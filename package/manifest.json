@@ -1,0 +1,32 @@
+{
+    "manifestVersion": "2.0.0",
+    "label": "thefloodmp",
+    "version": "5.0.0",
+    "files": {},
+    "category": "map",
+    "author": "Keymind Studios",
+    "name": "Helljumper Multiplayer Maps",
+    "description": "Multiplayer maps from Helljumper",
+    "deletes": [
+        "lua-map/aqueduct.lua",
+        "lua-map/bleed_it_out.lua",
+        "lua-map/impasse.lua",
+        "lua-map/last_voyage.lua",
+        "lua-map/treason.lua",
+        "lua-map/penance.lua",
+        "lua-map/behemoth.lua",
+        "lua-map/warehouse.lua"
+    ],
+    "dependencies": [
+        {
+            "label": "chimera"
+        },
+        {
+            "label": "balltze",
+            "version": "1.2.0"
+        },
+        {
+            "label": "censhine"
+        }
+    ]
+}

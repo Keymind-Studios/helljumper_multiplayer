@@ -1,0 +1,24 @@
+version: 1
+tag_space: 64M
+extend_limits: true
+scenarios:
+  - keymind/the_flood/levels/multiplayer/aqueduct/aqueduct_dev
+  - keymind/the_flood/levels/multiplayer/foundation/treason_dev
+  - keymind/the_flood/levels/multiplayer/bleed_it_out/bleed_it_out_dev
+  - keymind/the_flood/levels/multiplayer/bridge/last_voyage_dev
+  - keymind/halo_3/levels/multiplayer/bunkerworld/impasse_dev
+  - keymind/the_flood/levels/multiplayer/ca_damnation/penance_dev
+  - keymind/halo_3/levels/dlc/warehouse/warehouse_dev
+
+commands:
+  extra_tags:
+    - extra/keymind/the_flood/ui/shell
+  package:
+    - mercury luabundle
+    - cp dist/the_flood.lua package/my-games-data-path/balltze/plugins/the_flood.lua
+    - mercury pack package/ dist/
+  symlinks:
+    - ln -f -s "$PWD/dist/multiplayer_server.lua" "$HALO_CE_DATA_PATH/sapp/lua/the_flood_mp_server.lua"
+  release:
+    - mercury build --release --output package/game-maps/
+    - mercury build package
