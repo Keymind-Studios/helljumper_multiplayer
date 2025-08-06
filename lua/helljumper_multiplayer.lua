@@ -5,6 +5,7 @@ package.preload["luna"] = nil
 package.loaded["luna"] = nil
 require "luna"
 local weapons = require "helljumper.systems.constants.weapons"
+local sounds = require "helljumper.systems.constants.sounds"
 
 local objectReferences = {}
 -- Get an object of the current game (prevent memory leak by using this wrapper)
@@ -95,6 +96,7 @@ local main
 
 function PluginFirstTick()
     weapons.get()
+    sounds.get()
     balltze.event.tick.subscribe(function(event)
         if event.time == "before" then
             if not main then
