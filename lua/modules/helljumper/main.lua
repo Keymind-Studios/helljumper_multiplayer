@@ -1,5 +1,5 @@
 DebugMode = true
-local blam = require "blam"
+blam = require "blam"
 local balltze = Balltze
 local engine = Engine
 local drawText = balltze.chimera.draw_text
@@ -7,7 +7,7 @@ local drawText = balltze.chimera.draw_text
 -- Gameplay Core Modules
 local dynamicCross = require "helljumper.systems.hud.hudDynamicCrosshair"
 local hudExtensions = require "helljumper.systems.hud.hudExtensions"
-local healthRegen = require "helljumper.systems.hud.healthRegen"
+local healthRegen = require "helljumper.systems.player.playerHealthRegen"
 --local aimingDownSights = require "helljumper.systems.weapons.weaponAimingDownSights"
 --local playerPingObjectives = require "helljumper.systems.player.playerPingObjectives"
 --local sprint = require "helljumper.systems.player.playerSprint"
@@ -18,8 +18,8 @@ function OnTick()
     dynamicCross.dynamicReticles()
     hudExtensions.radarHideOnZoom()
     hudExtensions.hudBlurOnLowHealth()
-    hudExtensions.changeGreandeSound()
-    healthRegen.regenerateHealth()
+    hudExtensions.changeGrenadeSound()
+    healthRegen.healthRegen()
     -- aimingDownSights.customKeys()
     -- playerPingObjectives.pingObjectives()
     -- weaponExtensions.casterFixHeat()
