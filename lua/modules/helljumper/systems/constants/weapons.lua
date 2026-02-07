@@ -23,7 +23,8 @@ function weapons.get()
         disruptor = findTags("proto_arc_zapper", tagClasses.weapon)[1],
         spnkr = findTags("m41_spknr", tagClasses.weapon)[1],
         skewer = findTags("skewer", tagClasses.weapon)[1],
-        plasmaCoil = findTags("plasma_fusioncoil", tagClasses.weapon)[1]
+        plasmaCoil = findTags("plasma_fusioncoil", tagClasses.weapon)[1],
+        railGun = findTags("rail_gun", tagClasses.weapon)[1]
     }
 
     weapons.weaponHudInterfaceTag = {
