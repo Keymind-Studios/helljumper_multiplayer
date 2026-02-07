@@ -9,6 +9,7 @@ scenarios:
   - keymind/halo_3/levels/multiplayer/bunkerworld/impasse_dev
   - keymind/the_flood/levels/multiplayer/ca_damnation/penance_dev
   - keymind/halo_3/levels/dlc/warehouse/warehouse_dev
+  - keymind/helljumper/levels/multiplayer/behemoth/behemoth_dev
 
 commands:
   extra_tags:
