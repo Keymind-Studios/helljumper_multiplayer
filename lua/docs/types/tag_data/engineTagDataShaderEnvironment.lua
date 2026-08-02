@@ -1,35 +1,35 @@
----@class EngineTagShaderEnvironmentTypeEnum : Enum 
+---@class EngineTagDataShaderEnvironmentTypeEnum : Enum 
 
----@class EngineTagShaderEnvironmentTypeNormal : EngineTagShaderEnvironmentTypeEnum 
----@class EngineTagShaderEnvironmentTypeBlended : EngineTagShaderEnvironmentTypeEnum 
----@class EngineTagShaderEnvironmentTypeBlendedBaseSpecular : EngineTagShaderEnvironmentTypeEnum 
+---@class EngineTagDataShaderEnvironmentTypeNormal : EngineTagDataShaderEnvironmentTypeEnum 
+---@class EngineTagDataShaderEnvironmentTypeBlended : EngineTagDataShaderEnvironmentTypeEnum 
+---@class EngineTagDataShaderEnvironmentTypeBlendedBaseSpecular : EngineTagDataShaderEnvironmentTypeEnum 
 
----@alias EngineTagShaderEnvironmentType 
----| EngineTagShaderEnvironmentTypeNormal
----| EngineTagShaderEnvironmentTypeBlended
----| EngineTagShaderEnvironmentTypeBlendedBaseSpecular
+---@alias EngineTagDataShaderEnvironmentType 
+---| EngineTagDataShaderEnvironmentTypeNormal
+---| EngineTagDataShaderEnvironmentTypeBlended
+---| EngineTagDataShaderEnvironmentTypeBlendedBaseSpecular
 
----@class EngineTagShaderEnvironmentTypeTable 
----@field eNormal EngineTagShaderEnvironmentTypeNormal
----@field eBlended EngineTagShaderEnvironmentTypeBlended
----@field eBlendedBaseSpecular EngineTagShaderEnvironmentTypeBlendedBaseSpecular
+---@class EngineTagDataShaderEnvironmentTypeTable 
+---@field eNormal EngineTagDataShaderEnvironmentTypeNormal
+---@field eBlended EngineTagDataShaderEnvironmentTypeBlended
+---@field eBlendedBaseSpecular EngineTagDataShaderEnvironmentTypeBlendedBaseSpecular
 Engine.tag.shaderEnvironmentType = {} 
 
----@class EngineTagShaderEnvironmentReflectionTypeEnum : Enum 
+---@class EngineTagDataShaderEnvironmentReflectionTypeEnum : Enum 
 
----@class EngineTagShaderEnvironmentReflectionTypeBumpedCubeMap : EngineTagShaderEnvironmentReflectionTypeEnum 
----@class EngineTagShaderEnvironmentReflectionTypeFlatCubeMap : EngineTagShaderEnvironmentReflectionTypeEnum 
----@class EngineTagShaderEnvironmentReflectionTypeBumpedRadiosity : EngineTagShaderEnvironmentReflectionTypeEnum 
+---@class EngineTagDataShaderEnvironmentReflectionTypeBumpedCubeMap : EngineTagDataShaderEnvironmentReflectionTypeEnum 
+---@class EngineTagDataShaderEnvironmentReflectionTypeFlatCubeMap : EngineTagDataShaderEnvironmentReflectionTypeEnum 
+---@class EngineTagDataShaderEnvironmentReflectionTypeBumpedRadiosity : EngineTagDataShaderEnvironmentReflectionTypeEnum 
 
----@alias EngineTagShaderEnvironmentReflectionType 
----| EngineTagShaderEnvironmentReflectionTypeBumpedCubeMap
----| EngineTagShaderEnvironmentReflectionTypeFlatCubeMap
----| EngineTagShaderEnvironmentReflectionTypeBumpedRadiosity
+---@alias EngineTagDataShaderEnvironmentReflectionType 
+---| EngineTagDataShaderEnvironmentReflectionTypeBumpedCubeMap
+---| EngineTagDataShaderEnvironmentReflectionTypeFlatCubeMap
+---| EngineTagDataShaderEnvironmentReflectionTypeBumpedRadiosity
 
----@class EngineTagShaderEnvironmentReflectionTypeTable 
----@field peBumpedCubeMap EngineTagShaderEnvironmentReflectionTypeBumpedCubeMap
----@field peFlatCubeMap EngineTagShaderEnvironmentReflectionTypeFlatCubeMap
----@field peBumpedRadiosity EngineTagShaderEnvironmentReflectionTypeBumpedRadiosity
+---@class EngineTagDataShaderEnvironmentReflectionTypeTable 
+---@field peBumpedCubeMap EngineTagDataShaderEnvironmentReflectionTypeBumpedCubeMap
+---@field peFlatCubeMap EngineTagDataShaderEnvironmentReflectionTypeFlatCubeMap
+---@field peBumpedRadiosity EngineTagDataShaderEnvironmentReflectionTypeBumpedRadiosity
 Engine.tag.shaderEnvironmentReflectionType = {} 
 
 ---@class MetaEngineTagDataShaderEnvironmentFlags 

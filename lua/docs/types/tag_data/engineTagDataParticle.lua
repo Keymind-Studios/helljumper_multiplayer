@@ -1,35 +1,35 @@
----@class EngineTagParticleOrientationEnum : Enum 
+---@class EngineTagDataParticleOrientationEnum : Enum 
 
----@class EngineTagParticleOrientationScreenFacing : EngineTagParticleOrientationEnum 
----@class EngineTagParticleOrientationParallelToDirection : EngineTagParticleOrientationEnum 
----@class EngineTagParticleOrientationPerpendicularToDirection : EngineTagParticleOrientationEnum 
+---@class EngineTagDataParticleOrientationScreenFacing : EngineTagDataParticleOrientationEnum 
+---@class EngineTagDataParticleOrientationParallelToDirection : EngineTagDataParticleOrientationEnum 
+---@class EngineTagDataParticleOrientationPerpendicularToDirection : EngineTagDataParticleOrientationEnum 
 
----@alias EngineTagParticleOrientation 
----| EngineTagParticleOrientationScreenFacing
----| EngineTagParticleOrientationParallelToDirection
----| EngineTagParticleOrientationPerpendicularToDirection
+---@alias EngineTagDataParticleOrientation 
+---| EngineTagDataParticleOrientationScreenFacing
+---| EngineTagDataParticleOrientationParallelToDirection
+---| EngineTagDataParticleOrientationPerpendicularToDirection
 
----@class EngineTagParticleOrientationTable 
----@field screenFacing EngineTagParticleOrientationScreenFacing
----@field parallelToDirection EngineTagParticleOrientationParallelToDirection
----@field perpendicularToDirection EngineTagParticleOrientationPerpendicularToDirection
+---@class EngineTagDataParticleOrientationTable 
+---@field screenFacing EngineTagDataParticleOrientationScreenFacing
+---@field parallelToDirection EngineTagDataParticleOrientationParallelToDirection
+---@field perpendicularToDirection EngineTagDataParticleOrientationPerpendicularToDirection
 Engine.tag.particleOrientation = {} 
 
----@class EngineTagParticleAnchorEnum : Enum 
+---@class EngineTagDataParticleAnchorEnum : Enum 
 
----@class EngineTagParticleAnchorWithPrimary : EngineTagParticleAnchorEnum 
----@class EngineTagParticleAnchorWithScreenSpace : EngineTagParticleAnchorEnum 
----@class EngineTagParticleAnchorZsprite : EngineTagParticleAnchorEnum 
+---@class EngineTagDataParticleAnchorWithPrimary : EngineTagDataParticleAnchorEnum 
+---@class EngineTagDataParticleAnchorWithScreenSpace : EngineTagDataParticleAnchorEnum 
+---@class EngineTagDataParticleAnchorZsprite : EngineTagDataParticleAnchorEnum 
 
----@alias EngineTagParticleAnchor 
----| EngineTagParticleAnchorWithPrimary
----| EngineTagParticleAnchorWithScreenSpace
----| EngineTagParticleAnchorZsprite
+---@alias EngineTagDataParticleAnchor 
+---| EngineTagDataParticleAnchorWithPrimary
+---| EngineTagDataParticleAnchorWithScreenSpace
+---| EngineTagDataParticleAnchorZsprite
 
----@class EngineTagParticleAnchorTable 
----@field withPrimary EngineTagParticleAnchorWithPrimary
----@field withScreenSpace EngineTagParticleAnchorWithScreenSpace
----@field zsprite EngineTagParticleAnchorZsprite
+---@class EngineTagDataParticleAnchorTable 
+---@field withPrimary EngineTagDataParticleAnchorWithPrimary
+---@field withScreenSpace EngineTagDataParticleAnchorWithScreenSpace
+---@field zsprite EngineTagDataParticleAnchorZsprite
 Engine.tag.particleAnchor = {} 
 
 ---@class MetaEngineTagDataParticleFlags 

@@ -1,89 +1,89 @@
----@class EngineTagActorVariantMovementTypeEnum : Enum 
+---@class EngineTagDataActorVariantMovementTypeEnum : Enum 
 
----@class EngineTagActorVariantMovementTypeAlwaysRun : EngineTagActorVariantMovementTypeEnum 
----@class EngineTagActorVariantMovementTypeAlwaysCrouch : EngineTagActorVariantMovementTypeEnum 
----@class EngineTagActorVariantMovementTypeSwitchTypes : EngineTagActorVariantMovementTypeEnum 
+---@class EngineTagDataActorVariantMovementTypeAlwaysRun : EngineTagDataActorVariantMovementTypeEnum 
+---@class EngineTagDataActorVariantMovementTypeAlwaysCrouch : EngineTagDataActorVariantMovementTypeEnum 
+---@class EngineTagDataActorVariantMovementTypeSwitchTypes : EngineTagDataActorVariantMovementTypeEnum 
 
----@alias EngineTagActorVariantMovementType 
----| EngineTagActorVariantMovementTypeAlwaysRun
----| EngineTagActorVariantMovementTypeAlwaysCrouch
----| EngineTagActorVariantMovementTypeSwitchTypes
+---@alias EngineTagDataActorVariantMovementType 
+---| EngineTagDataActorVariantMovementTypeAlwaysRun
+---| EngineTagDataActorVariantMovementTypeAlwaysCrouch
+---| EngineTagDataActorVariantMovementTypeSwitchTypes
 
----@class EngineTagActorVariantMovementTypeTable 
----@field peAlwaysRun EngineTagActorVariantMovementTypeAlwaysRun
----@field peAlwaysCrouch EngineTagActorVariantMovementTypeAlwaysCrouch
----@field peSwitchTypes EngineTagActorVariantMovementTypeSwitchTypes
+---@class EngineTagDataActorVariantMovementTypeTable 
+---@field peAlwaysRun EngineTagDataActorVariantMovementTypeAlwaysRun
+---@field peAlwaysCrouch EngineTagDataActorVariantMovementTypeAlwaysCrouch
+---@field peSwitchTypes EngineTagDataActorVariantMovementTypeSwitchTypes
 Engine.tag.actorVariantMovementType = {} 
 
----@class EngineTagActorVariantSpecialFireModeEnum : Enum 
+---@class EngineTagDataActorVariantSpecialFireModeEnum : Enum 
 
----@class EngineTagActorVariantSpecialFireModeNone : EngineTagActorVariantSpecialFireModeEnum 
----@class EngineTagActorVariantSpecialFireModeOvercharge : EngineTagActorVariantSpecialFireModeEnum 
----@class EngineTagActorVariantSpecialFireModeSecondaryTrigger : EngineTagActorVariantSpecialFireModeEnum 
+---@class EngineTagDataActorVariantSpecialFireModeNone : EngineTagDataActorVariantSpecialFireModeEnum 
+---@class EngineTagDataActorVariantSpecialFireModeOvercharge : EngineTagDataActorVariantSpecialFireModeEnum 
+---@class EngineTagDataActorVariantSpecialFireModeSecondaryTrigger : EngineTagDataActorVariantSpecialFireModeEnum 
 
----@alias EngineTagActorVariantSpecialFireMode 
----| EngineTagActorVariantSpecialFireModeNone
----| EngineTagActorVariantSpecialFireModeOvercharge
----| EngineTagActorVariantSpecialFireModeSecondaryTrigger
+---@alias EngineTagDataActorVariantSpecialFireMode 
+---| EngineTagDataActorVariantSpecialFireModeNone
+---| EngineTagDataActorVariantSpecialFireModeOvercharge
+---| EngineTagDataActorVariantSpecialFireModeSecondaryTrigger
 
----@class EngineTagActorVariantSpecialFireModeTable 
----@field odeNone EngineTagActorVariantSpecialFireModeNone
----@field odeOvercharge EngineTagActorVariantSpecialFireModeOvercharge
----@field odeSecondaryTrigger EngineTagActorVariantSpecialFireModeSecondaryTrigger
+---@class EngineTagDataActorVariantSpecialFireModeTable 
+---@field odeNone EngineTagDataActorVariantSpecialFireModeNone
+---@field odeOvercharge EngineTagDataActorVariantSpecialFireModeOvercharge
+---@field odeSecondaryTrigger EngineTagDataActorVariantSpecialFireModeSecondaryTrigger
 Engine.tag.actorVariantSpecialFireMode = {} 
 
----@class EngineTagActorVariantSpecialFireSituationEnum : Enum 
+---@class EngineTagDataActorVariantSpecialFireSituationEnum : Enum 
 
----@class EngineTagActorVariantSpecialFireSituationNever : EngineTagActorVariantSpecialFireSituationEnum 
----@class EngineTagActorVariantSpecialFireSituationEnemyVisible : EngineTagActorVariantSpecialFireSituationEnum 
----@class EngineTagActorVariantSpecialFireSituationEnemyOutOfSight : EngineTagActorVariantSpecialFireSituationEnum 
----@class EngineTagActorVariantSpecialFireSituationStrafing : EngineTagActorVariantSpecialFireSituationEnum 
+---@class EngineTagDataActorVariantSpecialFireSituationNever : EngineTagDataActorVariantSpecialFireSituationEnum 
+---@class EngineTagDataActorVariantSpecialFireSituationEnemyVisible : EngineTagDataActorVariantSpecialFireSituationEnum 
+---@class EngineTagDataActorVariantSpecialFireSituationEnemyOutOfSight : EngineTagDataActorVariantSpecialFireSituationEnum 
+---@class EngineTagDataActorVariantSpecialFireSituationStrafing : EngineTagDataActorVariantSpecialFireSituationEnum 
 
----@alias EngineTagActorVariantSpecialFireSituation 
----| EngineTagActorVariantSpecialFireSituationNever
----| EngineTagActorVariantSpecialFireSituationEnemyVisible
----| EngineTagActorVariantSpecialFireSituationEnemyOutOfSight
----| EngineTagActorVariantSpecialFireSituationStrafing
+---@alias EngineTagDataActorVariantSpecialFireSituation 
+---| EngineTagDataActorVariantSpecialFireSituationNever
+---| EngineTagDataActorVariantSpecialFireSituationEnemyVisible
+---| EngineTagDataActorVariantSpecialFireSituationEnemyOutOfSight
+---| EngineTagDataActorVariantSpecialFireSituationStrafing
 
----@class EngineTagActorVariantSpecialFireSituationTable 
----@field ionNever EngineTagActorVariantSpecialFireSituationNever
----@field ionEnemyVisible EngineTagActorVariantSpecialFireSituationEnemyVisible
----@field ionEnemyOutOfSight EngineTagActorVariantSpecialFireSituationEnemyOutOfSight
----@field ionStrafing EngineTagActorVariantSpecialFireSituationStrafing
+---@class EngineTagDataActorVariantSpecialFireSituationTable 
+---@field ionNever EngineTagDataActorVariantSpecialFireSituationNever
+---@field ionEnemyVisible EngineTagDataActorVariantSpecialFireSituationEnemyVisible
+---@field ionEnemyOutOfSight EngineTagDataActorVariantSpecialFireSituationEnemyOutOfSight
+---@field ionStrafing EngineTagDataActorVariantSpecialFireSituationStrafing
 Engine.tag.actorVariantSpecialFireSituation = {} 
 
----@class EngineTagActorVariantTrajectoryTypeEnum : Enum 
+---@class EngineTagDataActorVariantTrajectoryTypeEnum : Enum 
 
----@class EngineTagActorVariantTrajectoryTypeToss : EngineTagActorVariantTrajectoryTypeEnum 
----@class EngineTagActorVariantTrajectoryTypeLob : EngineTagActorVariantTrajectoryTypeEnum 
----@class EngineTagActorVariantTrajectoryTypeBounce : EngineTagActorVariantTrajectoryTypeEnum 
+---@class EngineTagDataActorVariantTrajectoryTypeToss : EngineTagDataActorVariantTrajectoryTypeEnum 
+---@class EngineTagDataActorVariantTrajectoryTypeLob : EngineTagDataActorVariantTrajectoryTypeEnum 
+---@class EngineTagDataActorVariantTrajectoryTypeBounce : EngineTagDataActorVariantTrajectoryTypeEnum 
 
----@alias EngineTagActorVariantTrajectoryType 
----| EngineTagActorVariantTrajectoryTypeToss
----| EngineTagActorVariantTrajectoryTypeLob
----| EngineTagActorVariantTrajectoryTypeBounce
+---@alias EngineTagDataActorVariantTrajectoryType 
+---| EngineTagDataActorVariantTrajectoryTypeToss
+---| EngineTagDataActorVariantTrajectoryTypeLob
+---| EngineTagDataActorVariantTrajectoryTypeBounce
 
----@class EngineTagActorVariantTrajectoryTypeTable 
----@field peToss EngineTagActorVariantTrajectoryTypeToss
----@field peLob EngineTagActorVariantTrajectoryTypeLob
----@field peBounce EngineTagActorVariantTrajectoryTypeBounce
+---@class EngineTagDataActorVariantTrajectoryTypeTable 
+---@field peToss EngineTagDataActorVariantTrajectoryTypeToss
+---@field peLob EngineTagDataActorVariantTrajectoryTypeLob
+---@field peBounce EngineTagDataActorVariantTrajectoryTypeBounce
 Engine.tag.actorVariantTrajectoryType = {} 
 
----@class EngineTagActorVariantGrenadeStimulusEnum : Enum 
+---@class EngineTagDataActorVariantGrenadeStimulusEnum : Enum 
 
----@class EngineTagActorVariantGrenadeStimulusNever : EngineTagActorVariantGrenadeStimulusEnum 
----@class EngineTagActorVariantGrenadeStimulusVisibleTarget : EngineTagActorVariantGrenadeStimulusEnum 
----@class EngineTagActorVariantGrenadeStimulusSeekCover : EngineTagActorVariantGrenadeStimulusEnum 
+---@class EngineTagDataActorVariantGrenadeStimulusNever : EngineTagDataActorVariantGrenadeStimulusEnum 
+---@class EngineTagDataActorVariantGrenadeStimulusVisibleTarget : EngineTagDataActorVariantGrenadeStimulusEnum 
+---@class EngineTagDataActorVariantGrenadeStimulusSeekCover : EngineTagDataActorVariantGrenadeStimulusEnum 
 
----@alias EngineTagActorVariantGrenadeStimulus 
----| EngineTagActorVariantGrenadeStimulusNever
----| EngineTagActorVariantGrenadeStimulusVisibleTarget
----| EngineTagActorVariantGrenadeStimulusSeekCover
+---@alias EngineTagDataActorVariantGrenadeStimulus 
+---| EngineTagDataActorVariantGrenadeStimulusNever
+---| EngineTagDataActorVariantGrenadeStimulusVisibleTarget
+---| EngineTagDataActorVariantGrenadeStimulusSeekCover
 
----@class EngineTagActorVariantGrenadeStimulusTable 
----@field usNever EngineTagActorVariantGrenadeStimulusNever
----@field usVisibleTarget EngineTagActorVariantGrenadeStimulusVisibleTarget
----@field usSeekCover EngineTagActorVariantGrenadeStimulusSeekCover
+---@class EngineTagDataActorVariantGrenadeStimulusTable 
+---@field never EngineTagDataActorVariantGrenadeStimulusNever
+---@field visibleTarget EngineTagDataActorVariantGrenadeStimulusVisibleTarget
+---@field seekCover EngineTagDataActorVariantGrenadeStimulusSeekCover
 Engine.tag.actorVariantGrenadeStimulus = {} 
 
 ---@class MetaEngineTagDataActorVariantFlags 
@@ -173,10 +173,10 @@ Engine.tag.actorVariantGrenadeStimulus = {}
 ---@field grenadeCheckTime number 
 ---@field encounterGrenadeTimeout number 
 ---@field equipment MetaEngineTagDependency 
----@field grenadeCount integer 
+---@field grenadeCount number 
 ---@field dontDropGrenadesChance number 
 ---@field dropWeaponLoaded number 
----@field dropWeaponAmmo integer 
+---@field dropWeaponAmmo number 
 ---@field bodyVitality number 
 ---@field shieldVitality number 
 ---@field shieldSappingRadius number 

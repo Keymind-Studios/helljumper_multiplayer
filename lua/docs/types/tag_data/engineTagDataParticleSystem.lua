@@ -1,57 +1,57 @@
----@class EngineTagParticleSystemParticleCreationPhysicsEnum : Enum 
+---@class EngineTagDataParticleSystemParticleCreationPhysicsEnum : Enum 
 
----@class EngineTagParticleSystemParticleCreationPhysicsDefault : EngineTagParticleSystemParticleCreationPhysicsEnum 
----@class EngineTagParticleSystemParticleCreationPhysicsExplosion : EngineTagParticleSystemParticleCreationPhysicsEnum 
----@class EngineTagParticleSystemParticleCreationPhysicsJet : EngineTagParticleSystemParticleCreationPhysicsEnum 
+---@class EngineTagDataParticleSystemParticleCreationPhysicsDefault : EngineTagDataParticleSystemParticleCreationPhysicsEnum 
+---@class EngineTagDataParticleSystemParticleCreationPhysicsExplosion : EngineTagDataParticleSystemParticleCreationPhysicsEnum 
+---@class EngineTagDataParticleSystemParticleCreationPhysicsJet : EngineTagDataParticleSystemParticleCreationPhysicsEnum 
 
----@alias EngineTagParticleSystemParticleCreationPhysics 
----| EngineTagParticleSystemParticleCreationPhysicsDefault
----| EngineTagParticleSystemParticleCreationPhysicsExplosion
----| EngineTagParticleSystemParticleCreationPhysicsJet
+---@alias EngineTagDataParticleSystemParticleCreationPhysics 
+---| EngineTagDataParticleSystemParticleCreationPhysicsDefault
+---| EngineTagDataParticleSystemParticleCreationPhysicsExplosion
+---| EngineTagDataParticleSystemParticleCreationPhysicsJet
 
----@class EngineTagParticleSystemParticleCreationPhysicsTable 
----@field icsDefault EngineTagParticleSystemParticleCreationPhysicsDefault
----@field icsExplosion EngineTagParticleSystemParticleCreationPhysicsExplosion
----@field icsJet EngineTagParticleSystemParticleCreationPhysicsJet
+---@class EngineTagDataParticleSystemParticleCreationPhysicsTable 
+---@field icsDefault EngineTagDataParticleSystemParticleCreationPhysicsDefault
+---@field icsExplosion EngineTagDataParticleSystemParticleCreationPhysicsExplosion
+---@field icsJet EngineTagDataParticleSystemParticleCreationPhysicsJet
 Engine.tag.particleSystemParticleCreationPhysics = {} 
 
----@class EngineTagParticleSystemParticleUpdatePhysicsEnum : Enum 
+---@class EngineTagDataParticleSystemParticleUpdatePhysicsEnum : Enum 
 
----@class EngineTagParticleSystemParticleUpdatePhysicsDefault : EngineTagParticleSystemParticleUpdatePhysicsEnum 
+---@class EngineTagDataParticleSystemParticleUpdatePhysicsDefault : EngineTagDataParticleSystemParticleUpdatePhysicsEnum 
 
----@alias EngineTagParticleSystemParticleUpdatePhysics 
----| EngineTagParticleSystemParticleUpdatePhysicsDefault
+---@alias EngineTagDataParticleSystemParticleUpdatePhysics 
+---| EngineTagDataParticleSystemParticleUpdatePhysicsDefault
 
----@class EngineTagParticleSystemParticleUpdatePhysicsTable 
----@field icsDefault EngineTagParticleSystemParticleUpdatePhysicsDefault
+---@class EngineTagDataParticleSystemParticleUpdatePhysicsTable 
+---@field icsDefault EngineTagDataParticleSystemParticleUpdatePhysicsDefault
 Engine.tag.particleSystemParticleUpdatePhysics = {} 
 
----@class EngineTagParticleSystemComplexSpriteRenderModesEnum : Enum 
+---@class EngineTagDataParticleSystemComplexSpriteRenderModesEnum : Enum 
 
----@class EngineTagParticleSystemComplexSpriteRenderModesSimple : EngineTagParticleSystemComplexSpriteRenderModesEnum 
----@class EngineTagParticleSystemComplexSpriteRenderModesRotational : EngineTagParticleSystemComplexSpriteRenderModesEnum 
+---@class EngineTagDataParticleSystemComplexSpriteRenderModesSimple : EngineTagDataParticleSystemComplexSpriteRenderModesEnum 
+---@class EngineTagDataParticleSystemComplexSpriteRenderModesRotational : EngineTagDataParticleSystemComplexSpriteRenderModesEnum 
 
----@alias EngineTagParticleSystemComplexSpriteRenderModes 
----| EngineTagParticleSystemComplexSpriteRenderModesSimple
----| EngineTagParticleSystemComplexSpriteRenderModesRotational
+---@alias EngineTagDataParticleSystemComplexSpriteRenderModes 
+---| EngineTagDataParticleSystemComplexSpriteRenderModesSimple
+---| EngineTagDataParticleSystemComplexSpriteRenderModesRotational
 
----@class EngineTagParticleSystemComplexSpriteRenderModesTable 
----@field odesSimple EngineTagParticleSystemComplexSpriteRenderModesSimple
----@field odesRotational EngineTagParticleSystemComplexSpriteRenderModesRotational
+---@class EngineTagDataParticleSystemComplexSpriteRenderModesTable 
+---@field odesSimple EngineTagDataParticleSystemComplexSpriteRenderModesSimple
+---@field odesRotational EngineTagDataParticleSystemComplexSpriteRenderModesRotational
 Engine.tag.particleSystemComplexSpriteRenderModes = {} 
 
----@class EngineTagParticleSystemSystemUpdatePhysicsEnum : Enum 
+---@class EngineTagDataParticleSystemSystemUpdatePhysicsEnum : Enum 
 
----@class EngineTagParticleSystemSystemUpdatePhysicsDefault : EngineTagParticleSystemSystemUpdatePhysicsEnum 
----@class EngineTagParticleSystemSystemUpdatePhysicsExplosion : EngineTagParticleSystemSystemUpdatePhysicsEnum 
+---@class EngineTagDataParticleSystemSystemUpdatePhysicsDefault : EngineTagDataParticleSystemSystemUpdatePhysicsEnum 
+---@class EngineTagDataParticleSystemSystemUpdatePhysicsExplosion : EngineTagDataParticleSystemSystemUpdatePhysicsEnum 
 
----@alias EngineTagParticleSystemSystemUpdatePhysics 
----| EngineTagParticleSystemSystemUpdatePhysicsDefault
----| EngineTagParticleSystemSystemUpdatePhysicsExplosion
+---@alias EngineTagDataParticleSystemSystemUpdatePhysics 
+---| EngineTagDataParticleSystemSystemUpdatePhysicsDefault
+---| EngineTagDataParticleSystemSystemUpdatePhysicsExplosion
 
----@class EngineTagParticleSystemSystemUpdatePhysicsTable 
----@field icsDefault EngineTagParticleSystemSystemUpdatePhysicsDefault
----@field icsExplosion EngineTagParticleSystemSystemUpdatePhysicsExplosion
+---@class EngineTagDataParticleSystemSystemUpdatePhysicsTable 
+---@field icsDefault EngineTagDataParticleSystemSystemUpdatePhysicsDefault
+---@field icsExplosion EngineTagDataParticleSystemSystemUpdatePhysicsExplosion
 Engine.tag.particleSystemSystemUpdatePhysics = {} 
 
 ---@class MetaEngineTagDataParticleSystemTypeFlags 

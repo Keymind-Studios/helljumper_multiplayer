@@ -1,61 +1,61 @@
----@class EngineTagLensFlareRadiusScaledByEnum : Enum 
+---@class EngineTagDataLensFlareRadiusScaledByEnum : Enum 
 
----@class EngineTagLensFlareRadiusScaledByNone : EngineTagLensFlareRadiusScaledByEnum 
----@class EngineTagLensFlareRadiusScaledByRotation : EngineTagLensFlareRadiusScaledByEnum 
----@class EngineTagLensFlareRadiusScaledByRotationAndStrafing : EngineTagLensFlareRadiusScaledByEnum 
----@class EngineTagLensFlareRadiusScaledByDistanceFromCenter : EngineTagLensFlareRadiusScaledByEnum 
+---@class EngineTagDataLensFlareRadiusScaledByNone : EngineTagDataLensFlareRadiusScaledByEnum 
+---@class EngineTagDataLensFlareRadiusScaledByRotation : EngineTagDataLensFlareRadiusScaledByEnum 
+---@class EngineTagDataLensFlareRadiusScaledByRotationAndStrafing : EngineTagDataLensFlareRadiusScaledByEnum 
+---@class EngineTagDataLensFlareRadiusScaledByDistanceFromCenter : EngineTagDataLensFlareRadiusScaledByEnum 
 
----@alias EngineTagLensFlareRadiusScaledBy 
----| EngineTagLensFlareRadiusScaledByNone
----| EngineTagLensFlareRadiusScaledByRotation
----| EngineTagLensFlareRadiusScaledByRotationAndStrafing
----| EngineTagLensFlareRadiusScaledByDistanceFromCenter
+---@alias EngineTagDataLensFlareRadiusScaledBy 
+---| EngineTagDataLensFlareRadiusScaledByNone
+---| EngineTagDataLensFlareRadiusScaledByRotation
+---| EngineTagDataLensFlareRadiusScaledByRotationAndStrafing
+---| EngineTagDataLensFlareRadiusScaledByDistanceFromCenter
 
----@class EngineTagLensFlareRadiusScaledByTable 
----@field byNone EngineTagLensFlareRadiusScaledByNone
----@field byRotation EngineTagLensFlareRadiusScaledByRotation
----@field byRotationAndStrafing EngineTagLensFlareRadiusScaledByRotationAndStrafing
----@field byDistanceFromCenter EngineTagLensFlareRadiusScaledByDistanceFromCenter
+---@class EngineTagDataLensFlareRadiusScaledByTable 
+---@field byNone EngineTagDataLensFlareRadiusScaledByNone
+---@field byRotation EngineTagDataLensFlareRadiusScaledByRotation
+---@field byRotationAndStrafing EngineTagDataLensFlareRadiusScaledByRotationAndStrafing
+---@field byDistanceFromCenter EngineTagDataLensFlareRadiusScaledByDistanceFromCenter
 Engine.tag.lensFlareRadiusScaledBy = {} 
 
----@class EngineTagLensFlareOcclusionOffsetDirectionEnum : Enum 
+---@class EngineTagDataLensFlareOcclusionOffsetDirectionEnum : Enum 
 
----@class EngineTagLensFlareOcclusionOffsetDirectionTowardViewer : EngineTagLensFlareOcclusionOffsetDirectionEnum 
----@class EngineTagLensFlareOcclusionOffsetDirectionMarkerForward : EngineTagLensFlareOcclusionOffsetDirectionEnum 
----@class EngineTagLensFlareOcclusionOffsetDirectionNone : EngineTagLensFlareOcclusionOffsetDirectionEnum 
+---@class EngineTagDataLensFlareOcclusionOffsetDirectionTowardViewer : EngineTagDataLensFlareOcclusionOffsetDirectionEnum 
+---@class EngineTagDataLensFlareOcclusionOffsetDirectionMarkerForward : EngineTagDataLensFlareOcclusionOffsetDirectionEnum 
+---@class EngineTagDataLensFlareOcclusionOffsetDirectionNone : EngineTagDataLensFlareOcclusionOffsetDirectionEnum 
 
----@alias EngineTagLensFlareOcclusionOffsetDirection 
----| EngineTagLensFlareOcclusionOffsetDirectionTowardViewer
----| EngineTagLensFlareOcclusionOffsetDirectionMarkerForward
----| EngineTagLensFlareOcclusionOffsetDirectionNone
+---@alias EngineTagDataLensFlareOcclusionOffsetDirection 
+---| EngineTagDataLensFlareOcclusionOffsetDirectionTowardViewer
+---| EngineTagDataLensFlareOcclusionOffsetDirectionMarkerForward
+---| EngineTagDataLensFlareOcclusionOffsetDirectionNone
 
----@class EngineTagLensFlareOcclusionOffsetDirectionTable 
----@field ionTowardViewer EngineTagLensFlareOcclusionOffsetDirectionTowardViewer
----@field ionMarkerForward EngineTagLensFlareOcclusionOffsetDirectionMarkerForward
----@field ionNone EngineTagLensFlareOcclusionOffsetDirectionNone
+---@class EngineTagDataLensFlareOcclusionOffsetDirectionTable 
+---@field ionTowardViewer EngineTagDataLensFlareOcclusionOffsetDirectionTowardViewer
+---@field ionMarkerForward EngineTagDataLensFlareOcclusionOffsetDirectionMarkerForward
+---@field ionNone EngineTagDataLensFlareOcclusionOffsetDirectionNone
 Engine.tag.lensFlareOcclusionOffsetDirection = {} 
 
----@class EngineTagLensFlareRotationFunctionEnum : Enum 
+---@class EngineTagDataLensFlareRotationFunctionEnum : Enum 
 
----@class EngineTagLensFlareRotationFunctionNone : EngineTagLensFlareRotationFunctionEnum 
----@class EngineTagLensFlareRotationFunctionRotationA : EngineTagLensFlareRotationFunctionEnum 
----@class EngineTagLensFlareRotationFunctionRotationB : EngineTagLensFlareRotationFunctionEnum 
----@class EngineTagLensFlareRotationFunctionRotationTranslation : EngineTagLensFlareRotationFunctionEnum 
----@class EngineTagLensFlareRotationFunctionTranslation : EngineTagLensFlareRotationFunctionEnum 
+---@class EngineTagDataLensFlareRotationFunctionNone : EngineTagDataLensFlareRotationFunctionEnum 
+---@class EngineTagDataLensFlareRotationFunctionRotationA : EngineTagDataLensFlareRotationFunctionEnum 
+---@class EngineTagDataLensFlareRotationFunctionRotationB : EngineTagDataLensFlareRotationFunctionEnum 
+---@class EngineTagDataLensFlareRotationFunctionRotationTranslation : EngineTagDataLensFlareRotationFunctionEnum 
+---@class EngineTagDataLensFlareRotationFunctionTranslation : EngineTagDataLensFlareRotationFunctionEnum 
 
----@alias EngineTagLensFlareRotationFunction 
----| EngineTagLensFlareRotationFunctionNone
----| EngineTagLensFlareRotationFunctionRotationA
----| EngineTagLensFlareRotationFunctionRotationB
----| EngineTagLensFlareRotationFunctionRotationTranslation
----| EngineTagLensFlareRotationFunctionTranslation
+---@alias EngineTagDataLensFlareRotationFunction 
+---| EngineTagDataLensFlareRotationFunctionNone
+---| EngineTagDataLensFlareRotationFunctionRotationA
+---| EngineTagDataLensFlareRotationFunctionRotationB
+---| EngineTagDataLensFlareRotationFunctionRotationTranslation
+---| EngineTagDataLensFlareRotationFunctionTranslation
 
----@class EngineTagLensFlareRotationFunctionTable 
----@field onNone EngineTagLensFlareRotationFunctionNone
----@field onRotationA EngineTagLensFlareRotationFunctionRotationA
----@field onRotationB EngineTagLensFlareRotationFunctionRotationB
----@field onRotationTranslation EngineTagLensFlareRotationFunctionRotationTranslation
----@field onTranslation EngineTagLensFlareRotationFunctionTranslation
+---@class EngineTagDataLensFlareRotationFunctionTable 
+---@field onNone EngineTagDataLensFlareRotationFunctionNone
+---@field onRotationA EngineTagDataLensFlareRotationFunctionRotationA
+---@field onRotationB EngineTagDataLensFlareRotationFunctionRotationB
+---@field onRotationTranslation EngineTagDataLensFlareRotationFunctionRotationTranslation
+---@field onTranslation EngineTagDataLensFlareRotationFunctionTranslation
 Engine.tag.lensFlareRotationFunction = {} 
 
 ---@class MetaEngineTagDataLensFlareReflectionFlags 

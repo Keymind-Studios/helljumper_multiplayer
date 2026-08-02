@@ -1,371 +1,371 @@
----@class EngineTagFramebufferBlendFunctionEnum : Enum 
+---@class EngineTagDataFramebufferBlendFunctionEnum : Enum 
 
----@class EngineTagFramebufferBlendFunctionAlphaBlend : EngineTagFramebufferBlendFunctionEnum 
----@class EngineTagFramebufferBlendFunctionMultiply : EngineTagFramebufferBlendFunctionEnum 
----@class EngineTagFramebufferBlendFunctionDoubleMultiply : EngineTagFramebufferBlendFunctionEnum 
----@class EngineTagFramebufferBlendFunctionAdd : EngineTagFramebufferBlendFunctionEnum 
----@class EngineTagFramebufferBlendFunctionSubtract : EngineTagFramebufferBlendFunctionEnum 
----@class EngineTagFramebufferBlendFunctionComponentMin : EngineTagFramebufferBlendFunctionEnum 
----@class EngineTagFramebufferBlendFunctionComponentMax : EngineTagFramebufferBlendFunctionEnum 
----@class EngineTagFramebufferBlendFunctionAlphaMultiplyAdd : EngineTagFramebufferBlendFunctionEnum 
+---@class EngineTagDataFramebufferBlendFunctionAlphaBlend : EngineTagDataFramebufferBlendFunctionEnum 
+---@class EngineTagDataFramebufferBlendFunctionMultiply : EngineTagDataFramebufferBlendFunctionEnum 
+---@class EngineTagDataFramebufferBlendFunctionDoubleMultiply : EngineTagDataFramebufferBlendFunctionEnum 
+---@class EngineTagDataFramebufferBlendFunctionAdd : EngineTagDataFramebufferBlendFunctionEnum 
+---@class EngineTagDataFramebufferBlendFunctionSubtract : EngineTagDataFramebufferBlendFunctionEnum 
+---@class EngineTagDataFramebufferBlendFunctionComponentMin : EngineTagDataFramebufferBlendFunctionEnum 
+---@class EngineTagDataFramebufferBlendFunctionComponentMax : EngineTagDataFramebufferBlendFunctionEnum 
+---@class EngineTagDataFramebufferBlendFunctionAlphaMultiplyAdd : EngineTagDataFramebufferBlendFunctionEnum 
 
----@alias EngineTagFramebufferBlendFunction 
----| EngineTagFramebufferBlendFunctionAlphaBlend
----| EngineTagFramebufferBlendFunctionMultiply
----| EngineTagFramebufferBlendFunctionDoubleMultiply
----| EngineTagFramebufferBlendFunctionAdd
----| EngineTagFramebufferBlendFunctionSubtract
----| EngineTagFramebufferBlendFunctionComponentMin
----| EngineTagFramebufferBlendFunctionComponentMax
----| EngineTagFramebufferBlendFunctionAlphaMultiplyAdd
+---@alias EngineTagDataFramebufferBlendFunction 
+---| EngineTagDataFramebufferBlendFunctionAlphaBlend
+---| EngineTagDataFramebufferBlendFunctionMultiply
+---| EngineTagDataFramebufferBlendFunctionDoubleMultiply
+---| EngineTagDataFramebufferBlendFunctionAdd
+---| EngineTagDataFramebufferBlendFunctionSubtract
+---| EngineTagDataFramebufferBlendFunctionComponentMin
+---| EngineTagDataFramebufferBlendFunctionComponentMax
+---| EngineTagDataFramebufferBlendFunctionAlphaMultiplyAdd
 
----@class EngineTagFramebufferBlendFunctionTable 
----@field nAlphaBlend EngineTagFramebufferBlendFunctionAlphaBlend
----@field nMultiply EngineTagFramebufferBlendFunctionMultiply
----@field nDoubleMultiply EngineTagFramebufferBlendFunctionDoubleMultiply
----@field nAdd EngineTagFramebufferBlendFunctionAdd
----@field nSubtract EngineTagFramebufferBlendFunctionSubtract
----@field nComponentMin EngineTagFramebufferBlendFunctionComponentMin
----@field nComponentMax EngineTagFramebufferBlendFunctionComponentMax
----@field nAlphaMultiplyAdd EngineTagFramebufferBlendFunctionAlphaMultiplyAdd
+---@class EngineTagDataFramebufferBlendFunctionTable 
+---@field nAlphaBlend EngineTagDataFramebufferBlendFunctionAlphaBlend
+---@field nMultiply EngineTagDataFramebufferBlendFunctionMultiply
+---@field nDoubleMultiply EngineTagDataFramebufferBlendFunctionDoubleMultiply
+---@field nAdd EngineTagDataFramebufferBlendFunctionAdd
+---@field nSubtract EngineTagDataFramebufferBlendFunctionSubtract
+---@field nComponentMin EngineTagDataFramebufferBlendFunctionComponentMin
+---@field nComponentMax EngineTagDataFramebufferBlendFunctionComponentMax
+---@field nAlphaMultiplyAdd EngineTagDataFramebufferBlendFunctionAlphaMultiplyAdd
 Engine.tag.framebufferBlendFunction = {} 
 
----@class EngineTagFramebufferFadeModeEnum : Enum 
+---@class EngineTagDataFramebufferFadeModeEnum : Enum 
 
----@class EngineTagFramebufferFadeModeNone : EngineTagFramebufferFadeModeEnum 
----@class EngineTagFramebufferFadeModeFadeWhenPerpendicular : EngineTagFramebufferFadeModeEnum 
----@class EngineTagFramebufferFadeModeFadeWhenParallel : EngineTagFramebufferFadeModeEnum 
+---@class EngineTagDataFramebufferFadeModeNone : EngineTagDataFramebufferFadeModeEnum 
+---@class EngineTagDataFramebufferFadeModeFadeWhenPerpendicular : EngineTagDataFramebufferFadeModeEnum 
+---@class EngineTagDataFramebufferFadeModeFadeWhenParallel : EngineTagDataFramebufferFadeModeEnum 
 
----@alias EngineTagFramebufferFadeMode 
----| EngineTagFramebufferFadeModeNone
----| EngineTagFramebufferFadeModeFadeWhenPerpendicular
----| EngineTagFramebufferFadeModeFadeWhenParallel
+---@alias EngineTagDataFramebufferFadeMode 
+---| EngineTagDataFramebufferFadeModeNone
+---| EngineTagDataFramebufferFadeModeFadeWhenPerpendicular
+---| EngineTagDataFramebufferFadeModeFadeWhenParallel
 
----@class EngineTagFramebufferFadeModeTable 
----@field eNone EngineTagFramebufferFadeModeNone
----@field eFadeWhenPerpendicular EngineTagFramebufferFadeModeFadeWhenPerpendicular
----@field eFadeWhenParallel EngineTagFramebufferFadeModeFadeWhenParallel
+---@class EngineTagDataFramebufferFadeModeTable 
+---@field eNone EngineTagDataFramebufferFadeModeNone
+---@field eFadeWhenPerpendicular EngineTagDataFramebufferFadeModeFadeWhenPerpendicular
+---@field eFadeWhenParallel EngineTagDataFramebufferFadeModeFadeWhenParallel
 Engine.tag.framebufferFadeMode = {} 
 
----@class EngineTagFunctionOutEnum : Enum 
+---@class EngineTagDataFunctionOutEnum : Enum 
 
----@class EngineTagFunctionOutNone : EngineTagFunctionOutEnum 
----@class EngineTagFunctionOutAOut : EngineTagFunctionOutEnum 
----@class EngineTagFunctionOutBOut : EngineTagFunctionOutEnum 
----@class EngineTagFunctionOutCOut : EngineTagFunctionOutEnum 
----@class EngineTagFunctionOutDOut : EngineTagFunctionOutEnum 
+---@class EngineTagDataFunctionOutNone : EngineTagDataFunctionOutEnum 
+---@class EngineTagDataFunctionOutAOut : EngineTagDataFunctionOutEnum 
+---@class EngineTagDataFunctionOutBOut : EngineTagDataFunctionOutEnum 
+---@class EngineTagDataFunctionOutCOut : EngineTagDataFunctionOutEnum 
+---@class EngineTagDataFunctionOutDOut : EngineTagDataFunctionOutEnum 
 
----@alias EngineTagFunctionOut 
----| EngineTagFunctionOutNone
----| EngineTagFunctionOutAOut
----| EngineTagFunctionOutBOut
----| EngineTagFunctionOutCOut
----| EngineTagFunctionOutDOut
+---@alias EngineTagDataFunctionOut 
+---| EngineTagDataFunctionOutNone
+---| EngineTagDataFunctionOutAOut
+---| EngineTagDataFunctionOutBOut
+---| EngineTagDataFunctionOutCOut
+---| EngineTagDataFunctionOutDOut
 
----@class EngineTagFunctionOutTable 
----@field none EngineTagFunctionOutNone
----@field aOut EngineTagFunctionOutAOut
----@field bOut EngineTagFunctionOutBOut
----@field cOut EngineTagFunctionOutCOut
----@field dOut EngineTagFunctionOutDOut
+---@class EngineTagDataFunctionOutTable 
+---@field none EngineTagDataFunctionOutNone
+---@field aOut EngineTagDataFunctionOutAOut
+---@field bOut EngineTagDataFunctionOutBOut
+---@field cOut EngineTagDataFunctionOutCOut
+---@field dOut EngineTagDataFunctionOutDOut
 Engine.tag.functionOut = {} 
 
----@class EngineTagWaveFunctionEnum : Enum 
+---@class EngineTagDataWaveFunctionEnum : Enum 
 
----@class EngineTagWaveFunctionOne : EngineTagWaveFunctionEnum 
----@class EngineTagWaveFunctionZero : EngineTagWaveFunctionEnum 
----@class EngineTagWaveFunctionCosine : EngineTagWaveFunctionEnum 
----@class EngineTagWaveFunctionCosineVariablePeriod : EngineTagWaveFunctionEnum 
----@class EngineTagWaveFunctionDiagonalWave : EngineTagWaveFunctionEnum 
----@class EngineTagWaveFunctionDiagonalWaveVariablePeriod : EngineTagWaveFunctionEnum 
----@class EngineTagWaveFunctionSlide : EngineTagWaveFunctionEnum 
----@class EngineTagWaveFunctionSlideVariablePeriod : EngineTagWaveFunctionEnum 
----@class EngineTagWaveFunctionNoise : EngineTagWaveFunctionEnum 
----@class EngineTagWaveFunctionJitter : EngineTagWaveFunctionEnum 
----@class EngineTagWaveFunctionWander : EngineTagWaveFunctionEnum 
----@class EngineTagWaveFunctionSpark : EngineTagWaveFunctionEnum 
+---@class EngineTagDataWaveFunctionOne : EngineTagDataWaveFunctionEnum 
+---@class EngineTagDataWaveFunctionZero : EngineTagDataWaveFunctionEnum 
+---@class EngineTagDataWaveFunctionCosine : EngineTagDataWaveFunctionEnum 
+---@class EngineTagDataWaveFunctionCosineVariablePeriod : EngineTagDataWaveFunctionEnum 
+---@class EngineTagDataWaveFunctionDiagonalWave : EngineTagDataWaveFunctionEnum 
+---@class EngineTagDataWaveFunctionDiagonalWaveVariablePeriod : EngineTagDataWaveFunctionEnum 
+---@class EngineTagDataWaveFunctionSlide : EngineTagDataWaveFunctionEnum 
+---@class EngineTagDataWaveFunctionSlideVariablePeriod : EngineTagDataWaveFunctionEnum 
+---@class EngineTagDataWaveFunctionNoise : EngineTagDataWaveFunctionEnum 
+---@class EngineTagDataWaveFunctionJitter : EngineTagDataWaveFunctionEnum 
+---@class EngineTagDataWaveFunctionWander : EngineTagDataWaveFunctionEnum 
+---@class EngineTagDataWaveFunctionSpark : EngineTagDataWaveFunctionEnum 
 
----@alias EngineTagWaveFunction 
----| EngineTagWaveFunctionOne
----| EngineTagWaveFunctionZero
----| EngineTagWaveFunctionCosine
----| EngineTagWaveFunctionCosineVariablePeriod
----| EngineTagWaveFunctionDiagonalWave
----| EngineTagWaveFunctionDiagonalWaveVariablePeriod
----| EngineTagWaveFunctionSlide
----| EngineTagWaveFunctionSlideVariablePeriod
----| EngineTagWaveFunctionNoise
----| EngineTagWaveFunctionJitter
----| EngineTagWaveFunctionWander
----| EngineTagWaveFunctionSpark
+---@alias EngineTagDataWaveFunction 
+---| EngineTagDataWaveFunctionOne
+---| EngineTagDataWaveFunctionZero
+---| EngineTagDataWaveFunctionCosine
+---| EngineTagDataWaveFunctionCosineVariablePeriod
+---| EngineTagDataWaveFunctionDiagonalWave
+---| EngineTagDataWaveFunctionDiagonalWaveVariablePeriod
+---| EngineTagDataWaveFunctionSlide
+---| EngineTagDataWaveFunctionSlideVariablePeriod
+---| EngineTagDataWaveFunctionNoise
+---| EngineTagDataWaveFunctionJitter
+---| EngineTagDataWaveFunctionWander
+---| EngineTagDataWaveFunctionSpark
 
----@class EngineTagWaveFunctionTable 
----@field one EngineTagWaveFunctionOne
----@field zero EngineTagWaveFunctionZero
----@field cosine EngineTagWaveFunctionCosine
----@field cosineVariablePeriod EngineTagWaveFunctionCosineVariablePeriod
----@field diagonalWave EngineTagWaveFunctionDiagonalWave
----@field diagonalWaveVariablePeriod EngineTagWaveFunctionDiagonalWaveVariablePeriod
----@field slide EngineTagWaveFunctionSlide
----@field slideVariablePeriod EngineTagWaveFunctionSlideVariablePeriod
----@field noise EngineTagWaveFunctionNoise
----@field jitter EngineTagWaveFunctionJitter
----@field wander EngineTagWaveFunctionWander
----@field spark EngineTagWaveFunctionSpark
+---@class EngineTagDataWaveFunctionTable 
+---@field one EngineTagDataWaveFunctionOne
+---@field zero EngineTagDataWaveFunctionZero
+---@field cosine EngineTagDataWaveFunctionCosine
+---@field cosineVariablePeriod EngineTagDataWaveFunctionCosineVariablePeriod
+---@field diagonalWave EngineTagDataWaveFunctionDiagonalWave
+---@field diagonalWaveVariablePeriod EngineTagDataWaveFunctionDiagonalWaveVariablePeriod
+---@field slide EngineTagDataWaveFunctionSlide
+---@field slideVariablePeriod EngineTagDataWaveFunctionSlideVariablePeriod
+---@field noise EngineTagDataWaveFunctionNoise
+---@field jitter EngineTagDataWaveFunctionJitter
+---@field wander EngineTagDataWaveFunctionWander
+---@field spark EngineTagDataWaveFunctionSpark
 Engine.tag.waveFunction = {} 
 
----@class EngineTagMaterialTypeEnum : Enum 
+---@class EngineTagDataMaterialTypeEnum : Enum 
 
----@class EngineTagMaterialTypeDirt : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeSand : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeStone : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeSnow : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeWood : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeMetalHollow : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeMetalThin : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeMetalThick : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeRubber : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeGlass : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeForceField : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeGrunt : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeHunterArmor : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeHunterSkin : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeElite : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeJackal : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeJackalEnergyShield : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeEngineerSkin : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeEngineerForceField : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeFloodCombatForm : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeFloodCarrierForm : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeCyborgArmor : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeCyborgEnergyShield : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeHumanArmor : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeHumanSkin : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeSentinel : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeMonitor : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypePlastic : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeWater : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeLeaves : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeEliteEnergyShield : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeIce : EngineTagMaterialTypeEnum 
----@class EngineTagMaterialTypeHunterShield : EngineTagMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeDirt : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeSand : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeStone : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeSnow : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeWood : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeMetalHollow : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeMetalThin : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeMetalThick : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeRubber : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeGlass : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeForceField : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeGrunt : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeHunterArmor : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeHunterSkin : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeElite : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeJackal : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeJackalEnergyShield : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeEngineerSkin : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeEngineerForceField : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeFloodCombatForm : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeFloodCarrierForm : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeCyborgArmor : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeCyborgEnergyShield : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeHumanArmor : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeHumanSkin : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeSentinel : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeMonitor : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypePlastic : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeWater : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeLeaves : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeEliteEnergyShield : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeIce : EngineTagDataMaterialTypeEnum 
+---@class EngineTagDataMaterialTypeHunterShield : EngineTagDataMaterialTypeEnum 
 
----@alias EngineTagMaterialType 
----| EngineTagMaterialTypeDirt
----| EngineTagMaterialTypeSand
----| EngineTagMaterialTypeStone
----| EngineTagMaterialTypeSnow
----| EngineTagMaterialTypeWood
----| EngineTagMaterialTypeMetalHollow
----| EngineTagMaterialTypeMetalThin
----| EngineTagMaterialTypeMetalThick
----| EngineTagMaterialTypeRubber
----| EngineTagMaterialTypeGlass
----| EngineTagMaterialTypeForceField
----| EngineTagMaterialTypeGrunt
----| EngineTagMaterialTypeHunterArmor
----| EngineTagMaterialTypeHunterSkin
----| EngineTagMaterialTypeElite
----| EngineTagMaterialTypeJackal
----| EngineTagMaterialTypeJackalEnergyShield
----| EngineTagMaterialTypeEngineerSkin
----| EngineTagMaterialTypeEngineerForceField
----| EngineTagMaterialTypeFloodCombatForm
----| EngineTagMaterialTypeFloodCarrierForm
----| EngineTagMaterialTypeCyborgArmor
----| EngineTagMaterialTypeCyborgEnergyShield
----| EngineTagMaterialTypeHumanArmor
----| EngineTagMaterialTypeHumanSkin
----| EngineTagMaterialTypeSentinel
----| EngineTagMaterialTypeMonitor
----| EngineTagMaterialTypePlastic
----| EngineTagMaterialTypeWater
----| EngineTagMaterialTypeLeaves
----| EngineTagMaterialTypeEliteEnergyShield
----| EngineTagMaterialTypeIce
----| EngineTagMaterialTypeHunterShield
+---@alias EngineTagDataMaterialType 
+---| EngineTagDataMaterialTypeDirt
+---| EngineTagDataMaterialTypeSand
+---| EngineTagDataMaterialTypeStone
+---| EngineTagDataMaterialTypeSnow
+---| EngineTagDataMaterialTypeWood
+---| EngineTagDataMaterialTypeMetalHollow
+---| EngineTagDataMaterialTypeMetalThin
+---| EngineTagDataMaterialTypeMetalThick
+---| EngineTagDataMaterialTypeRubber
+---| EngineTagDataMaterialTypeGlass
+---| EngineTagDataMaterialTypeForceField
+---| EngineTagDataMaterialTypeGrunt
+---| EngineTagDataMaterialTypeHunterArmor
+---| EngineTagDataMaterialTypeHunterSkin
+---| EngineTagDataMaterialTypeElite
+---| EngineTagDataMaterialTypeJackal
+---| EngineTagDataMaterialTypeJackalEnergyShield
+---| EngineTagDataMaterialTypeEngineerSkin
+---| EngineTagDataMaterialTypeEngineerForceField
+---| EngineTagDataMaterialTypeFloodCombatForm
+---| EngineTagDataMaterialTypeFloodCarrierForm
+---| EngineTagDataMaterialTypeCyborgArmor
+---| EngineTagDataMaterialTypeCyborgEnergyShield
+---| EngineTagDataMaterialTypeHumanArmor
+---| EngineTagDataMaterialTypeHumanSkin
+---| EngineTagDataMaterialTypeSentinel
+---| EngineTagDataMaterialTypeMonitor
+---| EngineTagDataMaterialTypePlastic
+---| EngineTagDataMaterialTypeWater
+---| EngineTagDataMaterialTypeLeaves
+---| EngineTagDataMaterialTypeEliteEnergyShield
+---| EngineTagDataMaterialTypeIce
+---| EngineTagDataMaterialTypeHunterShield
 
----@class EngineTagMaterialTypeTable 
----@field dirt EngineTagMaterialTypeDirt
----@field sand EngineTagMaterialTypeSand
----@field stone EngineTagMaterialTypeStone
----@field snow EngineTagMaterialTypeSnow
----@field wood EngineTagMaterialTypeWood
----@field metalHollow EngineTagMaterialTypeMetalHollow
----@field metalThin EngineTagMaterialTypeMetalThin
----@field metalThick EngineTagMaterialTypeMetalThick
----@field rubber EngineTagMaterialTypeRubber
----@field glass EngineTagMaterialTypeGlass
----@field forceField EngineTagMaterialTypeForceField
----@field grunt EngineTagMaterialTypeGrunt
----@field hunterArmor EngineTagMaterialTypeHunterArmor
----@field hunterSkin EngineTagMaterialTypeHunterSkin
----@field elite EngineTagMaterialTypeElite
----@field jackal EngineTagMaterialTypeJackal
----@field jackalEnergyShield EngineTagMaterialTypeJackalEnergyShield
----@field engineerSkin EngineTagMaterialTypeEngineerSkin
----@field engineerForceField EngineTagMaterialTypeEngineerForceField
----@field floodCombatForm EngineTagMaterialTypeFloodCombatForm
----@field floodCarrierForm EngineTagMaterialTypeFloodCarrierForm
----@field cyborgArmor EngineTagMaterialTypeCyborgArmor
----@field cyborgEnergyShield EngineTagMaterialTypeCyborgEnergyShield
----@field humanArmor EngineTagMaterialTypeHumanArmor
----@field humanSkin EngineTagMaterialTypeHumanSkin
----@field sentinel EngineTagMaterialTypeSentinel
----@field monitor EngineTagMaterialTypeMonitor
----@field plastic EngineTagMaterialTypePlastic
----@field water EngineTagMaterialTypeWater
----@field leaves EngineTagMaterialTypeLeaves
----@field eliteEnergyShield EngineTagMaterialTypeEliteEnergyShield
----@field ice EngineTagMaterialTypeIce
----@field hunterShield EngineTagMaterialTypeHunterShield
+---@class EngineTagDataMaterialTypeTable 
+---@field dirt EngineTagDataMaterialTypeDirt
+---@field sand EngineTagDataMaterialTypeSand
+---@field stone EngineTagDataMaterialTypeStone
+---@field snow EngineTagDataMaterialTypeSnow
+---@field wood EngineTagDataMaterialTypeWood
+---@field metalHollow EngineTagDataMaterialTypeMetalHollow
+---@field metalThin EngineTagDataMaterialTypeMetalThin
+---@field metalThick EngineTagDataMaterialTypeMetalThick
+---@field rubber EngineTagDataMaterialTypeRubber
+---@field glass EngineTagDataMaterialTypeGlass
+---@field forceField EngineTagDataMaterialTypeForceField
+---@field grunt EngineTagDataMaterialTypeGrunt
+---@field hunterArmor EngineTagDataMaterialTypeHunterArmor
+---@field hunterSkin EngineTagDataMaterialTypeHunterSkin
+---@field elite EngineTagDataMaterialTypeElite
+---@field jackal EngineTagDataMaterialTypeJackal
+---@field jackalEnergyShield EngineTagDataMaterialTypeJackalEnergyShield
+---@field engineerSkin EngineTagDataMaterialTypeEngineerSkin
+---@field engineerForceField EngineTagDataMaterialTypeEngineerForceField
+---@field floodCombatForm EngineTagDataMaterialTypeFloodCombatForm
+---@field floodCarrierForm EngineTagDataMaterialTypeFloodCarrierForm
+---@field cyborgArmor EngineTagDataMaterialTypeCyborgArmor
+---@field cyborgEnergyShield EngineTagDataMaterialTypeCyborgEnergyShield
+---@field humanArmor EngineTagDataMaterialTypeHumanArmor
+---@field humanSkin EngineTagDataMaterialTypeHumanSkin
+---@field sentinel EngineTagDataMaterialTypeSentinel
+---@field monitor EngineTagDataMaterialTypeMonitor
+---@field plastic EngineTagDataMaterialTypePlastic
+---@field water EngineTagDataMaterialTypeWater
+---@field leaves EngineTagDataMaterialTypeLeaves
+---@field eliteEnergyShield EngineTagDataMaterialTypeEliteEnergyShield
+---@field ice EngineTagDataMaterialTypeIce
+---@field hunterShield EngineTagDataMaterialTypeHunterShield
 Engine.tag.materialType = {} 
 
----@class EngineTagFunctionTypeEnum : Enum 
+---@class EngineTagDataFunctionTypeEnum : Enum 
 
----@class EngineTagFunctionTypeLinear : EngineTagFunctionTypeEnum 
----@class EngineTagFunctionTypeEarly : EngineTagFunctionTypeEnum 
----@class EngineTagFunctionTypeVeryEarly : EngineTagFunctionTypeEnum 
----@class EngineTagFunctionTypeLate : EngineTagFunctionTypeEnum 
----@class EngineTagFunctionTypeVeryLate : EngineTagFunctionTypeEnum 
----@class EngineTagFunctionTypeCosine : EngineTagFunctionTypeEnum 
+---@class EngineTagDataFunctionTypeLinear : EngineTagDataFunctionTypeEnum 
+---@class EngineTagDataFunctionTypeEarly : EngineTagDataFunctionTypeEnum 
+---@class EngineTagDataFunctionTypeVeryEarly : EngineTagDataFunctionTypeEnum 
+---@class EngineTagDataFunctionTypeLate : EngineTagDataFunctionTypeEnum 
+---@class EngineTagDataFunctionTypeVeryLate : EngineTagDataFunctionTypeEnum 
+---@class EngineTagDataFunctionTypeCosine : EngineTagDataFunctionTypeEnum 
 
----@alias EngineTagFunctionType 
----| EngineTagFunctionTypeLinear
----| EngineTagFunctionTypeEarly
----| EngineTagFunctionTypeVeryEarly
----| EngineTagFunctionTypeLate
----| EngineTagFunctionTypeVeryLate
----| EngineTagFunctionTypeCosine
+---@alias EngineTagDataFunctionType 
+---| EngineTagDataFunctionTypeLinear
+---| EngineTagDataFunctionTypeEarly
+---| EngineTagDataFunctionTypeVeryEarly
+---| EngineTagDataFunctionTypeLate
+---| EngineTagDataFunctionTypeVeryLate
+---| EngineTagDataFunctionTypeCosine
 
----@class EngineTagFunctionTypeTable 
----@field linear EngineTagFunctionTypeLinear
----@field early EngineTagFunctionTypeEarly
----@field veryEarly EngineTagFunctionTypeVeryEarly
----@field late EngineTagFunctionTypeLate
----@field veryLate EngineTagFunctionTypeVeryLate
----@field cosine EngineTagFunctionTypeCosine
+---@class EngineTagDataFunctionTypeTable 
+---@field linear EngineTagDataFunctionTypeLinear
+---@field early EngineTagDataFunctionTypeEarly
+---@field veryEarly EngineTagDataFunctionTypeVeryEarly
+---@field late EngineTagDataFunctionTypeLate
+---@field veryLate EngineTagDataFunctionTypeVeryLate
+---@field cosine EngineTagDataFunctionTypeCosine
 Engine.tag.functionType = {} 
 
----@class EngineTagFunctionBoundsModeEnum : Enum 
+---@class EngineTagDataFunctionBoundsModeEnum : Enum 
 
----@class EngineTagFunctionBoundsModeClip : EngineTagFunctionBoundsModeEnum 
----@class EngineTagFunctionBoundsModeClipAndNormalize : EngineTagFunctionBoundsModeEnum 
----@class EngineTagFunctionBoundsModeScaleToFit : EngineTagFunctionBoundsModeEnum 
+---@class EngineTagDataFunctionBoundsModeClip : EngineTagDataFunctionBoundsModeEnum 
+---@class EngineTagDataFunctionBoundsModeClipAndNormalize : EngineTagDataFunctionBoundsModeEnum 
+---@class EngineTagDataFunctionBoundsModeScaleToFit : EngineTagDataFunctionBoundsModeEnum 
 
----@alias EngineTagFunctionBoundsMode 
----| EngineTagFunctionBoundsModeClip
----| EngineTagFunctionBoundsModeClipAndNormalize
----| EngineTagFunctionBoundsModeScaleToFit
+---@alias EngineTagDataFunctionBoundsMode 
+---| EngineTagDataFunctionBoundsModeClip
+---| EngineTagDataFunctionBoundsModeClipAndNormalize
+---| EngineTagDataFunctionBoundsModeScaleToFit
 
----@class EngineTagFunctionBoundsModeTable 
----@field eClip EngineTagFunctionBoundsModeClip
----@field eClipAndNormalize EngineTagFunctionBoundsModeClipAndNormalize
----@field eScaleToFit EngineTagFunctionBoundsModeScaleToFit
+---@class EngineTagDataFunctionBoundsModeTable 
+---@field eClip EngineTagDataFunctionBoundsModeClip
+---@field eClipAndNormalize EngineTagDataFunctionBoundsModeClipAndNormalize
+---@field eScaleToFit EngineTagDataFunctionBoundsModeScaleToFit
 Engine.tag.functionBoundsMode = {} 
 
----@class EngineTagFunctionScaleByEnum : Enum 
+---@class EngineTagDataFunctionScaleByEnum : Enum 
 
----@class EngineTagFunctionScaleByNone : EngineTagFunctionScaleByEnum 
----@class EngineTagFunctionScaleByAIn : EngineTagFunctionScaleByEnum 
----@class EngineTagFunctionScaleByBIn : EngineTagFunctionScaleByEnum 
----@class EngineTagFunctionScaleByCIn : EngineTagFunctionScaleByEnum 
----@class EngineTagFunctionScaleByDIn : EngineTagFunctionScaleByEnum 
----@class EngineTagFunctionScaleByAOut : EngineTagFunctionScaleByEnum 
----@class EngineTagFunctionScaleByBOut : EngineTagFunctionScaleByEnum 
----@class EngineTagFunctionScaleByCOut : EngineTagFunctionScaleByEnum 
----@class EngineTagFunctionScaleByDOut : EngineTagFunctionScaleByEnum 
+---@class EngineTagDataFunctionScaleByNone : EngineTagDataFunctionScaleByEnum 
+---@class EngineTagDataFunctionScaleByAIn : EngineTagDataFunctionScaleByEnum 
+---@class EngineTagDataFunctionScaleByBIn : EngineTagDataFunctionScaleByEnum 
+---@class EngineTagDataFunctionScaleByCIn : EngineTagDataFunctionScaleByEnum 
+---@class EngineTagDataFunctionScaleByDIn : EngineTagDataFunctionScaleByEnum 
+---@class EngineTagDataFunctionScaleByAOut : EngineTagDataFunctionScaleByEnum 
+---@class EngineTagDataFunctionScaleByBOut : EngineTagDataFunctionScaleByEnum 
+---@class EngineTagDataFunctionScaleByCOut : EngineTagDataFunctionScaleByEnum 
+---@class EngineTagDataFunctionScaleByDOut : EngineTagDataFunctionScaleByEnum 
 
----@alias EngineTagFunctionScaleBy 
----| EngineTagFunctionScaleByNone
----| EngineTagFunctionScaleByAIn
----| EngineTagFunctionScaleByBIn
----| EngineTagFunctionScaleByCIn
----| EngineTagFunctionScaleByDIn
----| EngineTagFunctionScaleByAOut
----| EngineTagFunctionScaleByBOut
----| EngineTagFunctionScaleByCOut
----| EngineTagFunctionScaleByDOut
+---@alias EngineTagDataFunctionScaleBy 
+---| EngineTagDataFunctionScaleByNone
+---| EngineTagDataFunctionScaleByAIn
+---| EngineTagDataFunctionScaleByBIn
+---| EngineTagDataFunctionScaleByCIn
+---| EngineTagDataFunctionScaleByDIn
+---| EngineTagDataFunctionScaleByAOut
+---| EngineTagDataFunctionScaleByBOut
+---| EngineTagDataFunctionScaleByCOut
+---| EngineTagDataFunctionScaleByDOut
 
----@class EngineTagFunctionScaleByTable 
----@field yNone EngineTagFunctionScaleByNone
----@field yAIn EngineTagFunctionScaleByAIn
----@field yBIn EngineTagFunctionScaleByBIn
----@field yCIn EngineTagFunctionScaleByCIn
----@field yDIn EngineTagFunctionScaleByDIn
----@field yAOut EngineTagFunctionScaleByAOut
----@field yBOut EngineTagFunctionScaleByBOut
----@field yCOut EngineTagFunctionScaleByCOut
----@field yDOut EngineTagFunctionScaleByDOut
+---@class EngineTagDataFunctionScaleByTable 
+---@field yNone EngineTagDataFunctionScaleByNone
+---@field yAIn EngineTagDataFunctionScaleByAIn
+---@field yBIn EngineTagDataFunctionScaleByBIn
+---@field yCIn EngineTagDataFunctionScaleByCIn
+---@field yDIn EngineTagDataFunctionScaleByDIn
+---@field yAOut EngineTagDataFunctionScaleByAOut
+---@field yBOut EngineTagDataFunctionScaleByBOut
+---@field yCOut EngineTagDataFunctionScaleByCOut
+---@field yDOut EngineTagDataFunctionScaleByDOut
 Engine.tag.functionScaleBy = {} 
 
----@class EngineTagFunctionNameNullableEnum : Enum 
+---@class EngineTagDataFunctionNameNullableEnum : Enum 
 
----@class EngineTagFunctionNameNullableNone : EngineTagFunctionNameNullableEnum 
----@class EngineTagFunctionNameNullableA : EngineTagFunctionNameNullableEnum 
----@class EngineTagFunctionNameNullableB : EngineTagFunctionNameNullableEnum 
----@class EngineTagFunctionNameNullableC : EngineTagFunctionNameNullableEnum 
----@class EngineTagFunctionNameNullableD : EngineTagFunctionNameNullableEnum 
+---@class EngineTagDataFunctionNameNullableNone : EngineTagDataFunctionNameNullableEnum 
+---@class EngineTagDataFunctionNameNullableA : EngineTagDataFunctionNameNullableEnum 
+---@class EngineTagDataFunctionNameNullableB : EngineTagDataFunctionNameNullableEnum 
+---@class EngineTagDataFunctionNameNullableC : EngineTagDataFunctionNameNullableEnum 
+---@class EngineTagDataFunctionNameNullableD : EngineTagDataFunctionNameNullableEnum 
 
----@alias EngineTagFunctionNameNullable 
----| EngineTagFunctionNameNullableNone
----| EngineTagFunctionNameNullableA
----| EngineTagFunctionNameNullableB
----| EngineTagFunctionNameNullableC
----| EngineTagFunctionNameNullableD
+---@alias EngineTagDataFunctionNameNullable 
+---| EngineTagDataFunctionNameNullableNone
+---| EngineTagDataFunctionNameNullableA
+---| EngineTagDataFunctionNameNullableB
+---| EngineTagDataFunctionNameNullableC
+---| EngineTagDataFunctionNameNullableD
 
----@class EngineTagFunctionNameNullableTable 
----@field eNone EngineTagFunctionNameNullableNone
----@field eA EngineTagFunctionNameNullableA
----@field eB EngineTagFunctionNameNullableB
----@field eC EngineTagFunctionNameNullableC
----@field eD EngineTagFunctionNameNullableD
+---@class EngineTagDataFunctionNameNullableTable 
+---@field eNone EngineTagDataFunctionNameNullableNone
+---@field eA EngineTagDataFunctionNameNullableA
+---@field eB EngineTagDataFunctionNameNullableB
+---@field eC EngineTagDataFunctionNameNullableC
+---@field eD EngineTagDataFunctionNameNullableD
 Engine.tag.functionNameNullable = {} 
 
----@class EngineTagGrenadeTypeEnum : Enum 
+---@class EngineTagDataGrenadeTypeEnum : Enum 
 
----@class EngineTagGrenadeTypeHumanFragmentation : EngineTagGrenadeTypeEnum 
----@class EngineTagGrenadeTypeCovenantPlasma : EngineTagGrenadeTypeEnum 
----@class EngineTagGrenadeTypeGrenadeType2 : EngineTagGrenadeTypeEnum 
----@class EngineTagGrenadeTypeGrenadeType3 : EngineTagGrenadeTypeEnum 
+---@class EngineTagDataGrenadeTypeHumanFragmentation : EngineTagDataGrenadeTypeEnum 
+---@class EngineTagDataGrenadeTypeCovenantPlasma : EngineTagDataGrenadeTypeEnum 
+---@class EngineTagDataGrenadeTypeGrenadeType2 : EngineTagDataGrenadeTypeEnum 
+---@class EngineTagDataGrenadeTypeGrenadeType3 : EngineTagDataGrenadeTypeEnum 
 
----@alias EngineTagGrenadeType 
----| EngineTagGrenadeTypeHumanFragmentation
----| EngineTagGrenadeTypeCovenantPlasma
----| EngineTagGrenadeTypeGrenadeType2
----| EngineTagGrenadeTypeGrenadeType3
+---@alias EngineTagDataGrenadeType 
+---| EngineTagDataGrenadeTypeHumanFragmentation
+---| EngineTagDataGrenadeTypeCovenantPlasma
+---| EngineTagDataGrenadeTypeGrenadeType2
+---| EngineTagDataGrenadeTypeGrenadeType3
 
----@class EngineTagGrenadeTypeTable 
----@field humanFragmentation EngineTagGrenadeTypeHumanFragmentation
----@field covenantPlasma EngineTagGrenadeTypeCovenantPlasma
----@field grenadeType2 EngineTagGrenadeTypeGrenadeType2
----@field grenadeType3 EngineTagGrenadeTypeGrenadeType3
+---@class EngineTagDataGrenadeTypeTable 
+---@field humanFragmentation EngineTagDataGrenadeTypeHumanFragmentation
+---@field covenantPlasma EngineTagDataGrenadeTypeCovenantPlasma
+---@field grenadeType2 EngineTagDataGrenadeTypeGrenadeType2
+---@field grenadeType3 EngineTagDataGrenadeTypeGrenadeType3
 Engine.tag.grenadeType = {} 
 
----@class EngineTagVertexTypeEnum : Enum 
+---@class EngineTagDataVertexTypeEnum : Enum 
 
----@class EngineTagVertexTypeStructureBspUncompressedRenderedVertices : EngineTagVertexTypeEnum 
----@class EngineTagVertexTypeStructureBspCompressedRenderedVertices : EngineTagVertexTypeEnum 
----@class EngineTagVertexTypeStructureBspUncompressedLightmapVertices : EngineTagVertexTypeEnum 
----@class EngineTagVertexTypeStructureBspCompressedLightmapVertices : EngineTagVertexTypeEnum 
----@class EngineTagVertexTypeModelUncompressed : EngineTagVertexTypeEnum 
----@class EngineTagVertexTypeModelCompressed : EngineTagVertexTypeEnum 
+---@class EngineTagDataVertexTypeStructureBspUncompressedRenderedVertices : EngineTagDataVertexTypeEnum 
+---@class EngineTagDataVertexTypeStructureBspCompressedRenderedVertices : EngineTagDataVertexTypeEnum 
+---@class EngineTagDataVertexTypeStructureBspUncompressedLightmapVertices : EngineTagDataVertexTypeEnum 
+---@class EngineTagDataVertexTypeStructureBspCompressedLightmapVertices : EngineTagDataVertexTypeEnum 
+---@class EngineTagDataVertexTypeModelUncompressed : EngineTagDataVertexTypeEnum 
+---@class EngineTagDataVertexTypeModelCompressed : EngineTagDataVertexTypeEnum 
 
----@alias EngineTagVertexType 
----| EngineTagVertexTypeStructureBspUncompressedRenderedVertices
----| EngineTagVertexTypeStructureBspCompressedRenderedVertices
----| EngineTagVertexTypeStructureBspUncompressedLightmapVertices
----| EngineTagVertexTypeStructureBspCompressedLightmapVertices
----| EngineTagVertexTypeModelUncompressed
----| EngineTagVertexTypeModelCompressed
+---@alias EngineTagDataVertexType 
+---| EngineTagDataVertexTypeStructureBspUncompressedRenderedVertices
+---| EngineTagDataVertexTypeStructureBspCompressedRenderedVertices
+---| EngineTagDataVertexTypeStructureBspUncompressedLightmapVertices
+---| EngineTagDataVertexTypeStructureBspCompressedLightmapVertices
+---| EngineTagDataVertexTypeModelUncompressed
+---| EngineTagDataVertexTypeModelCompressed
 
----@class EngineTagVertexTypeTable 
----@field structureBspUncompressedRenderedVertices EngineTagVertexTypeStructureBspUncompressedRenderedVertices
----@field structureBspCompressedRenderedVertices EngineTagVertexTypeStructureBspCompressedRenderedVertices
----@field structureBspUncompressedLightmapVertices EngineTagVertexTypeStructureBspUncompressedLightmapVertices
----@field structureBspCompressedLightmapVertices EngineTagVertexTypeStructureBspCompressedLightmapVertices
----@field modelUncompressed EngineTagVertexTypeModelUncompressed
----@field modelCompressed EngineTagVertexTypeModelCompressed
+---@class EngineTagDataVertexTypeTable 
+---@field structureBspUncompressedRenderedVertices EngineTagDataVertexTypeStructureBspUncompressedRenderedVertices
+---@field structureBspCompressedRenderedVertices EngineTagDataVertexTypeStructureBspCompressedRenderedVertices
+---@field structureBspUncompressedLightmapVertices EngineTagDataVertexTypeStructureBspUncompressedLightmapVertices
+---@field structureBspCompressedLightmapVertices EngineTagDataVertexTypeStructureBspCompressedLightmapVertices
+---@field modelUncompressed EngineTagDataVertexTypeModelUncompressed
+---@field modelCompressed EngineTagDataVertexTypeModelCompressed
 Engine.tag.vertexType = {} 
 
 

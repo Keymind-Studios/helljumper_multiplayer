@@ -1,38 +1,38 @@
----@class EngineTagMeterInterpolateColorsEnum : Enum 
+---@class EngineTagDataMeterInterpolateColorsEnum : Enum 
 
----@class EngineTagMeterInterpolateColorsLinearly : EngineTagMeterInterpolateColorsEnum 
----@class EngineTagMeterInterpolateColorsFasterNearEmpty : EngineTagMeterInterpolateColorsEnum 
----@class EngineTagMeterInterpolateColorsFasterNearFull : EngineTagMeterInterpolateColorsEnum 
----@class EngineTagMeterInterpolateColorsThroughRandomNoise : EngineTagMeterInterpolateColorsEnum 
+---@class EngineTagDataMeterInterpolateColorsLinearly : EngineTagDataMeterInterpolateColorsEnum 
+---@class EngineTagDataMeterInterpolateColorsFasterNearEmpty : EngineTagDataMeterInterpolateColorsEnum 
+---@class EngineTagDataMeterInterpolateColorsFasterNearFull : EngineTagDataMeterInterpolateColorsEnum 
+---@class EngineTagDataMeterInterpolateColorsThroughRandomNoise : EngineTagDataMeterInterpolateColorsEnum 
 
----@alias EngineTagMeterInterpolateColors 
----| EngineTagMeterInterpolateColorsLinearly
----| EngineTagMeterInterpolateColorsFasterNearEmpty
----| EngineTagMeterInterpolateColorsFasterNearFull
----| EngineTagMeterInterpolateColorsThroughRandomNoise
+---@alias EngineTagDataMeterInterpolateColors 
+---| EngineTagDataMeterInterpolateColorsLinearly
+---| EngineTagDataMeterInterpolateColorsFasterNearEmpty
+---| EngineTagDataMeterInterpolateColorsFasterNearFull
+---| EngineTagDataMeterInterpolateColorsThroughRandomNoise
 
----@class EngineTagMeterInterpolateColorsTable 
----@field sLinearly EngineTagMeterInterpolateColorsLinearly
----@field sFasterNearEmpty EngineTagMeterInterpolateColorsFasterNearEmpty
----@field sFasterNearFull EngineTagMeterInterpolateColorsFasterNearFull
----@field sThroughRandomNoise EngineTagMeterInterpolateColorsThroughRandomNoise
+---@class EngineTagDataMeterInterpolateColorsTable 
+---@field sLinearly EngineTagDataMeterInterpolateColorsLinearly
+---@field sFasterNearEmpty EngineTagDataMeterInterpolateColorsFasterNearEmpty
+---@field sFasterNearFull EngineTagDataMeterInterpolateColorsFasterNearFull
+---@field sThroughRandomNoise EngineTagDataMeterInterpolateColorsThroughRandomNoise
 Engine.tag.meterInterpolateColors = {} 
 
----@class EngineTagMeterAnchorColorsEnum : Enum 
+---@class EngineTagDataMeterAnchorColorsEnum : Enum 
 
----@class EngineTagMeterAnchorColorsAtBothEnds : EngineTagMeterAnchorColorsEnum 
----@class EngineTagMeterAnchorColorsAtEmpty : EngineTagMeterAnchorColorsEnum 
----@class EngineTagMeterAnchorColorsAtFull : EngineTagMeterAnchorColorsEnum 
+---@class EngineTagDataMeterAnchorColorsAtBothEnds : EngineTagDataMeterAnchorColorsEnum 
+---@class EngineTagDataMeterAnchorColorsAtEmpty : EngineTagDataMeterAnchorColorsEnum 
+---@class EngineTagDataMeterAnchorColorsAtFull : EngineTagDataMeterAnchorColorsEnum 
 
----@alias EngineTagMeterAnchorColors 
----| EngineTagMeterAnchorColorsAtBothEnds
----| EngineTagMeterAnchorColorsAtEmpty
----| EngineTagMeterAnchorColorsAtFull
+---@alias EngineTagDataMeterAnchorColors 
+---| EngineTagDataMeterAnchorColorsAtBothEnds
+---| EngineTagDataMeterAnchorColorsAtEmpty
+---| EngineTagDataMeterAnchorColorsAtFull
 
----@class EngineTagMeterAnchorColorsTable 
----@field sAtBothEnds EngineTagMeterAnchorColorsAtBothEnds
----@field sAtEmpty EngineTagMeterAnchorColorsAtEmpty
----@field sAtFull EngineTagMeterAnchorColorsAtFull
+---@class EngineTagDataMeterAnchorColorsTable 
+---@field sAtBothEnds EngineTagDataMeterAnchorColorsAtBothEnds
+---@field sAtEmpty EngineTagDataMeterAnchorColorsAtEmpty
+---@field sAtFull EngineTagDataMeterAnchorColorsAtFull
 Engine.tag.meterAnchorColors = {} 
 
 ---@class MetaEngineTagDataMeter 

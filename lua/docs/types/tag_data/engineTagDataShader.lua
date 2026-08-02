@@ -1,149 +1,149 @@
----@class EngineTagShaderDetailLevelEnum : Enum 
+---@class EngineTagDataShaderDetailLevelEnum : Enum 
 
----@class EngineTagShaderDetailLevelHigh : EngineTagShaderDetailLevelEnum 
----@class EngineTagShaderDetailLevelMedium : EngineTagShaderDetailLevelEnum 
----@class EngineTagShaderDetailLevelLow : EngineTagShaderDetailLevelEnum 
----@class EngineTagShaderDetailLevelTurd : EngineTagShaderDetailLevelEnum 
+---@class EngineTagDataShaderDetailLevelHigh : EngineTagDataShaderDetailLevelEnum 
+---@class EngineTagDataShaderDetailLevelMedium : EngineTagDataShaderDetailLevelEnum 
+---@class EngineTagDataShaderDetailLevelLow : EngineTagDataShaderDetailLevelEnum 
+---@class EngineTagDataShaderDetailLevelTurd : EngineTagDataShaderDetailLevelEnum 
 
----@alias EngineTagShaderDetailLevel 
----| EngineTagShaderDetailLevelHigh
----| EngineTagShaderDetailLevelMedium
----| EngineTagShaderDetailLevelLow
----| EngineTagShaderDetailLevelTurd
+---@alias EngineTagDataShaderDetailLevel 
+---| EngineTagDataShaderDetailLevelHigh
+---| EngineTagDataShaderDetailLevelMedium
+---| EngineTagDataShaderDetailLevelLow
+---| EngineTagDataShaderDetailLevelTurd
 
----@class EngineTagShaderDetailLevelTable 
----@field lHigh EngineTagShaderDetailLevelHigh
----@field lMedium EngineTagShaderDetailLevelMedium
----@field lLow EngineTagShaderDetailLevelLow
----@field lTurd EngineTagShaderDetailLevelTurd
+---@class EngineTagDataShaderDetailLevelTable 
+---@field lHigh EngineTagDataShaderDetailLevelHigh
+---@field lMedium EngineTagDataShaderDetailLevelMedium
+---@field lLow EngineTagDataShaderDetailLevelLow
+---@field lTurd EngineTagDataShaderDetailLevelTurd
 Engine.tag.shaderDetailLevel = {} 
 
----@class EngineTagShaderColorFunctionTypeEnum : Enum 
+---@class EngineTagDataShaderColorFunctionTypeEnum : Enum 
 
----@class EngineTagShaderColorFunctionTypeCurrent : EngineTagShaderColorFunctionTypeEnum 
----@class EngineTagShaderColorFunctionTypeNextMap : EngineTagShaderColorFunctionTypeEnum 
----@class EngineTagShaderColorFunctionTypeMultiply : EngineTagShaderColorFunctionTypeEnum 
----@class EngineTagShaderColorFunctionTypeDoubleMultiply : EngineTagShaderColorFunctionTypeEnum 
----@class EngineTagShaderColorFunctionTypeAdd : EngineTagShaderColorFunctionTypeEnum 
----@class EngineTagShaderColorFunctionTypeAddSignedCurrent : EngineTagShaderColorFunctionTypeEnum 
----@class EngineTagShaderColorFunctionTypeAddSignedNextMap : EngineTagShaderColorFunctionTypeEnum 
----@class EngineTagShaderColorFunctionTypeSubtractCurrent : EngineTagShaderColorFunctionTypeEnum 
----@class EngineTagShaderColorFunctionTypeSubtractNextMap : EngineTagShaderColorFunctionTypeEnum 
----@class EngineTagShaderColorFunctionTypeBlendCurrentAlpha : EngineTagShaderColorFunctionTypeEnum 
----@class EngineTagShaderColorFunctionTypeBlendCurrentAlphaInverse : EngineTagShaderColorFunctionTypeEnum 
----@class EngineTagShaderColorFunctionTypeBlendNextMapAlpha : EngineTagShaderColorFunctionTypeEnum 
----@class EngineTagShaderColorFunctionTypeBlendNextMapAlphaInverse : EngineTagShaderColorFunctionTypeEnum 
+---@class EngineTagDataShaderColorFunctionTypeCurrent : EngineTagDataShaderColorFunctionTypeEnum 
+---@class EngineTagDataShaderColorFunctionTypeNextMap : EngineTagDataShaderColorFunctionTypeEnum 
+---@class EngineTagDataShaderColorFunctionTypeMultiply : EngineTagDataShaderColorFunctionTypeEnum 
+---@class EngineTagDataShaderColorFunctionTypeDoubleMultiply : EngineTagDataShaderColorFunctionTypeEnum 
+---@class EngineTagDataShaderColorFunctionTypeAdd : EngineTagDataShaderColorFunctionTypeEnum 
+---@class EngineTagDataShaderColorFunctionTypeAddSignedCurrent : EngineTagDataShaderColorFunctionTypeEnum 
+---@class EngineTagDataShaderColorFunctionTypeAddSignedNextMap : EngineTagDataShaderColorFunctionTypeEnum 
+---@class EngineTagDataShaderColorFunctionTypeSubtractCurrent : EngineTagDataShaderColorFunctionTypeEnum 
+---@class EngineTagDataShaderColorFunctionTypeSubtractNextMap : EngineTagDataShaderColorFunctionTypeEnum 
+---@class EngineTagDataShaderColorFunctionTypeBlendCurrentAlpha : EngineTagDataShaderColorFunctionTypeEnum 
+---@class EngineTagDataShaderColorFunctionTypeBlendCurrentAlphaInverse : EngineTagDataShaderColorFunctionTypeEnum 
+---@class EngineTagDataShaderColorFunctionTypeBlendNextMapAlpha : EngineTagDataShaderColorFunctionTypeEnum 
+---@class EngineTagDataShaderColorFunctionTypeBlendNextMapAlphaInverse : EngineTagDataShaderColorFunctionTypeEnum 
 
----@alias EngineTagShaderColorFunctionType 
----| EngineTagShaderColorFunctionTypeCurrent
----| EngineTagShaderColorFunctionTypeNextMap
----| EngineTagShaderColorFunctionTypeMultiply
----| EngineTagShaderColorFunctionTypeDoubleMultiply
----| EngineTagShaderColorFunctionTypeAdd
----| EngineTagShaderColorFunctionTypeAddSignedCurrent
----| EngineTagShaderColorFunctionTypeAddSignedNextMap
----| EngineTagShaderColorFunctionTypeSubtractCurrent
----| EngineTagShaderColorFunctionTypeSubtractNextMap
----| EngineTagShaderColorFunctionTypeBlendCurrentAlpha
----| EngineTagShaderColorFunctionTypeBlendCurrentAlphaInverse
----| EngineTagShaderColorFunctionTypeBlendNextMapAlpha
----| EngineTagShaderColorFunctionTypeBlendNextMapAlphaInverse
+---@alias EngineTagDataShaderColorFunctionType 
+---| EngineTagDataShaderColorFunctionTypeCurrent
+---| EngineTagDataShaderColorFunctionTypeNextMap
+---| EngineTagDataShaderColorFunctionTypeMultiply
+---| EngineTagDataShaderColorFunctionTypeDoubleMultiply
+---| EngineTagDataShaderColorFunctionTypeAdd
+---| EngineTagDataShaderColorFunctionTypeAddSignedCurrent
+---| EngineTagDataShaderColorFunctionTypeAddSignedNextMap
+---| EngineTagDataShaderColorFunctionTypeSubtractCurrent
+---| EngineTagDataShaderColorFunctionTypeSubtractNextMap
+---| EngineTagDataShaderColorFunctionTypeBlendCurrentAlpha
+---| EngineTagDataShaderColorFunctionTypeBlendCurrentAlphaInverse
+---| EngineTagDataShaderColorFunctionTypeBlendNextMapAlpha
+---| EngineTagDataShaderColorFunctionTypeBlendNextMapAlphaInverse
 
----@class EngineTagShaderColorFunctionTypeTable 
----@field peCurrent EngineTagShaderColorFunctionTypeCurrent
----@field peNextMap EngineTagShaderColorFunctionTypeNextMap
----@field peMultiply EngineTagShaderColorFunctionTypeMultiply
----@field peDoubleMultiply EngineTagShaderColorFunctionTypeDoubleMultiply
----@field peAdd EngineTagShaderColorFunctionTypeAdd
----@field peAddSignedCurrent EngineTagShaderColorFunctionTypeAddSignedCurrent
----@field peAddSignedNextMap EngineTagShaderColorFunctionTypeAddSignedNextMap
----@field peSubtractCurrent EngineTagShaderColorFunctionTypeSubtractCurrent
----@field peSubtractNextMap EngineTagShaderColorFunctionTypeSubtractNextMap
----@field peBlendCurrentAlpha EngineTagShaderColorFunctionTypeBlendCurrentAlpha
----@field peBlendCurrentAlphaInverse EngineTagShaderColorFunctionTypeBlendCurrentAlphaInverse
----@field peBlendNextMapAlpha EngineTagShaderColorFunctionTypeBlendNextMapAlpha
----@field peBlendNextMapAlphaInverse EngineTagShaderColorFunctionTypeBlendNextMapAlphaInverse
+---@class EngineTagDataShaderColorFunctionTypeTable 
+---@field peCurrent EngineTagDataShaderColorFunctionTypeCurrent
+---@field peNextMap EngineTagDataShaderColorFunctionTypeNextMap
+---@field peMultiply EngineTagDataShaderColorFunctionTypeMultiply
+---@field peDoubleMultiply EngineTagDataShaderColorFunctionTypeDoubleMultiply
+---@field peAdd EngineTagDataShaderColorFunctionTypeAdd
+---@field peAddSignedCurrent EngineTagDataShaderColorFunctionTypeAddSignedCurrent
+---@field peAddSignedNextMap EngineTagDataShaderColorFunctionTypeAddSignedNextMap
+---@field peSubtractCurrent EngineTagDataShaderColorFunctionTypeSubtractCurrent
+---@field peSubtractNextMap EngineTagDataShaderColorFunctionTypeSubtractNextMap
+---@field peBlendCurrentAlpha EngineTagDataShaderColorFunctionTypeBlendCurrentAlpha
+---@field peBlendCurrentAlphaInverse EngineTagDataShaderColorFunctionTypeBlendCurrentAlphaInverse
+---@field peBlendNextMapAlpha EngineTagDataShaderColorFunctionTypeBlendNextMapAlpha
+---@field peBlendNextMapAlphaInverse EngineTagDataShaderColorFunctionTypeBlendNextMapAlphaInverse
 Engine.tag.shaderColorFunctionType = {} 
 
----@class EngineTagShaderFirstMapTypeEnum : Enum 
+---@class EngineTagDataShaderFirstMapTypeEnum : Enum 
 
----@class EngineTagShaderFirstMapType2dMap : EngineTagShaderFirstMapTypeEnum 
----@class EngineTagShaderFirstMapTypeFirstMapIsReflectionCubeMap : EngineTagShaderFirstMapTypeEnum 
----@class EngineTagShaderFirstMapTypeFirstMapIsObjectCenteredCubeMap : EngineTagShaderFirstMapTypeEnum 
----@class EngineTagShaderFirstMapTypeFirstMapIsViewerCenteredCubeMap : EngineTagShaderFirstMapTypeEnum 
+---@class EngineTagDataShaderFirstMapType2dMap : EngineTagDataShaderFirstMapTypeEnum 
+---@class EngineTagDataShaderFirstMapTypeFirstMapIsReflectionCubeMap : EngineTagDataShaderFirstMapTypeEnum 
+---@class EngineTagDataShaderFirstMapTypeFirstMapIsObjectCenteredCubeMap : EngineTagDataShaderFirstMapTypeEnum 
+---@class EngineTagDataShaderFirstMapTypeFirstMapIsViewerCenteredCubeMap : EngineTagDataShaderFirstMapTypeEnum 
 
----@alias EngineTagShaderFirstMapType 
----| EngineTagShaderFirstMapType2dMap
----| EngineTagShaderFirstMapTypeFirstMapIsReflectionCubeMap
----| EngineTagShaderFirstMapTypeFirstMapIsObjectCenteredCubeMap
----| EngineTagShaderFirstMapTypeFirstMapIsViewerCenteredCubeMap
+---@alias EngineTagDataShaderFirstMapType 
+---| EngineTagDataShaderFirstMapType2dMap
+---| EngineTagDataShaderFirstMapTypeFirstMapIsReflectionCubeMap
+---| EngineTagDataShaderFirstMapTypeFirstMapIsObjectCenteredCubeMap
+---| EngineTagDataShaderFirstMapTypeFirstMapIsViewerCenteredCubeMap
 
----@class EngineTagShaderFirstMapTypeTable 
----@field pe2dMap EngineTagShaderFirstMapType2dMap
----@field peFirstMapIsReflectionCubeMap EngineTagShaderFirstMapTypeFirstMapIsReflectionCubeMap
----@field peFirstMapIsObjectCenteredCubeMap EngineTagShaderFirstMapTypeFirstMapIsObjectCenteredCubeMap
----@field peFirstMapIsViewerCenteredCubeMap EngineTagShaderFirstMapTypeFirstMapIsViewerCenteredCubeMap
+---@class EngineTagDataShaderFirstMapTypeTable 
+---@field pe2dMap EngineTagDataShaderFirstMapType2dMap
+---@field peFirstMapIsReflectionCubeMap EngineTagDataShaderFirstMapTypeFirstMapIsReflectionCubeMap
+---@field peFirstMapIsObjectCenteredCubeMap EngineTagDataShaderFirstMapTypeFirstMapIsObjectCenteredCubeMap
+---@field peFirstMapIsViewerCenteredCubeMap EngineTagDataShaderFirstMapTypeFirstMapIsViewerCenteredCubeMap
 Engine.tag.shaderFirstMapType = {} 
 
----@class EngineTagShaderTypeEnum : Enum 
+---@class EngineTagDataShaderTypeEnum : Enum 
 
----@class EngineTagShaderTypeUnused : EngineTagShaderTypeEnum 
----@class EngineTagShaderTypeUnused1 : EngineTagShaderTypeEnum 
----@class EngineTagShaderTypeUnused2 : EngineTagShaderTypeEnum 
----@class EngineTagShaderTypeShaderEnvironment : EngineTagShaderTypeEnum 
----@class EngineTagShaderTypeShaderModel : EngineTagShaderTypeEnum 
----@class EngineTagShaderTypeShaderTransparentGeneric : EngineTagShaderTypeEnum 
----@class EngineTagShaderTypeShaderTransparentChicago : EngineTagShaderTypeEnum 
----@class EngineTagShaderTypeShaderTransparentChicagoExtended : EngineTagShaderTypeEnum 
----@class EngineTagShaderTypeShaderTransparentWater : EngineTagShaderTypeEnum 
----@class EngineTagShaderTypeShaderTransparentGlass : EngineTagShaderTypeEnum 
----@class EngineTagShaderTypeShaderTransparentMeter : EngineTagShaderTypeEnum 
----@class EngineTagShaderTypeShaderTransparentPlasma : EngineTagShaderTypeEnum 
+---@class EngineTagDataShaderTypeUnused : EngineTagDataShaderTypeEnum 
+---@class EngineTagDataShaderTypeUnused1 : EngineTagDataShaderTypeEnum 
+---@class EngineTagDataShaderTypeUnused2 : EngineTagDataShaderTypeEnum 
+---@class EngineTagDataShaderTypeShaderEnvironment : EngineTagDataShaderTypeEnum 
+---@class EngineTagDataShaderTypeShaderModel : EngineTagDataShaderTypeEnum 
+---@class EngineTagDataShaderTypeShaderTransparentGeneric : EngineTagDataShaderTypeEnum 
+---@class EngineTagDataShaderTypeShaderTransparentChicago : EngineTagDataShaderTypeEnum 
+---@class EngineTagDataShaderTypeShaderTransparentChicagoExtended : EngineTagDataShaderTypeEnum 
+---@class EngineTagDataShaderTypeShaderTransparentWater : EngineTagDataShaderTypeEnum 
+---@class EngineTagDataShaderTypeShaderTransparentGlass : EngineTagDataShaderTypeEnum 
+---@class EngineTagDataShaderTypeShaderTransparentMeter : EngineTagDataShaderTypeEnum 
+---@class EngineTagDataShaderTypeShaderTransparentPlasma : EngineTagDataShaderTypeEnum 
 
----@alias EngineTagShaderType 
----| EngineTagShaderTypeUnused
----| EngineTagShaderTypeUnused1
----| EngineTagShaderTypeUnused2
----| EngineTagShaderTypeShaderEnvironment
----| EngineTagShaderTypeShaderModel
----| EngineTagShaderTypeShaderTransparentGeneric
----| EngineTagShaderTypeShaderTransparentChicago
----| EngineTagShaderTypeShaderTransparentChicagoExtended
----| EngineTagShaderTypeShaderTransparentWater
----| EngineTagShaderTypeShaderTransparentGlass
----| EngineTagShaderTypeShaderTransparentMeter
----| EngineTagShaderTypeShaderTransparentPlasma
+---@alias EngineTagDataShaderType 
+---| EngineTagDataShaderTypeUnused
+---| EngineTagDataShaderTypeUnused1
+---| EngineTagDataShaderTypeUnused2
+---| EngineTagDataShaderTypeShaderEnvironment
+---| EngineTagDataShaderTypeShaderModel
+---| EngineTagDataShaderTypeShaderTransparentGeneric
+---| EngineTagDataShaderTypeShaderTransparentChicago
+---| EngineTagDataShaderTypeShaderTransparentChicagoExtended
+---| EngineTagDataShaderTypeShaderTransparentWater
+---| EngineTagDataShaderTypeShaderTransparentGlass
+---| EngineTagDataShaderTypeShaderTransparentMeter
+---| EngineTagDataShaderTypeShaderTransparentPlasma
 
----@class EngineTagShaderTypeTable 
----@field unused EngineTagShaderTypeUnused
----@field unused1 EngineTagShaderTypeUnused1
----@field unused2 EngineTagShaderTypeUnused2
----@field shaderEnvironment EngineTagShaderTypeShaderEnvironment
----@field shaderModel EngineTagShaderTypeShaderModel
----@field shaderTransparentGeneric EngineTagShaderTypeShaderTransparentGeneric
----@field shaderTransparentChicago EngineTagShaderTypeShaderTransparentChicago
----@field shaderTransparentChicagoExtended EngineTagShaderTypeShaderTransparentChicagoExtended
----@field shaderTransparentWater EngineTagShaderTypeShaderTransparentWater
----@field shaderTransparentGlass EngineTagShaderTypeShaderTransparentGlass
----@field shaderTransparentMeter EngineTagShaderTypeShaderTransparentMeter
----@field shaderTransparentPlasma EngineTagShaderTypeShaderTransparentPlasma
+---@class EngineTagDataShaderTypeTable 
+---@field unused EngineTagDataShaderTypeUnused
+---@field unused1 EngineTagDataShaderTypeUnused1
+---@field unused2 EngineTagDataShaderTypeUnused2
+---@field shaderEnvironment EngineTagDataShaderTypeShaderEnvironment
+---@field shaderModel EngineTagDataShaderTypeShaderModel
+---@field shaderTransparentGeneric EngineTagDataShaderTypeShaderTransparentGeneric
+---@field shaderTransparentChicago EngineTagDataShaderTypeShaderTransparentChicago
+---@field shaderTransparentChicagoExtended EngineTagDataShaderTypeShaderTransparentChicagoExtended
+---@field shaderTransparentWater EngineTagDataShaderTypeShaderTransparentWater
+---@field shaderTransparentGlass EngineTagDataShaderTypeShaderTransparentGlass
+---@field shaderTransparentMeter EngineTagDataShaderTypeShaderTransparentMeter
+---@field shaderTransparentPlasma EngineTagDataShaderTypeShaderTransparentPlasma
 Engine.tag.shaderType = {} 
 
----@class EngineTagShaderDetailFunctionEnum : Enum 
+---@class EngineTagDataShaderDetailFunctionEnum : Enum 
 
----@class EngineTagShaderDetailFunctionDoubleBiasedMultiply : EngineTagShaderDetailFunctionEnum 
----@class EngineTagShaderDetailFunctionMultiply : EngineTagShaderDetailFunctionEnum 
----@class EngineTagShaderDetailFunctionDoubleBiasedAdd : EngineTagShaderDetailFunctionEnum 
+---@class EngineTagDataShaderDetailFunctionDoubleBiasedMultiply : EngineTagDataShaderDetailFunctionEnum 
+---@class EngineTagDataShaderDetailFunctionMultiply : EngineTagDataShaderDetailFunctionEnum 
+---@class EngineTagDataShaderDetailFunctionDoubleBiasedAdd : EngineTagDataShaderDetailFunctionEnum 
 
----@alias EngineTagShaderDetailFunction 
----| EngineTagShaderDetailFunctionDoubleBiasedMultiply
----| EngineTagShaderDetailFunctionMultiply
----| EngineTagShaderDetailFunctionDoubleBiasedAdd
+---@alias EngineTagDataShaderDetailFunction 
+---| EngineTagDataShaderDetailFunctionDoubleBiasedMultiply
+---| EngineTagDataShaderDetailFunctionMultiply
+---| EngineTagDataShaderDetailFunctionDoubleBiasedAdd
 
----@class EngineTagShaderDetailFunctionTable 
----@field nDoubleBiasedMultiply EngineTagShaderDetailFunctionDoubleBiasedMultiply
----@field nMultiply EngineTagShaderDetailFunctionMultiply
----@field nDoubleBiasedAdd EngineTagShaderDetailFunctionDoubleBiasedAdd
+---@class EngineTagDataShaderDetailFunctionTable 
+---@field nDoubleBiasedMultiply EngineTagDataShaderDetailFunctionDoubleBiasedMultiply
+---@field nMultiply EngineTagDataShaderDetailFunctionMultiply
+---@field nDoubleBiasedAdd EngineTagDataShaderDetailFunctionDoubleBiasedAdd
 Engine.tag.shaderDetailFunction = {} 
 
 ---@class MetaEngineTagDataShaderFlags 

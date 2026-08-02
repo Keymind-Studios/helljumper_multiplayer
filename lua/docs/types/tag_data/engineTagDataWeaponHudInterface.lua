@@ -1,120 +1,115 @@
--- SPDX-License-Identifier: GPL-3.0-only
--- This file is used to document the Lua plugins engine API. It should not be included.
+---@class EngineTagDataWeaponHUDInterfaceStateAttachedToEnum : Enum 
 
----@meta _
+---@class EngineTagDataWeaponHUDInterfaceStateAttachedToTotalAmmo : EngineTagDataWeaponHUDInterfaceStateAttachedToEnum 
+---@class EngineTagDataWeaponHUDInterfaceStateAttachedToLoadedAmmo : EngineTagDataWeaponHUDInterfaceStateAttachedToEnum 
+---@class EngineTagDataWeaponHUDInterfaceStateAttachedToHeat : EngineTagDataWeaponHUDInterfaceStateAttachedToEnum 
+---@class EngineTagDataWeaponHUDInterfaceStateAttachedToAge : EngineTagDataWeaponHUDInterfaceStateAttachedToEnum 
+---@class EngineTagDataWeaponHUDInterfaceStateAttachedToSecondaryWeaponTotalAmmo : EngineTagDataWeaponHUDInterfaceStateAttachedToEnum 
+---@class EngineTagDataWeaponHUDInterfaceStateAttachedToSecondaryWeaponLoadedAmmo : EngineTagDataWeaponHUDInterfaceStateAttachedToEnum 
+---@class EngineTagDataWeaponHUDInterfaceStateAttachedToDistanceToTarget : EngineTagDataWeaponHUDInterfaceStateAttachedToEnum 
+---@class EngineTagDataWeaponHUDInterfaceStateAttachedToElevationToTarget : EngineTagDataWeaponHUDInterfaceStateAttachedToEnum 
 
----@class EngineTagWeaponHUDInterfaceStateAttachedToEnum : Enum 
+---@alias EngineTagDataWeaponHUDInterfaceStateAttachedTo 
+---| EngineTagDataWeaponHUDInterfaceStateAttachedToTotalAmmo
+---| EngineTagDataWeaponHUDInterfaceStateAttachedToLoadedAmmo
+---| EngineTagDataWeaponHUDInterfaceStateAttachedToHeat
+---| EngineTagDataWeaponHUDInterfaceStateAttachedToAge
+---| EngineTagDataWeaponHUDInterfaceStateAttachedToSecondaryWeaponTotalAmmo
+---| EngineTagDataWeaponHUDInterfaceStateAttachedToSecondaryWeaponLoadedAmmo
+---| EngineTagDataWeaponHUDInterfaceStateAttachedToDistanceToTarget
+---| EngineTagDataWeaponHUDInterfaceStateAttachedToElevationToTarget
 
----@class EngineTagWeaponHUDInterfaceStateAttachedToTotalAmmo : EngineTagWeaponHUDInterfaceStateAttachedToEnum 
----@class EngineTagWeaponHUDInterfaceStateAttachedToLoadedAmmo : EngineTagWeaponHUDInterfaceStateAttachedToEnum 
----@class EngineTagWeaponHUDInterfaceStateAttachedToHeat : EngineTagWeaponHUDInterfaceStateAttachedToEnum 
----@class EngineTagWeaponHUDInterfaceStateAttachedToAge : EngineTagWeaponHUDInterfaceStateAttachedToEnum 
----@class EngineTagWeaponHUDInterfaceStateAttachedToSecondaryWeaponTotalAmmo : EngineTagWeaponHUDInterfaceStateAttachedToEnum 
----@class EngineTagWeaponHUDInterfaceStateAttachedToSecondaryWeaponLoadedAmmo : EngineTagWeaponHUDInterfaceStateAttachedToEnum 
----@class EngineTagWeaponHUDInterfaceStateAttachedToDistanceToTarget : EngineTagWeaponHUDInterfaceStateAttachedToEnum 
----@class EngineTagWeaponHUDInterfaceStateAttachedToElevationToTarget : EngineTagWeaponHUDInterfaceStateAttachedToEnum 
-
----@alias EngineTagWeaponHUDInterfaceStateAttachedTo 
----| EngineTagWeaponHUDInterfaceStateAttachedToTotalAmmo
----| EngineTagWeaponHUDInterfaceStateAttachedToLoadedAmmo
----| EngineTagWeaponHUDInterfaceStateAttachedToHeat
----| EngineTagWeaponHUDInterfaceStateAttachedToAge
----| EngineTagWeaponHUDInterfaceStateAttachedToSecondaryWeaponTotalAmmo
----| EngineTagWeaponHUDInterfaceStateAttachedToSecondaryWeaponLoadedAmmo
----| EngineTagWeaponHUDInterfaceStateAttachedToDistanceToTarget
----| EngineTagWeaponHUDInterfaceStateAttachedToElevationToTarget
-
----@class EngineTagWeaponHUDInterfaceStateAttachedToTable 
----@field hedToTotalAmmo EngineTagWeaponHUDInterfaceStateAttachedToTotalAmmo
----@field hedToLoadedAmmo EngineTagWeaponHUDInterfaceStateAttachedToLoadedAmmo
----@field hedToHeat EngineTagWeaponHUDInterfaceStateAttachedToHeat
----@field hedToAge EngineTagWeaponHUDInterfaceStateAttachedToAge
----@field hedToSecondaryWeaponTotalAmmo EngineTagWeaponHUDInterfaceStateAttachedToSecondaryWeaponTotalAmmo
----@field hedToSecondaryWeaponLoadedAmmo EngineTagWeaponHUDInterfaceStateAttachedToSecondaryWeaponLoadedAmmo
----@field hedToDistanceToTarget EngineTagWeaponHUDInterfaceStateAttachedToDistanceToTarget
----@field hedToElevationToTarget EngineTagWeaponHUDInterfaceStateAttachedToElevationToTarget
+---@class EngineTagDataWeaponHUDInterfaceStateAttachedToTable 
+---@field hedToTotalAmmo EngineTagDataWeaponHUDInterfaceStateAttachedToTotalAmmo
+---@field hedToLoadedAmmo EngineTagDataWeaponHUDInterfaceStateAttachedToLoadedAmmo
+---@field hedToHeat EngineTagDataWeaponHUDInterfaceStateAttachedToHeat
+---@field hedToAge EngineTagDataWeaponHUDInterfaceStateAttachedToAge
+---@field hedToSecondaryWeaponTotalAmmo EngineTagDataWeaponHUDInterfaceStateAttachedToSecondaryWeaponTotalAmmo
+---@field hedToSecondaryWeaponLoadedAmmo EngineTagDataWeaponHUDInterfaceStateAttachedToSecondaryWeaponLoadedAmmo
+---@field hedToDistanceToTarget EngineTagDataWeaponHUDInterfaceStateAttachedToDistanceToTarget
+---@field hedToElevationToTarget EngineTagDataWeaponHUDInterfaceStateAttachedToElevationToTarget
 Engine.tag.weaponHUDInterfaceStateAttachedTo = {} 
 
----@class EngineTagWeaponHUDInterfaceViewTypeEnum : Enum 
+---@class EngineTagDataWeaponHUDInterfaceViewTypeEnum : Enum 
 
----@class EngineTagWeaponHUDInterfaceViewTypeAny : EngineTagWeaponHUDInterfaceViewTypeEnum 
----@class EngineTagWeaponHUDInterfaceViewTypeFullscreen : EngineTagWeaponHUDInterfaceViewTypeEnum 
----@class EngineTagWeaponHUDInterfaceViewTypeSplitscreen : EngineTagWeaponHUDInterfaceViewTypeEnum 
+---@class EngineTagDataWeaponHUDInterfaceViewTypeAny : EngineTagDataWeaponHUDInterfaceViewTypeEnum 
+---@class EngineTagDataWeaponHUDInterfaceViewTypeFullscreen : EngineTagDataWeaponHUDInterfaceViewTypeEnum 
+---@class EngineTagDataWeaponHUDInterfaceViewTypeSplitscreen : EngineTagDataWeaponHUDInterfaceViewTypeEnum 
 
----@alias EngineTagWeaponHUDInterfaceViewType 
----| EngineTagWeaponHUDInterfaceViewTypeAny
----| EngineTagWeaponHUDInterfaceViewTypeFullscreen
----| EngineTagWeaponHUDInterfaceViewTypeSplitscreen
+---@alias EngineTagDataWeaponHUDInterfaceViewType 
+---| EngineTagDataWeaponHUDInterfaceViewTypeAny
+---| EngineTagDataWeaponHUDInterfaceViewTypeFullscreen
+---| EngineTagDataWeaponHUDInterfaceViewTypeSplitscreen
 
----@class EngineTagWeaponHUDInterfaceViewTypeTable 
----@field typeAny EngineTagWeaponHUDInterfaceViewTypeAny
----@field typeFullscreen EngineTagWeaponHUDInterfaceViewTypeFullscreen
----@field typeSplitscreen EngineTagWeaponHUDInterfaceViewTypeSplitscreen
+---@class EngineTagDataWeaponHUDInterfaceViewTypeTable 
+---@field typeAny EngineTagDataWeaponHUDInterfaceViewTypeAny
+---@field typeFullscreen EngineTagDataWeaponHUDInterfaceViewTypeFullscreen
+---@field typeSplitscreen EngineTagDataWeaponHUDInterfaceViewTypeSplitscreen
 Engine.tag.weaponHUDInterfaceViewType = {} 
 
----@class EngineTagWeaponHUDInterfaceCrosshairTypeEnum : Enum 
+---@class EngineTagDataWeaponHUDInterfaceCrosshairTypeEnum : Enum 
 
----@class EngineTagWeaponHUDInterfaceCrosshairTypeAim : EngineTagWeaponHUDInterfaceCrosshairTypeEnum 
----@class EngineTagWeaponHUDInterfaceCrosshairTypeZoomOverlay : EngineTagWeaponHUDInterfaceCrosshairTypeEnum 
----@class EngineTagWeaponHUDInterfaceCrosshairTypeCharge : EngineTagWeaponHUDInterfaceCrosshairTypeEnum 
----@class EngineTagWeaponHUDInterfaceCrosshairTypeShouldReload : EngineTagWeaponHUDInterfaceCrosshairTypeEnum 
----@class EngineTagWeaponHUDInterfaceCrosshairTypeFlashHeat : EngineTagWeaponHUDInterfaceCrosshairTypeEnum 
----@class EngineTagWeaponHUDInterfaceCrosshairTypeFlashTotalAmmo : EngineTagWeaponHUDInterfaceCrosshairTypeEnum 
----@class EngineTagWeaponHUDInterfaceCrosshairTypeFlashBattery : EngineTagWeaponHUDInterfaceCrosshairTypeEnum 
----@class EngineTagWeaponHUDInterfaceCrosshairTypeReloadOverheat : EngineTagWeaponHUDInterfaceCrosshairTypeEnum 
----@class EngineTagWeaponHUDInterfaceCrosshairTypeFlashWhenFiringAndNoAmmo : EngineTagWeaponHUDInterfaceCrosshairTypeEnum 
----@class EngineTagWeaponHUDInterfaceCrosshairTypeFlashWhenThrowingAndNoGrenade : EngineTagWeaponHUDInterfaceCrosshairTypeEnum 
----@class EngineTagWeaponHUDInterfaceCrosshairTypeLowAmmoAndNoneLeftToReload : EngineTagWeaponHUDInterfaceCrosshairTypeEnum 
----@class EngineTagWeaponHUDInterfaceCrosshairTypeShouldReloadSecondaryTrigger : EngineTagWeaponHUDInterfaceCrosshairTypeEnum 
----@class EngineTagWeaponHUDInterfaceCrosshairTypeFlashSecondaryTotalAmmo : EngineTagWeaponHUDInterfaceCrosshairTypeEnum 
----@class EngineTagWeaponHUDInterfaceCrosshairTypeFlashSecondaryReload : EngineTagWeaponHUDInterfaceCrosshairTypeEnum 
----@class EngineTagWeaponHUDInterfaceCrosshairTypeFlashWhenFiringSecondaryTriggerWithNoAmmo : EngineTagWeaponHUDInterfaceCrosshairTypeEnum 
----@class EngineTagWeaponHUDInterfaceCrosshairTypeLowSecondaryAmmoAndNoneLeftToReload : EngineTagWeaponHUDInterfaceCrosshairTypeEnum 
----@class EngineTagWeaponHUDInterfaceCrosshairTypePrimaryTriggerReady : EngineTagWeaponHUDInterfaceCrosshairTypeEnum 
----@class EngineTagWeaponHUDInterfaceCrosshairTypeSecondaryTriggerReady : EngineTagWeaponHUDInterfaceCrosshairTypeEnum 
----@class EngineTagWeaponHUDInterfaceCrosshairTypeFlashWhenFiringWithDepletedBattery : EngineTagWeaponHUDInterfaceCrosshairTypeEnum 
+---@class EngineTagDataWeaponHUDInterfaceCrosshairTypeAim : EngineTagDataWeaponHUDInterfaceCrosshairTypeEnum 
+---@class EngineTagDataWeaponHUDInterfaceCrosshairTypeZoomOverlay : EngineTagDataWeaponHUDInterfaceCrosshairTypeEnum 
+---@class EngineTagDataWeaponHUDInterfaceCrosshairTypeCharge : EngineTagDataWeaponHUDInterfaceCrosshairTypeEnum 
+---@class EngineTagDataWeaponHUDInterfaceCrosshairTypeShouldReload : EngineTagDataWeaponHUDInterfaceCrosshairTypeEnum 
+---@class EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashHeat : EngineTagDataWeaponHUDInterfaceCrosshairTypeEnum 
+---@class EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashTotalAmmo : EngineTagDataWeaponHUDInterfaceCrosshairTypeEnum 
+---@class EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashBattery : EngineTagDataWeaponHUDInterfaceCrosshairTypeEnum 
+---@class EngineTagDataWeaponHUDInterfaceCrosshairTypeReloadOverheat : EngineTagDataWeaponHUDInterfaceCrosshairTypeEnum 
+---@class EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashWhenFiringAndNoAmmo : EngineTagDataWeaponHUDInterfaceCrosshairTypeEnum 
+---@class EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashWhenThrowingAndNoGrenade : EngineTagDataWeaponHUDInterfaceCrosshairTypeEnum 
+---@class EngineTagDataWeaponHUDInterfaceCrosshairTypeLowAmmoAndNoneLeftToReload : EngineTagDataWeaponHUDInterfaceCrosshairTypeEnum 
+---@class EngineTagDataWeaponHUDInterfaceCrosshairTypeShouldReloadSecondaryTrigger : EngineTagDataWeaponHUDInterfaceCrosshairTypeEnum 
+---@class EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashSecondaryTotalAmmo : EngineTagDataWeaponHUDInterfaceCrosshairTypeEnum 
+---@class EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashSecondaryReload : EngineTagDataWeaponHUDInterfaceCrosshairTypeEnum 
+---@class EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashWhenFiringSecondaryTriggerWithNoAmmo : EngineTagDataWeaponHUDInterfaceCrosshairTypeEnum 
+---@class EngineTagDataWeaponHUDInterfaceCrosshairTypeLowSecondaryAmmoAndNoneLeftToReload : EngineTagDataWeaponHUDInterfaceCrosshairTypeEnum 
+---@class EngineTagDataWeaponHUDInterfaceCrosshairTypePrimaryTriggerReady : EngineTagDataWeaponHUDInterfaceCrosshairTypeEnum 
+---@class EngineTagDataWeaponHUDInterfaceCrosshairTypeSecondaryTriggerReady : EngineTagDataWeaponHUDInterfaceCrosshairTypeEnum 
+---@class EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashWhenFiringWithDepletedBattery : EngineTagDataWeaponHUDInterfaceCrosshairTypeEnum 
 
----@alias EngineTagWeaponHUDInterfaceCrosshairType 
----| EngineTagWeaponHUDInterfaceCrosshairTypeAim
----| EngineTagWeaponHUDInterfaceCrosshairTypeZoomOverlay
----| EngineTagWeaponHUDInterfaceCrosshairTypeCharge
----| EngineTagWeaponHUDInterfaceCrosshairTypeShouldReload
----| EngineTagWeaponHUDInterfaceCrosshairTypeFlashHeat
----| EngineTagWeaponHUDInterfaceCrosshairTypeFlashTotalAmmo
----| EngineTagWeaponHUDInterfaceCrosshairTypeFlashBattery
----| EngineTagWeaponHUDInterfaceCrosshairTypeReloadOverheat
----| EngineTagWeaponHUDInterfaceCrosshairTypeFlashWhenFiringAndNoAmmo
----| EngineTagWeaponHUDInterfaceCrosshairTypeFlashWhenThrowingAndNoGrenade
----| EngineTagWeaponHUDInterfaceCrosshairTypeLowAmmoAndNoneLeftToReload
----| EngineTagWeaponHUDInterfaceCrosshairTypeShouldReloadSecondaryTrigger
----| EngineTagWeaponHUDInterfaceCrosshairTypeFlashSecondaryTotalAmmo
----| EngineTagWeaponHUDInterfaceCrosshairTypeFlashSecondaryReload
----| EngineTagWeaponHUDInterfaceCrosshairTypeFlashWhenFiringSecondaryTriggerWithNoAmmo
----| EngineTagWeaponHUDInterfaceCrosshairTypeLowSecondaryAmmoAndNoneLeftToReload
----| EngineTagWeaponHUDInterfaceCrosshairTypePrimaryTriggerReady
----| EngineTagWeaponHUDInterfaceCrosshairTypeSecondaryTriggerReady
----| EngineTagWeaponHUDInterfaceCrosshairTypeFlashWhenFiringWithDepletedBattery
+---@alias EngineTagDataWeaponHUDInterfaceCrosshairType 
+---| EngineTagDataWeaponHUDInterfaceCrosshairTypeAim
+---| EngineTagDataWeaponHUDInterfaceCrosshairTypeZoomOverlay
+---| EngineTagDataWeaponHUDInterfaceCrosshairTypeCharge
+---| EngineTagDataWeaponHUDInterfaceCrosshairTypeShouldReload
+---| EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashHeat
+---| EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashTotalAmmo
+---| EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashBattery
+---| EngineTagDataWeaponHUDInterfaceCrosshairTypeReloadOverheat
+---| EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashWhenFiringAndNoAmmo
+---| EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashWhenThrowingAndNoGrenade
+---| EngineTagDataWeaponHUDInterfaceCrosshairTypeLowAmmoAndNoneLeftToReload
+---| EngineTagDataWeaponHUDInterfaceCrosshairTypeShouldReloadSecondaryTrigger
+---| EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashSecondaryTotalAmmo
+---| EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashSecondaryReload
+---| EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashWhenFiringSecondaryTriggerWithNoAmmo
+---| EngineTagDataWeaponHUDInterfaceCrosshairTypeLowSecondaryAmmoAndNoneLeftToReload
+---| EngineTagDataWeaponHUDInterfaceCrosshairTypePrimaryTriggerReady
+---| EngineTagDataWeaponHUDInterfaceCrosshairTypeSecondaryTriggerReady
+---| EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashWhenFiringWithDepletedBattery
 
----@class EngineTagWeaponHUDInterfaceCrosshairTypeTable 
----@field typeAim EngineTagWeaponHUDInterfaceCrosshairTypeAim
----@field typeZoomOverlay EngineTagWeaponHUDInterfaceCrosshairTypeZoomOverlay
----@field typeCharge EngineTagWeaponHUDInterfaceCrosshairTypeCharge
----@field typeShouldReload EngineTagWeaponHUDInterfaceCrosshairTypeShouldReload
----@field typeFlashHeat EngineTagWeaponHUDInterfaceCrosshairTypeFlashHeat
----@field typeFlashTotalAmmo EngineTagWeaponHUDInterfaceCrosshairTypeFlashTotalAmmo
----@field typeFlashBattery EngineTagWeaponHUDInterfaceCrosshairTypeFlashBattery
----@field typeReloadOverheat EngineTagWeaponHUDInterfaceCrosshairTypeReloadOverheat
----@field typeFlashWhenFiringAndNoAmmo EngineTagWeaponHUDInterfaceCrosshairTypeFlashWhenFiringAndNoAmmo
----@field typeFlashWhenThrowingAndNoGrenade EngineTagWeaponHUDInterfaceCrosshairTypeFlashWhenThrowingAndNoGrenade
----@field typeLowAmmoAndNoneLeftToReload EngineTagWeaponHUDInterfaceCrosshairTypeLowAmmoAndNoneLeftToReload
----@field typeShouldReloadSecondaryTrigger EngineTagWeaponHUDInterfaceCrosshairTypeShouldReloadSecondaryTrigger
----@field typeFlashSecondaryTotalAmmo EngineTagWeaponHUDInterfaceCrosshairTypeFlashSecondaryTotalAmmo
----@field typeFlashSecondaryReload EngineTagWeaponHUDInterfaceCrosshairTypeFlashSecondaryReload
----@field typeFlashWhenFiringSecondaryTriggerWithNoAmmo EngineTagWeaponHUDInterfaceCrosshairTypeFlashWhenFiringSecondaryTriggerWithNoAmmo
----@field typeLowSecondaryAmmoAndNoneLeftToReload EngineTagWeaponHUDInterfaceCrosshairTypeLowSecondaryAmmoAndNoneLeftToReload
----@field typePrimaryTriggerReady EngineTagWeaponHUDInterfaceCrosshairTypePrimaryTriggerReady
----@field typeSecondaryTriggerReady EngineTagWeaponHUDInterfaceCrosshairTypeSecondaryTriggerReady
----@field typeFlashWhenFiringWithDepletedBattery EngineTagWeaponHUDInterfaceCrosshairTypeFlashWhenFiringWithDepletedBattery
+---@class EngineTagDataWeaponHUDInterfaceCrosshairTypeTable 
+---@field typeAim EngineTagDataWeaponHUDInterfaceCrosshairTypeAim
+---@field typeZoomOverlay EngineTagDataWeaponHUDInterfaceCrosshairTypeZoomOverlay
+---@field typeCharge EngineTagDataWeaponHUDInterfaceCrosshairTypeCharge
+---@field typeShouldReload EngineTagDataWeaponHUDInterfaceCrosshairTypeShouldReload
+---@field typeFlashHeat EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashHeat
+---@field typeFlashTotalAmmo EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashTotalAmmo
+---@field typeFlashBattery EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashBattery
+---@field typeReloadOverheat EngineTagDataWeaponHUDInterfaceCrosshairTypeReloadOverheat
+---@field typeFlashWhenFiringAndNoAmmo EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashWhenFiringAndNoAmmo
+---@field typeFlashWhenThrowingAndNoGrenade EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashWhenThrowingAndNoGrenade
+---@field typeLowAmmoAndNoneLeftToReload EngineTagDataWeaponHUDInterfaceCrosshairTypeLowAmmoAndNoneLeftToReload
+---@field typeShouldReloadSecondaryTrigger EngineTagDataWeaponHUDInterfaceCrosshairTypeShouldReloadSecondaryTrigger
+---@field typeFlashSecondaryTotalAmmo EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashSecondaryTotalAmmo
+---@field typeFlashSecondaryReload EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashSecondaryReload
+---@field typeFlashWhenFiringSecondaryTriggerWithNoAmmo EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashWhenFiringSecondaryTriggerWithNoAmmo
+---@field typeLowSecondaryAmmoAndNoneLeftToReload EngineTagDataWeaponHUDInterfaceCrosshairTypeLowSecondaryAmmoAndNoneLeftToReload
+---@field typePrimaryTriggerReady EngineTagDataWeaponHUDInterfaceCrosshairTypePrimaryTriggerReady
+---@field typeSecondaryTriggerReady EngineTagDataWeaponHUDInterfaceCrosshairTypeSecondaryTriggerReady
+---@field typeFlashWhenFiringWithDepletedBattery EngineTagDataWeaponHUDInterfaceCrosshairTypeFlashWhenFiringWithDepletedBattery
 Engine.tag.weaponHUDInterfaceCrosshairType = {} 
 
 ---@class MetaEngineTagDataWeaponHUDInterfaceCrosshairTypeFlags 

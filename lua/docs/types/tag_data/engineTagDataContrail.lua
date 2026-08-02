@@ -1,27 +1,27 @@
----@class EngineTagContrailRenderTypeEnum : Enum 
+---@class EngineTagDataContrailRenderTypeEnum : Enum 
 
----@class EngineTagContrailRenderTypeVerticalOrientation : EngineTagContrailRenderTypeEnum 
----@class EngineTagContrailRenderTypeHorizontalOrientation : EngineTagContrailRenderTypeEnum 
----@class EngineTagContrailRenderTypeMediaMapped : EngineTagContrailRenderTypeEnum 
----@class EngineTagContrailRenderTypeGroundMapped : EngineTagContrailRenderTypeEnum 
----@class EngineTagContrailRenderTypeViewerFacing : EngineTagContrailRenderTypeEnum 
----@class EngineTagContrailRenderTypeDoubleMarkerLinked : EngineTagContrailRenderTypeEnum 
+---@class EngineTagDataContrailRenderTypeVerticalOrientation : EngineTagDataContrailRenderTypeEnum 
+---@class EngineTagDataContrailRenderTypeHorizontalOrientation : EngineTagDataContrailRenderTypeEnum 
+---@class EngineTagDataContrailRenderTypeMediaMapped : EngineTagDataContrailRenderTypeEnum 
+---@class EngineTagDataContrailRenderTypeGroundMapped : EngineTagDataContrailRenderTypeEnum 
+---@class EngineTagDataContrailRenderTypeViewerFacing : EngineTagDataContrailRenderTypeEnum 
+---@class EngineTagDataContrailRenderTypeDoubleMarkerLinked : EngineTagDataContrailRenderTypeEnum 
 
----@alias EngineTagContrailRenderType 
----| EngineTagContrailRenderTypeVerticalOrientation
----| EngineTagContrailRenderTypeHorizontalOrientation
----| EngineTagContrailRenderTypeMediaMapped
----| EngineTagContrailRenderTypeGroundMapped
----| EngineTagContrailRenderTypeViewerFacing
----| EngineTagContrailRenderTypeDoubleMarkerLinked
+---@alias EngineTagDataContrailRenderType 
+---| EngineTagDataContrailRenderTypeVerticalOrientation
+---| EngineTagDataContrailRenderTypeHorizontalOrientation
+---| EngineTagDataContrailRenderTypeMediaMapped
+---| EngineTagDataContrailRenderTypeGroundMapped
+---| EngineTagDataContrailRenderTypeViewerFacing
+---| EngineTagDataContrailRenderTypeDoubleMarkerLinked
 
----@class EngineTagContrailRenderTypeTable 
----@field eVerticalOrientation EngineTagContrailRenderTypeVerticalOrientation
----@field eHorizontalOrientation EngineTagContrailRenderTypeHorizontalOrientation
----@field eMediaMapped EngineTagContrailRenderTypeMediaMapped
----@field eGroundMapped EngineTagContrailRenderTypeGroundMapped
----@field eViewerFacing EngineTagContrailRenderTypeViewerFacing
----@field eDoubleMarkerLinked EngineTagContrailRenderTypeDoubleMarkerLinked
+---@class EngineTagDataContrailRenderTypeTable 
+---@field eVerticalOrientation EngineTagDataContrailRenderTypeVerticalOrientation
+---@field eHorizontalOrientation EngineTagDataContrailRenderTypeHorizontalOrientation
+---@field eMediaMapped EngineTagDataContrailRenderTypeMediaMapped
+---@field eGroundMapped EngineTagDataContrailRenderTypeGroundMapped
+---@field eViewerFacing EngineTagDataContrailRenderTypeViewerFacing
+---@field eDoubleMarkerLinked EngineTagDataContrailRenderTypeDoubleMarkerLinked
 Engine.tag.contrailRenderType = {} 
 
 ---@class MetaEngineTagDataContrailPointStateScaleFlags 

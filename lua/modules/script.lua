@@ -1,7 +1,15 @@
 local script = {}
 
 local engine = Engine
-local getTickCount = engine.core.getTickCount
+local getTickCount = engine.game.getTickCount
+local getClock = os.clock
+
+-- Control if thread args are passed as local arguments to the thread function
+local useLocalThreadArgs = false
+-- Keep a local reference to DebugPerformance to avoid global lookups in hot code paths (performance baby!)
+local debugPerformance = DebugPerformance
+
+local functionsReferenceContext = {}
 
 ---@class ScriptThreadMetadata
 ---@field type "startup"|"continuous"|"dormant"
@@ -15,6 +23,10 @@ local getTickCount = engine.core.getTickCount
 ---@field started boolean
 ---@field run fun(): boolean
 ---@field func fun()
+---@field totalRunTime number
+---@field lastRunTime number
+---@field maxRunTime number
+---@field runCount number
 
 ---@type ScriptThread[]
 local callTrace = {}
@@ -27,10 +39,11 @@ end
 ---@param scriptThread ScriptThread
 local function removeThreadFromTrace(scriptThread)
     local scriptThreadIndex = table.indexof(callTrace, scriptThread)
-    -- logger:debug("Removing dead script {}.", scriptThreadIndex)
+    -- Balltze.logger.debug("Removing dead script {}.", scriptThreadIndex)
     if scriptThread.parent then
         scriptThread.parent.child = nil
     end
+    scriptThread.thread = nil
     table.remove(callTrace, scriptThreadIndex)
 end
 
@@ -43,23 +56,54 @@ local function findScriptThreadByFunc(func)
     return nil
 end
 
+local function findScriptThreadByThread(thread)
+    for _, scriptThread in ipairs(callTrace) do
+        if scriptThread.thread == thread then
+            return scriptThread
+        end
+    end
+    return nil
+end
+
+---@param scriptThread ScriptThread
+---@return ScriptThread?
 local function getBottomMostScriptChild(scriptThread)
     local currentScriptThread = scriptThread
-    while currentScriptThread.child do
+    while currentScriptThread and currentScriptThread.child do
         currentScriptThread = currentScriptThread.child
     end
     return currentScriptThread
 end
 
+---@param scriptThread ScriptThread
+---@param elapsedTime number
+local function recordScriptThreadRunTime(scriptThread, elapsedTime)
+    scriptThread.lastRunTime = elapsedTime
+    scriptThread.totalRunTime = scriptThread.totalRunTime + elapsedTime
+    scriptThread.runCount = scriptThread.runCount + 1
+    scriptThread.maxRunTime = math.max(scriptThread.maxRunTime, elapsedTime)
+end
+
+---@param scriptThread ScriptThread
+local function resumeScriptThread(scriptThread, ...)
+    if not debugPerformance then
+        return coroutine.resume(scriptThread.thread, ...)
+    end
+    local startTime = getClock()
+    local ok, result = coroutine.resume(scriptThread.thread, ...)
+    recordScriptThreadRunTime(scriptThread, getClock() - startTime)
+    return ok, result
+end
+
 ---@param ticks number
 local function sleepThreadFor(ticks)
     if ticks == -1 then
-        logger:debug("Sleeping until woken up")
+        -- Balltze.logger.debug("Sleeping until woken up")
     else
-        -- logger:debug("Sleeping for " .. ticks .. " ticks")
+        -- Balltze.logger.debug("Sleeping for " .. ticks .. " ticks")
     end
     local currentTicks = getTickCount()
-    while ticks == -1 or getTickCount() - currentTicks < ticks do
+    while ticks == -1 or (getTickCount() - currentTicks < ticks) do
         coroutine.yield()
     end
 end
@@ -68,12 +112,122 @@ end
 ---@param everyNTicks? number
 ---@param maximumTicks? number
 local function sleepThreadUntil(evaluateCondition, everyNTicks, maximumTicks)
-    -- logger:debug("Sleeping until condition is true")
+    -- Balltze.logger.debug("Sleeping until condition is true")
     local currentTicks = getTickCount()
     while not evaluateCondition() and
         (not maximumTicks or getTickCount() - currentTicks < maximumTicks) do
-        coroutine.yield()
+        if everyNTicks then
+            local waitStart = getTickCount()
+            while getTickCount() - waitStart < everyNTicks do
+                coroutine.yield()
+            end
+        else
+            coroutine.yield()
+        end
     end
+end
+
+-- Exported sleep function that locates the caller's ScriptThread by its coroutine
+function script.sleep(...)
+    local co = coroutine.running()
+    local currentScriptThread = findScriptThreadByThread(co)
+    if not currentScriptThread then
+        error("Cannot sleep outside of a script thread", 2)
+    end
+
+    if currentScriptThread.child then
+        error("Cannot sleep while another function is being called", 2)
+    end
+
+    local args = {...}
+
+    -- Special case: sleep(ticks, someFunc) -> attach sleep child to the referenced function's script
+    if type(args[1]) == "number" and type(args[2]) == "function" then
+        local ticks = args[1]
+        local scriptFunc = args[2]
+        local scriptThread = findScriptThreadByFunc(scriptFunc)
+        if not scriptThread then
+            -- Balltze.logger.warning("Tried to sleep a script that does not exist.")
+            -- error("Cannot sleep for a function that does not exist", 2)
+            return
+        end
+        if scriptThread.child then
+            -- TODO This scenario might be conflicting, we need to research how HSC handles this
+            -- as what happens when a thread that is already waiting for another child thread,
+            -- is being put to sleep again with this method?
+            -- Do they just ignore the new sleep call or do they replace the existing child
+            -- thread with the new sleep thread? 
+
+            -- As for now usual campaign scenarios imply to "kill" the thread
+            -- Remove child thread if it exists, we are replacing it with a new sleep thread
+            removeThreadFromTrace(scriptThread.child)
+            -- Balltze.logger.warning("Script thread for function \"{}\" already has a child, removing it and replacing with new sleep thread", scriptFunc)
+        end
+        if ticks == -1 then
+            Balltze.logger.debug("Sleeping script thread for function \"{}\" until woken up",
+                                 scriptFunc)
+        end
+        local _, sleepThread = script.thread(function()
+            sleepThreadFor(ticks)
+        end)
+        sleepThread.parent = scriptThread
+        scriptThread.child = sleepThread
+        sleepThread.isSleep = true
+        return
+    end
+
+    -- Normal case: create a child thread that sleeps based on args
+    local _, sleepThread = script.thread(function()
+        if type(args[1]) == "number" then
+            local ticks = args[1]
+            sleepThreadFor(ticks)
+        elseif type(args[1]) == "function" then
+            sleepThreadUntil(table.unpack(args))
+        else
+            error("Invalid sleep arguments")
+        end
+    end)
+    sleepThread.isSleep = true
+    sleepThread.parent = currentScriptThread
+    currentScriptThread.child = sleepThread
+    return coroutine.yield()
+end
+
+function script.call(funcToCall, ...)
+    local co = coroutine.running()
+    local currentScriptThread = findScriptThreadByThread(co)
+    if not currentScriptThread then
+        error("Cannot call outside of a script thread", 2)
+    end
+
+    if currentScriptThread.child then
+        -- FIXME Consider this an edge case, we might want to allow this in the future
+        -- Calling functions that are already in a sleep until state is not allowed right?
+        -- I mean function is already sleeping.. so why would you want to sleep it again?
+        --
+        -- But it does not mean we should not allow it, we just need to handle it properly
+        -- right now we are missing references to "call" and "sleep" in the function signature
+        -- so we can just not call them again and let the sleep go by, maybe "call" can still
+        -- be triggered (?)
+        --
+        -- This case is usually just executed when you are trying to call a function immediately
+        -- while sleeping, so is somewhat safe to assume "call" and "sleep" are not being used.
+        -- 
+        return funcToCall(function(func, ...)
+            -- error("Cannot call a function while another function is being called", 2)
+            Balltze.logger.debug("Cannot call a function while another function is being called")
+            -- Just return the function result directly, we cannot yield here
+            return func(...)
+        end, function()
+            Balltze.logger.error("Cannot sleep while another function is being called")
+        end, ...)
+    end
+
+    local _, callScriptThread = script.thread(funcToCall)
+    callScriptThread.parent = currentScriptThread
+    callScriptThread.args = {...}
+    currentScriptThread.child = callScriptThread
+    return coroutine.yield()
 end
 
 --- Handle a script thread recursively
@@ -89,10 +243,10 @@ local function handleScriptThread(scriptThread, result)
     local threadResult
     if not scriptThread.started then
         threadResult = scriptThread.run()
-        -- logger:debug("No child, thread result: " .. tostring(threadResult))
+        -- Balltze.logger.debug("No child, thread result: " .. tostring(threadResult))
     else
-        -- logger:debug("Parent, got result: " .. tostring(result))
-        local ok, result = coroutine.resume(scriptThread.thread, result)
+        -- Balltze.logger.debug("Parent, got result: " .. tostring(result))
+        local ok, result = resumeScriptThread(scriptThread, result)
         if not ok then
             error(result, 2)
         end
@@ -106,7 +260,11 @@ local function handleScriptThread(scriptThread, result)
         else
             removeThreadFromTrace(scriptThread)
             if scriptThread.parent then
-                handleScriptThread(scriptThread.parent, threadResult)
+                local ok, result = pcall(handleScriptThread, scriptThread.parent, threadResult)
+                if not ok then
+                    -- error(debug.traceback(scriptThread.parent.thread, result), 2)
+                    Balltze.logger.error(debug.traceback(scriptThread.parent.thread, result))
+                end
             end
         end
     end
@@ -118,6 +276,7 @@ function script.poll()
             handleScriptThread(currentScript)
         end
     end
+
     return #callTrace
 end
 
@@ -131,82 +290,27 @@ function script.thread(func, metadata)
         parent = nil,
         child = nil,
         type = metadata.type,
-        isSleep = false
+        isSleep = false,
+        totalRunTime = 0,
+        lastRunTime = 0,
+        maxRunTime = 0,
+        runCount = 0
     }
     addThreadToTrace(parentScriptThread)
-
-    local call = function(funcToCall, ...)
-        if parentScriptThread.child then
-            -- FIXME Consider this an edge case, we might want to allow this in the future
-            -- Calling functions that are already in a sleep until state is not allowed right?
-            -- I mean function is already sleeping.. so why would you want to sleep it again?
-            --
-            -- But it does not mean we should not allow it, we just need to handle it properly
-            -- right now we are missing references to "call" and "sleep" in the function signature
-            -- so we can just not call them again and let the sleep go by, maybe "call" can still
-            -- be triggered (?)
-            --
-            -- This case is usually just executed when you are trying to call a function immediately
-            -- while sleeping, so is somewhat safe to assume "call" and "sleep" are not being used.
-            -- 
-            -- error("Cannot call a function while another function is being called", 2)/
-            return funcToCall(function ()
-                logger:error("Cannot call a function while another function is being called")
-            end, function ()
-                logger:error("Cannot sleep while another function is being called")
-            end, ...)
-        end
-        local _, callScriptThread = script.thread(funcToCall)
-        callScriptThread.parent = parentScriptThread
-        callScriptThread.args = {...}
-        parentScriptThread.child = callScriptThread
-        return coroutine.yield()
-    end
-
-    local sleep = function(...)
-        if parentScriptThread.child then
-            error("Cannot sleep while another function is being called", 2)
-        end
-        local args = {...}
-
-        if type(args[1]) == "number" and type(args[2]) == "function" then
-            local ticks = args[1]
-            local scriptFunc = args[2]
-            local scriptThread = findScriptThreadByFunc(scriptFunc)
-            if scriptThread then
-                local _, callScriptThread = script.thread(function()
-                    sleepThreadFor(ticks)
-                end)
-                callScriptThread.parent = scriptThread
-                scriptThread.child = callScriptThread
-                callScriptThread.isSleep = true
-                return
-            end
-        end
-
-        local _, callScriptThread = script.thread(function()
-            if type(args[1]) == "number" then
-                local ticks = args[1]
-                sleepThreadFor(ticks)
-            elseif type(args[1]) == "function" then
-                sleepThreadUntil(table.unpack(args))
-            else
-                error("Invalid sleep arguments")
-            end
-        end)
-        callScriptThread.isSleep = true
-        callScriptThread.parent = parentScriptThread
-        parentScriptThread.child = callScriptThread
-        return coroutine.yield()
-    end
 
     local run = function()
         local scriptThread = parentScriptThread
         scriptThread.started = true
-        local ok, result = coroutine.resume(scriptThread.thread, call, sleep,
+        local ok, result
+        if useLocalThreadArgs then
+            ok, result = resumeScriptThread(scriptThread, script.call, script.sleep,
                                             table.unpack(parentScriptThread.args or {}))
+        else
+            ok, result = resumeScriptThread(scriptThread,
+                                            table.unpack(parentScriptThread.args or {}))
+        end
         if not ok then
-            error(result, 2)
+            error(debug.traceback(scriptThread.thread, result), 2)
         end
         return result
     end
@@ -219,7 +323,8 @@ end
 function script.startup(func)
     local foundScript = findScriptThreadByFunc(func)
     if foundScript then
-        logger:error("Tried to add a script that already exists.")
+        Balltze.logger.error("Tried to add a script that already exists.")
+        Balltze.logger.error("Existing script trace: {}", debug.traceback(foundScript.thread))
         return
     end
     local metadata = {type = "startup"}
@@ -229,7 +334,8 @@ end
 function script.continuous(func)
     local foundScript = findScriptThreadByFunc(func)
     if foundScript then
-        logger:error("Tried to add a script that already exists.")
+        Balltze.logger.error("Tried to add a script that already exists.")
+        Balltze.logger.error("Existing script trace: {}", debug.traceback(foundScript.thread))
         return
     end
     local metadata = {type = "continuous"}
@@ -239,13 +345,87 @@ end
 function script.wake(func)
     local foundScript = findScriptThreadByFunc(func)
     if foundScript then
+        Balltze.logger.debug("Waking script thread for function.")
         local child = getBottomMostScriptChild(foundScript)
-        if child.isSleep then
+        if child and child.isSleep then
+            -- Technically this is a sleep thread, so we can just remove it from the trace
+            -- and let the parent thread continue running
             removeThreadFromTrace(child)
         end
     else
+        -- This somehow imitates how "dormant" scripts work in HSC
+        -- as all our scripts/threads can be started and sent to sleep independently
+        -- no need to differentiate dormant scripts, as they are basically threads just sleeping
+        -- until woken up
+
+        -- So we do not declare them as dormant as we do with "startup" and "continuous" scripts,
+        -- we just create a new thread for them when they are woken up
+
+        -- Balltze.logger.error("Tried to wake a script that does not exist. Creating a new thread for it.")
         script.thread(func)
     end
+end
+
+--- Creates a script thread and runs it immediately without waiting for the next poll.
+--- Useful for scripts that need to run immediately and will not live long enough to be caught by
+--- the poll loop, like short lived startup scripts or scripts that are being called by other
+--- threads and need to run immediately.
+---
+--- Note: This does not check if a script thread for the given function already exists, so it can
+--- lead to multiple threads running the same function if used carelessly. Use with caution.
+---@param func fun()
+function script.create(func)
+    script.thread(func)()
+end
+
+---Clean up all call traces
+function script.cleanup()
+    callTrace = {}
+    collectgarbage("collect")
+end
+
+---Set script functions context
+function script.setReferenceContext(context)
+    functionsReferenceContext = context or {}
+end
+
+---Get a summary of all script threads and their statuses for debugging purposes
+function script.getStatus()
+    local status = {}
+    for i, scriptThread in ipairs(callTrace) do
+        if not scriptThread.isSleep then
+            local functionInfo = debug.getinfo(scriptThread.func)
+            local referenceName = functionInfo.name or tostring(scriptThread.func)
+            for name, func in pairs(functionsReferenceContext) do
+                if func == scriptThread.func then
+                    referenceName = name
+                    break
+                end
+            end
+            local referenceFile =
+                functionInfo.short_src .. ":" .. functionInfo.linedefined .. " (" ..
+                    (referenceName or "unknown") .. ")"
+            table.insert(status, {
+                index = i,
+                type = scriptThread.type,
+                isSleep = scriptThread.isSleep,
+                started = scriptThread.started,
+                func = scriptThread.func,
+                threadStatus = coroutine.status(scriptThread.thread),
+                parentFunc = scriptThread.parent and scriptThread.parent.func or nil,
+                childFunc = scriptThread.child and scriptThread.child.func or nil,
+                referenceName = referenceName,
+                referenceFile = referenceFile,
+                totalRunTime = scriptThread.totalRunTime or 0,
+                lastRunTime = scriptThread.lastRunTime or 0,
+                maxRunTime = scriptThread.maxRunTime or 0,
+                runCount = scriptThread.runCount or 0,
+                averageRunTime = scriptThread.runCount and scriptThread.runCount > 0 and
+                    (scriptThread.totalRunTime or 0) / scriptThread.runCount or 0
+            })
+        end
+    end
+    return status
 end
 
 return script

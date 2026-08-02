@@ -43,26 +43,24 @@ function ini.decode(fileString)
     local data = {}
     local section
     for lineNumber, line in pairs(lines) do
-        if string.sub(line, 1, 1) == "[" then
-            section = string.sub(line, 2, string.find(line, "]") - 1)
-            data[section] = {}
-        elseif section then
-            --local key, value = string.match(line, "([^=]*)=(.*)")
-            local key, value = string.match(line, "^([%w|_]+)%s-=%s-(.+)$")
-            if key and value then
-                value = value:gsub("\r", "")
-                if (tonumber(value)) then
-                    value = tonumber(value)
-                elseif (value == "true") then
-                    value = true
-                elseif (value == "false") then
-                    value = false
-                end
-                if (tonumber(key)) then
-                    key = tonumber(key)
-                end
-                data[section][key] = value
+        local tempSection = line:match("^%[([^%[%]]+)%]$")
+        if (tempSection) then
+            section = tonumber(tempSection) and tonumber(tempSection) or tempSection
+            data[section] = data[section] or {}
+        end
+        local param, value = line:match("^([%w|_]+)%s-=%s-(.+)$")
+        if (param and value ~= nil) then
+            if (tonumber(value)) then
+                value = tonumber(value)
+            elseif (value == "true") then
+                value = true
+            elseif (value == "false") then
+                value = false
             end
+            if (tonumber(param)) then
+                param = tonumber(param)
+            end
+            data[section][param] = value
         end
     end
     return data

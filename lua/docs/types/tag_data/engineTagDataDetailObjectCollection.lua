@@ -1,15 +1,15 @@
----@class EngineTagDetailObjectCollectionTypeEnum : Enum 
+---@class EngineTagDataDetailObjectCollectionTypeEnum : Enum 
 
----@class EngineTagDetailObjectCollectionTypeScreenFacing : EngineTagDetailObjectCollectionTypeEnum 
----@class EngineTagDetailObjectCollectionTypeViewerFacing : EngineTagDetailObjectCollectionTypeEnum 
+---@class EngineTagDataDetailObjectCollectionTypeScreenFacing : EngineTagDataDetailObjectCollectionTypeEnum 
+---@class EngineTagDataDetailObjectCollectionTypeViewerFacing : EngineTagDataDetailObjectCollectionTypeEnum 
 
----@alias EngineTagDetailObjectCollectionType 
----| EngineTagDetailObjectCollectionTypeScreenFacing
----| EngineTagDetailObjectCollectionTypeViewerFacing
+---@alias EngineTagDataDetailObjectCollectionType 
+---| EngineTagDataDetailObjectCollectionTypeScreenFacing
+---| EngineTagDataDetailObjectCollectionTypeViewerFacing
 
----@class EngineTagDetailObjectCollectionTypeTable 
----@field peScreenFacing EngineTagDetailObjectCollectionTypeScreenFacing
----@field peViewerFacing EngineTagDetailObjectCollectionTypeViewerFacing
+---@class EngineTagDataDetailObjectCollectionTypeTable 
+---@field peScreenFacing EngineTagDataDetailObjectCollectionTypeScreenFacing
+---@field peViewerFacing EngineTagDataDetailObjectCollectionTypeViewerFacing
 Engine.tag.detailObjectCollectionType = {} 
 
 ---@class MetaEngineTagDataDetailObjectCollectionTypeFlags 

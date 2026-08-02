@@ -1,30 +1,30 @@
----@class EngineTagEquipmentPowerupTypeEnum : Enum 
+---@class EngineTagDataEquipmentPowerupTypeEnum : Enum 
 
----@class EngineTagEquipmentPowerupTypeNone : EngineTagEquipmentPowerupTypeEnum 
----@class EngineTagEquipmentPowerupTypeDoubleSpeed : EngineTagEquipmentPowerupTypeEnum 
----@class EngineTagEquipmentPowerupTypeOverShield : EngineTagEquipmentPowerupTypeEnum 
----@class EngineTagEquipmentPowerupTypeActiveCamouflage : EngineTagEquipmentPowerupTypeEnum 
----@class EngineTagEquipmentPowerupTypeFullSpectrumVision : EngineTagEquipmentPowerupTypeEnum 
----@class EngineTagEquipmentPowerupTypeHealth : EngineTagEquipmentPowerupTypeEnum 
----@class EngineTagEquipmentPowerupTypeGrenade : EngineTagEquipmentPowerupTypeEnum 
+---@class EngineTagDataEquipmentPowerupTypeNone : EngineTagDataEquipmentPowerupTypeEnum 
+---@class EngineTagDataEquipmentPowerupTypeDoubleSpeed : EngineTagDataEquipmentPowerupTypeEnum 
+---@class EngineTagDataEquipmentPowerupTypeOverShield : EngineTagDataEquipmentPowerupTypeEnum 
+---@class EngineTagDataEquipmentPowerupTypeActiveCamouflage : EngineTagDataEquipmentPowerupTypeEnum 
+---@class EngineTagDataEquipmentPowerupTypeFullSpectrumVision : EngineTagDataEquipmentPowerupTypeEnum 
+---@class EngineTagDataEquipmentPowerupTypeHealth : EngineTagDataEquipmentPowerupTypeEnum 
+---@class EngineTagDataEquipmentPowerupTypeGrenade : EngineTagDataEquipmentPowerupTypeEnum 
 
----@alias EngineTagEquipmentPowerupType 
----| EngineTagEquipmentPowerupTypeNone
----| EngineTagEquipmentPowerupTypeDoubleSpeed
----| EngineTagEquipmentPowerupTypeOverShield
----| EngineTagEquipmentPowerupTypeActiveCamouflage
----| EngineTagEquipmentPowerupTypeFullSpectrumVision
----| EngineTagEquipmentPowerupTypeHealth
----| EngineTagEquipmentPowerupTypeGrenade
+---@alias EngineTagDataEquipmentPowerupType 
+---| EngineTagDataEquipmentPowerupTypeNone
+---| EngineTagDataEquipmentPowerupTypeDoubleSpeed
+---| EngineTagDataEquipmentPowerupTypeOverShield
+---| EngineTagDataEquipmentPowerupTypeActiveCamouflage
+---| EngineTagDataEquipmentPowerupTypeFullSpectrumVision
+---| EngineTagDataEquipmentPowerupTypeHealth
+---| EngineTagDataEquipmentPowerupTypeGrenade
 
----@class EngineTagEquipmentPowerupTypeTable 
----@field eNone EngineTagEquipmentPowerupTypeNone
----@field eDoubleSpeed EngineTagEquipmentPowerupTypeDoubleSpeed
----@field eOverShield EngineTagEquipmentPowerupTypeOverShield
----@field eActiveCamouflage EngineTagEquipmentPowerupTypeActiveCamouflage
----@field eFullSpectrumVision EngineTagEquipmentPowerupTypeFullSpectrumVision
----@field eHealth EngineTagEquipmentPowerupTypeHealth
----@field eGrenade EngineTagEquipmentPowerupTypeGrenade
+---@class EngineTagDataEquipmentPowerupTypeTable 
+---@field eNone EngineTagDataEquipmentPowerupTypeNone
+---@field eDoubleSpeed EngineTagDataEquipmentPowerupTypeDoubleSpeed
+---@field eOverShield EngineTagDataEquipmentPowerupTypeOverShield
+---@field eActiveCamouflage EngineTagDataEquipmentPowerupTypeActiveCamouflage
+---@field eFullSpectrumVision EngineTagDataEquipmentPowerupTypeFullSpectrumVision
+---@field eHealth EngineTagDataEquipmentPowerupTypeHealth
+---@field eGrenade EngineTagDataEquipmentPowerupTypeGrenade
 Engine.tag.equipmentPowerupType = {} 
 
 ---@class MetaEngineTagDataEquipment: MetaEngineTagDataItem  

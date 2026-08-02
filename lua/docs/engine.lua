@@ -36,16 +36,16 @@ Engine.gameState = {}
 
 -- Get an object of the current game
 ---@param handle EngineObjectHandle|integer Handle of the object
----@param type EngineTagObjectType? Type of the object
----@overload fun(handle: EngineObjectHandle|integer, type: EngineTagObjectTypeBiped): MetaEngineBipedObject|nil
----@overload fun(handle: EngineObjectHandle|integer, type: EngineTagObjectTypeVehicle): MetaEngineVehicleObject|nil
----@overload fun(handle: EngineObjectHandle|integer, type: EngineTagObjectTypeGarbage): MetaEngineGarbageObject|nil
----@overload fun(handle: EngineObjectHandle|integer, type: EngineTagObjectTypeWeapon): MetaEngineWeaponObject|nil
----@overload fun(handle: EngineObjectHandle|integer, type: EngineTagObjectTypeEquipment): MetaEngineEquipmentObject|nil
----@overload fun(handle: EngineObjectHandle|integer, type: EngineTagObjectTypeProjectile): MetaEngineProjectileObject|nil
----@overload fun(handle: EngineObjectHandle|integer, type: EngineTagObjectTypeDeviceMachine): MetaEngineDeviceMachineObject|nil
----@overload fun(handle: EngineObjectHandle|integer, type: EngineTagObjectTypeDeviceControl): MetaEngineDeviceControlObject|nil
----@overload fun(handle: EngineObjectHandle|integer, type: EngineTagObjectTypeDeviceLightFixture): MetaEngineDeviceLightFixtureObject|nil
+---@param type EngineTagDataObjectType? Type of the object
+---@overload fun(handle: EngineObjectHandle|integer, type: EngineTagDataObjectTypeBiped): MetaEngineBipedObject|nil
+---@overload fun(handle: EngineObjectHandle|integer, type: EngineTagDataObjectTypeVehicle): MetaEngineVehicleObject|nil
+---@overload fun(handle: EngineObjectHandle|integer, type: EngineTagDataObjectTypeGarbage): MetaEngineGarbageObject|nil
+---@overload fun(handle: EngineObjectHandle|integer, type: EngineTagDataObjectTypeWeapon): MetaEngineWeaponObject|nil
+---@overload fun(handle: EngineObjectHandle|integer, type: EngineTagDataObjectTypeEquipment): MetaEngineEquipmentObject|nil
+---@overload fun(handle: EngineObjectHandle|integer, type: EngineTagDataObjectTypeProjectile): MetaEngineProjectileObject|nil
+---@overload fun(handle: EngineObjectHandle|integer, type: EngineTagDataObjectTypeDeviceMachine): MetaEngineDeviceMachineObject|nil
+---@overload fun(handle: EngineObjectHandle|integer, type: EngineTagDataObjectTypeDeviceControl): MetaEngineDeviceControlObject|nil
+---@overload fun(handle: EngineObjectHandle|integer, type: EngineTagDataObjectTypeDeviceLightFixture): MetaEngineDeviceLightFixtureObject|nil
 ---@return MetaEngineBaseObject|nil
 function Engine.gameState.getObject(handle, type) end
 
@@ -84,7 +84,7 @@ function Engine.gameState.unitAddWeapon(unitObjectHandle, weaponTagHandle) end
 ---@param objectMarker string|nil @The marker of the object to attach
 ---@param attachmentObjectHandle EngineObjectHandle|integer @The handle of the object to attach to
 ---@param attachmentMarker string|nil @The marker of the attachment object
-function Engine.gameState.objectAttachToMarker(objectHandle, objectMarker, attachmentObjectHandle, attachmentMarker) end
+function Engine.gameState.attachObject(objectHandle, objectMarker, attachmentObjectHandle, attachmentMarker) end
 
 -- Get a player
 ---@param playerIndexOrHandle? EnginePlayerHandle|integer @The index or the handle of the player; If nil, the local player is returned
@@ -333,6 +333,8 @@ function Engine.tag.getTag(tagHandleOrPath, tagClass) end
 ---Return a tag entry list given a keyword and/or a tag class
 ---
 ---Leave the keyword empty to get all tags, if tag class is nil, it will return all tags
+---@param keyword string @Keyword to search for
+---@param tagClass? EngineTagClass Class of the tag
 ---@overload fun(keyword: string): MetaEngineTag[]
 ---@overload fun(keyword: string, tagClass: EngineTagClassActor): MetaEngineActorTag[]
 ---@overload fun(keyword: string, tagClass: EngineTagClassActorVariant): MetaEngineActorVariantTag[]

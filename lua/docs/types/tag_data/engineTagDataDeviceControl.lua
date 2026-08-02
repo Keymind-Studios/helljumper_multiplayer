@@ -1,35 +1,35 @@
----@class EngineTagDeviceTypeEnum : Enum 
+---@class EngineTagDataDeviceTypeEnum : Enum 
 
----@class EngineTagDeviceTypeToggleSwitch : EngineTagDeviceTypeEnum 
----@class EngineTagDeviceTypeOnButton : EngineTagDeviceTypeEnum 
----@class EngineTagDeviceTypeOffButton : EngineTagDeviceTypeEnum 
----@class EngineTagDeviceTypeCallButton : EngineTagDeviceTypeEnum 
+---@class EngineTagDataDeviceTypeToggleSwitch : EngineTagDataDeviceTypeEnum 
+---@class EngineTagDataDeviceTypeOnButton : EngineTagDataDeviceTypeEnum 
+---@class EngineTagDataDeviceTypeOffButton : EngineTagDataDeviceTypeEnum 
+---@class EngineTagDataDeviceTypeCallButton : EngineTagDataDeviceTypeEnum 
 
----@alias EngineTagDeviceType 
----| EngineTagDeviceTypeToggleSwitch
----| EngineTagDeviceTypeOnButton
----| EngineTagDeviceTypeOffButton
----| EngineTagDeviceTypeCallButton
+---@alias EngineTagDataDeviceType 
+---| EngineTagDataDeviceTypeToggleSwitch
+---| EngineTagDataDeviceTypeOnButton
+---| EngineTagDataDeviceTypeOffButton
+---| EngineTagDataDeviceTypeCallButton
 
----@class EngineTagDeviceTypeTable 
----@field toggleSwitch EngineTagDeviceTypeToggleSwitch
----@field onButton EngineTagDeviceTypeOnButton
----@field offButton EngineTagDeviceTypeOffButton
----@field callButton EngineTagDeviceTypeCallButton
+---@class EngineTagDataDeviceTypeTable 
+---@field toggleSwitch EngineTagDataDeviceTypeToggleSwitch
+---@field onButton EngineTagDataDeviceTypeOnButton
+---@field offButton EngineTagDataDeviceTypeOffButton
+---@field callButton EngineTagDataDeviceTypeCallButton
 Engine.tag.deviceType = {} 
 
----@class EngineTagDeviceTriggersWhenEnum : Enum 
+---@class EngineTagDataDeviceTriggersWhenEnum : Enum 
 
----@class EngineTagDeviceTriggersWhenTouchedByPlayer : EngineTagDeviceTriggersWhenEnum 
----@class EngineTagDeviceTriggersWhenDestroyed : EngineTagDeviceTriggersWhenEnum 
+---@class EngineTagDataDeviceTriggersWhenTouchedByPlayer : EngineTagDataDeviceTriggersWhenEnum 
+---@class EngineTagDataDeviceTriggersWhenDestroyed : EngineTagDataDeviceTriggersWhenEnum 
 
----@alias EngineTagDeviceTriggersWhen 
----| EngineTagDeviceTriggersWhenTouchedByPlayer
----| EngineTagDeviceTriggersWhenDestroyed
+---@alias EngineTagDataDeviceTriggersWhen 
+---| EngineTagDataDeviceTriggersWhenTouchedByPlayer
+---| EngineTagDataDeviceTriggersWhenDestroyed
 
----@class EngineTagDeviceTriggersWhenTable 
----@field nTouchedByPlayer EngineTagDeviceTriggersWhenTouchedByPlayer
----@field nDestroyed EngineTagDeviceTriggersWhenDestroyed
+---@class EngineTagDataDeviceTriggersWhenTable 
+---@field nTouchedByPlayer EngineTagDataDeviceTriggersWhenTouchedByPlayer
+---@field nDestroyed EngineTagDataDeviceTriggersWhenDestroyed
 Engine.tag.deviceTriggersWhen = {} 
 
 ---@class MetaEngineTagDataDeviceControl: MetaEngineTagDataDevice  

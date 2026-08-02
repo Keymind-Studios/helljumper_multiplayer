@@ -18,7 +18,7 @@ Balltze.config = {}
 
 ---@class BalltzeConfig
 ---@field save fun(self: BalltzeConfig) @Save configs to file
----@field load fun(self: BalltzeConfig): any @Load configs from file
+---@field load fun(self: BalltzeConfig, key: string): any @Load configs from file
 ---@field exists fun(self: BalltzeConfig, key: string): boolean @Check if a config exists
 ---@field remove fun(self: BalltzeConfig, key: string) @Remove a config
 ---@field getInteger fun(self: BalltzeConfig, key: string): integer|nil @Get an integer config

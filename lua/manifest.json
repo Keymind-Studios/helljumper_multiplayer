@@ -1,0 +1,26 @@
+{
+  "name": "Helljumper Multiplayer",
+  "author": "Keymind Dev Team",
+  "plugin_main": "Keymind Dev Team.lua",
+  "version": "1.0.0",
+  "target_api": "2.0.0",
+  "maps": [
+    "treason",
+    "treason_dev",
+    "bleed_it_out",
+    "bleed_it_out_dev",
+    "last_voyage",
+    "last_voyage_dev",
+    "impasse",
+    "impasse_dev",
+    "aqueduct",
+    "aqueduct_dev",
+    "penance",
+    "penance_dev",
+    "behemoth",
+    "behemoth_dev",
+    "warehouse",
+    "warehouse_dev"
+  ],
+  "reloadable": true
+}

@@ -1,11 +1,13 @@
 ---@class hsc
+---@diagnostic disable: duplicate-set-field
 local hsc = {}
 
 local luna = require "luna"
 local hscDoc = require "hscDoc"
+local blam2 = require "blam2"
 local blam = require "blam"
 local engine = Engine
-local hscExecuteScript = engine.hsc.executeScript
+local hscExecuteScript = engine.script.execute
 
 math.randomseed(os.time())
 
@@ -18,22 +20,6 @@ local cacheHscGlobals = {
     real = "lua_real",
     string = "lua_string",
     unit = "lua_unit"
-}
-
----@enum ai_default_state
-hsc.aiDefaultState = {
-    none = 0,
-    sleeping = 1,
-    alert = 2,
-    RepeatSamePosition = 3,
-    Loop = 4,
-    LoopBackAndForth = 5,
-    loopRandomly = 6,
-    randomly = 7,
-    guarding = 8,
-    guardingAtGuardPosition = 9,
-    searching = 10,
-    fleeing = 11,
 }
 
 local function getScriptArgs(args)
@@ -49,29 +35,46 @@ local function getScriptArgs(args)
 end
 
 local function executeScript(script, functionName, args, metadata)
+    hscExecuteScript(script)
     for _, middleware in ipairs(middlewares) do
+        -- Trigger middleware
+        -- Optionally allow middleware to modify the script if needed
         script = middleware(functionName, args or {}) or script
     end
-    hscExecuteScript(script)
 end
 
-local function getFunctionInvokation(hscFunction, args)
+local function getFunctionInvocation(hscFunction, args)
     return hscFunction.funcName .. " " .. table.concat(args, " ")
 end
 
-local function setVariable(varName, varValue)
-    local varSet = "begin (set " .. varName .. " (" .. varValue .. "))"
-    hscExecuteScript(varSet)
+local function getSetVariableInvocation(varName, varValue)
+    return "begin (set " .. varName .. " (" .. varValue .. "))"
 end
 
 local function getVariable(varName)
-    return get_global(varName)
+    local exists, result = pcall(get_global, varName)
+    if not exists then
+        Balltze.logger.error("Failed to get HSC variable {}: {}", varName, result)
+        return nil
+    end
+    return result
 end
 
----Reimplement HSC functions with LuaBlam
+local function native(name, ...)
+    return getmetatable(hsc).__index(hsc, name)(...)
+end
+
+-- Reimplement HSC functions in Lua
+
+---Execute functions in sequence and return last evaluated function result
 ---@param ... function | function[]
 ---@return any
 function hsc.begin(...)
+    local functions = {...}
+    if type(functions[1]) == "table" then
+        -- If the first argument is a table, treat it as a list of functions
+        functions = functions[1]
+    end
     for i, func in ipairs(functions) do
         if type(func) == "function" then
             -- Return last evaluated function
@@ -86,22 +89,31 @@ function hsc.begin(...)
     end
 end
 
-function hsc.begin_random(functions)
-    local functions = table.copy(functions)
+---Execute functions in random order
+---@param ... function | function[]
+---@return any
+function hsc.begin_random(...)
+    local functions = {...}
+    if type(functions[1]) == "table" then
+        -- If the first argument is a table, treat it as a list of functions
+        functions = functions[1]
+    end
+    local functionsToRandomize = table.copy(functions)
     local result
     local function random()
-        local index = math.random(1, #functions)
-        local func = functions[index]
-        table.remove(functions, index)
+        local index = math.random(1, #functionsToRandomize)
+        local func = functionsToRandomize[index]
+        table.remove(functionsToRandomize, index)
         return func
     end
-    while #functions > 0 do
+    while #functionsToRandomize > 0 do
         -- Store result of randomly selected function
         result = random()()
     end
     return result
 end
 
+---Execute functions until one returns true
 ---@param ... function | function[]
 ---@return boolean
 function hsc.cond(...)
@@ -117,10 +129,10 @@ function hsc.cond(...)
         -- In the meantime we will return the first function that returns true
         -- as it works for most scenarios.
         if type(func) == "function" then
-            --logger:debug("Evaluating cond function at index {}:", i)
+            -- Balltze.logger.debug("Evaluating cond function at index {}:", i)
             -- Only return if func result is true
             local result = func()
-            --logger:debug("Evaluating cond function result: {}", result)
+            -- Balltze.logger.debug("Evaluating cond function result: {}", result)
             if result then
                 return result
             end
@@ -131,39 +143,79 @@ function hsc.cond(...)
 end
 
 local difficulties = {"easy", "normal", "hard", "impossible"}
+---Get the current game difficulty
+---@return "easy" | "normal" | "hard" | "impossible"
 function hsc.game_difficulty_get()
     return difficulties[blam.getGameDifficultyIndex() + 1]
 end
 hsc.game_difficulty_get_real = hsc.game_difficulty_get
 
+---Print a message to the in-game console
+---@param message any
 function hsc.print(message)
-    engine.core.consolePrint("{}", tostring(message))
+    engine.terminal.print("{}", tostring(message))
 end
 
+local skipInternal = false
+local actuallySkip = false
+
 function hsc.cinematic_skip_start_internal()
+    skipInternal = true
 end
 
 function hsc.cinematic_skip_stop_internal()
+    skipInternal = false
+    actuallySkip = false
 end
 
 function hsc.game_save()
-    hsc.print("game_save not Lua implemented!")
+    Balltze.logger.debug("game_save not Lua implemented!")
 end
 
 function hsc.game_save_totally_unsafe()
-    hsc.print("game_save_totally_unsafe not Lua implemented!")
+    Balltze.logger.debug("game_save_totally_unsafe not Lua implemented!")
 end
 
 function hsc.game_save_no_timeout()
-    hsc.print("game_save_no_timeout not Lua implemented!")
+    Balltze.logger.debug("game_save_no_timeout not Lua implemented!")
 end
 
 function hsc.game_is_cooperative()
     return hsc.list_count(hsc.players()) > 1
 end
 
+function hsc.game_revert()
+    -- Execute depending of server type
+    if engine.game.getGameConnectionType() == "networkServer" then
+        hscExecuteScript("sv_map_next")
+    else
+        native("game_revert")()
+    end
+end
+
 function hsc.game_won()
-    execute_script("sv_map_next")
+    -- Execute depending of server type
+    if engine.game.getGameConnectionType() == "networkServer" then
+        hscExecuteScript("sv_map_next")
+    else
+        native("game_won")()
+    end
+end
+
+function hsc.game_saving()
+    -- Execute depending of server type
+    if engine.game.getGameConnectionType() == "local" then
+        return native("game_saving")()
+    else
+        return false
+    end
+end
+
+function hsc.game_skip_ticks(ticks)
+    if engine.game.getGameConnectionType() == "local" then
+        return native("game_skip_ticks", ticks)
+    end
+    Balltze.logger.debug("game_skip_ticks not supported on networked games")
 end
 
 function hsc.pin(value, min, max)
@@ -179,43 +231,43 @@ function hsc.abs_real(value)
 end
 
 function hsc.bitwise_and(a, b)
-    return a & b
+    -- return a & b
 end
 
 function hsc.bitwise_or(a, b)
-    return a | b
+    -- return a | b
 end
 
 function hsc.bitwise_xor(a, b)
-    return a ~ b
+    -- return a ~ b
 end
 
 function hsc.bitwise_left_shift(value, shift)
-    return value << shift
+    -- return value << shift
 end
 
 function hsc.bitwise_right_shift(value, shift)
-    return value >> shift
+    -- return value >> shift
 end
 
 function hsc.bit_test(value, bit)
-    --return (value & (1 << bit)) ~= 0
-    return luna.bit((value & (1 << bit)) ~= 0)
+    -- return (value & (1 << bit)) ~= 0
+    -- return luna.bit((value & (1 << bit)) ~= 0)
 end
 
 function hsc.bit_toggle(value, bit, state)
     if state then
-        return value | (1 << bit)
+        -- return value | (1 << bit)
     else
-        return value & ~(1 << bit)
+        -- return value & ~(1 << bit)
     end
 end
 
 function hsc.bitwise_flags_toggle(value, flags, state)
     if state then
-        return value | flags
+        -- return value | flags
     else
-        return value & ~flags
+        -- return value & ~flags
     end
 end
 
@@ -227,7 +279,7 @@ end
 
 function hsc.log_print(message)
     -- Assuming `logger` is available in the environment
-    logger:info(tostring(message))
+    Balltze.logger.info(tostring(message))
 end
 
 function hsc.list_count_not_dead(object_list)
@@ -245,16 +297,16 @@ end
 
 function hsc.objects_distance_to_object(object_list, object)
     local objectCount = hsc.list_count(object_list)
-    --local distances = {}
-    --for i = 0, objectCount - 1 do
+    -- local distances = {}
+    -- for i = 0, objectCount - 1 do
     --    local otherObject = hsc.list_get(object_list, i)
     --    if otherObject ~= object then
     --        --local distance = hsc.unit_distance(hsc.unit(object), hsc.unit(otherObject))
     --        table.insert(distances, distance)
     --    end
-    --end
-    --return distances
-    logger:debug("objects_distance_to_object not implemented")
+    -- end
+    -- return distances
+    Balltze.logger.debug("objects_distance_to_object not implemented")
     return 0
 end
 
@@ -264,18 +316,18 @@ function hsc.objects_distance_to_flag(object_list, cutscene_flag)
 end
 
 function hsc.physics_constants_reset()
-    -- unimplemented
-    error("physics_constants_reset not implemented")
+    blam2.restoreGlobalGravity()
 end
 
 function hsc.physics_set_gravity(value)
-    -- unimplemented
-    error("physics_set_gravity not implemented")
+    blam2.restoreGlobalGravity()
+    local currentGravity = blam2.globalGravity()
+    local newGravity = currentGravity * value
+    blam2.globalGravity(newGravity)
 end
 
 function hsc.physics_get_gravity()
-    -- unimplemented
-    error("physics_get_gravity not implemented")
+    return blam2.globalGravity()
 end
 
 function hsc.debug_camera_save_name(name)
@@ -303,6 +355,138 @@ function hsc.debug_camera_load_text(text)
     error("debug_camera_load_text not implemented")
 end
 
+function hsc.unit_enter_vehicle(...)
+    local params = {...}
+    if engine.game.getGameConnectionType() == "networkServer" then
+        local unitName = params[1]
+        local unitIsPlayer = unitName:includes("player")
+        if unitIsPlayer then
+            -- Attempt to find anything that looks like a number
+            local playerIndex = tointeger(unitName:match("(%d+)"))
+            if not playerIndex then
+                Balltze.logger.error("Failed to parse player index from unit name: {}", unitName)
+                return
+            end
+            playerIndex = playerIndex + 1 -- Convert to 1-based index
+
+            local objectName = params[2]
+            local targetSeatName = params[3]
+            --Balltze.logger.debug("unit_enter_vehicle( playerIndex: {}, objectName: {}, targetSeatName: {})", playerIndex, objectName, targetSeatName)
+            -- Attempt to find the vehicle object id by name
+            local scenario = blam.scenario(0)
+            assert(scenario, "Scenario not found")
+            for objectId in pairs(blam.getObjects()) do
+                local object = blam.getObject(objectId)
+                if object and object.class == blam.objectClasses.vehicle then
+                    if not blam.isNull(object.nameIndex) then
+                        local objectScenarioName = scenario.objectNames[object.nameIndex + 1]
+                        if objectScenarioName == objectName then
+                            Balltze.logger.warning("Found vehicle object id {} for name {}",
+                                                   objectId, objectName)
+                            local seatIndex = 0
+                            local vehicleTag = blam2.getTagEntry(object.tagId,
+                                                                 blam2.tag.groups.vehicle)
+                            assert(vehicleTag,
+                                   "Vehicle tag not found for object id " .. tostring(objectId))
+                            local vehicle = vehicleTag.data --[[@as MetaEngineTagDataVehicle]]
+                            for i = 1, #vehicle.seats do
+                                local seat = vehicle.seats[i]
+                                if seat.label.string:lower() == targetSeatName:lower() then
+                                    seatIndex = i - 1 -- Convert to 0-based index
+                                    break
+                                end
+                            end
+                            Balltze.logger.debug(
+                                "Player {} will enter vehicle {} on seat {}", playerIndex,
+                                objectId, seatIndex)
+                            enter_vehicle(objectId, playerIndex, seatIndex)
+                            return
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    -- Invoke the original HSC function
+    return native("unit_enter_vehicle", ...)
+end
+
+function hsc.activate_team_nav_point_flag(navpoint, team, cutscene_flag, real)
+    if engine.game.getGameConnectionType() ~= "local" then
+        -- Workaround for navpoints not working as expected in multiplayer due to team indexes
+        if team and team:lower() == "player" then
+            local playerCount = hsc.list_count(hsc.players())
+            for i = 0, playerCount - 1 do
+                local player = hsc.unit(hsc.list_get(hsc.players(), i))
+                -- Activate nav point flag for each player unit
+                native("activate_nav_point_flag", navpoint, player, cutscene_flag, real)
+            end
+            return
+        end
+    end
+    return native("activate_team_nav_point_flag", navpoint, team, cutscene_flag, real)
+end
+
+function hsc.deactivate_team_nav_point_flag(team, cutscene_flag)
+    if engine.game.getGameConnectionType() ~= "local" then
+        -- Workaround for navpoints not working as expected in multiplayer due to team indexes
+        if team and team:lower() == "player" then
+            local playerCount = hsc.list_count(hsc.players())
+            for i = 0, playerCount - 1 do
+                local player = hsc.unit(hsc.list_get(hsc.players(), i))
+                -- Deactivate nav point flag for each player unit
+                native("deactivate_nav_point_flag", player, cutscene_flag)
+            end
+            return
+        end
+    end
+    return native("deactivate_team_nav_point_flag", team, cutscene_flag)
+end
+
+function hsc.activate_team_nav_point_object(navpoint, team, object, real)
+    if engine.game.getGameConnectionType() ~= "local" then
+        -- Workaround for navpoints not working as expected in multiplayer due to team indexes
+        if team and team:lower() == "player" then
+            local playerCount = hsc.list_count(hsc.players())
+            for i = 0, playerCount - 1 do
+                local player = hsc.unit(hsc.list_get(hsc.players(), i))
+                -- Activate nav point for each player unit
+                native("activate_nav_point_object", navpoint, player, object, real)
+            end
+            return
+        end
+    end
+    return native("activate_team_nav_point_object", navpoint, team, object, real)
+end
+
+function hsc.deactivate_team_nav_point_object(team, object)
+    if engine.game.getGameConnectionType() ~= "local" then
+        -- Workaround for navpoints not working as expected in multiplayer due to team indexes
+        if team and team:lower() == "player" then
+            local playerCount = hsc.list_count(hsc.players())
+            for i = 0, playerCount - 1 do
+                local player = hsc.unit(hsc.list_get(hsc.players(), i))
+                -- Deactivate nav point for each player unit
+                native("deactivate_nav_point_object", player, object)
+            end
+            return
+        end
+    end
+    return native("deactivate_team_nav_point_object", team, object)
+end
+
+function hsc.display_scenario_help(index)
+    -- TODO Reimplement scenario help display in Lua to support custom maps and display given string
+    --if getServerType() ~= "sapp" then
+    --    local mapHeader = engine.cacheFile.getLoadedCacheFileHeader()
+    --    local mapName = mapHeader and mapHeader.name or ""
+    --    Balltze.logger.debug("Displaying scenario help for map {} at index {}", mapName, index)
+    --    
+    --    return engine.uiWidget.launchWidget
+    --end
+end
+
 -- Bind existing in game HSC functions to Lua
 setmetatable(hsc, {
     __index = function(_, key)
@@ -311,7 +495,8 @@ setmetatable(hsc, {
         end)
         if hscFunction then
             if not hscFunction.isNative then
-                logger:error("Function " .. key .. " is not native, needs to be reimplemented from Lua")
+                Balltze.logger.error("Function " .. key ..
+                                         " is not native, needs to be reimplemented from Lua")
                 return function()
                 end
             end
@@ -321,8 +506,10 @@ setmetatable(hsc, {
                 returnType == "real" then
                 return function(...)
                     local args = getScriptArgs({...})
-                    local functionInvokation = getFunctionInvokation(hscFunction, args)
-                    setVariable(cacheHscGlobals[returnType], functionInvokation)
+                    local functionInvocation = getFunctionInvocation(hscFunction, args)
+                    local variableAssignment = getSetVariableInvocation(cacheHscGlobals[returnType],
+                                                                        functionInvocation)
+                    executeScript(variableAssignment, hscFunction.funcName, args)
                     local result = getVariable(cacheHscGlobals[returnType])
                     if returnType == "boolean" then
                         result = luna.bool(result)
@@ -333,21 +520,21 @@ setmetatable(hsc, {
             elseif returnType ~= "void" then
                 return function(...)
                     local args = getScriptArgs({...})
-                    local functionInvokation = getFunctionInvokation(hscFunction, args)
-                    return "(" .. functionInvokation .. ")"
+                    local functionInvocation = getFunctionInvocation(hscFunction, args)
+                    return "(" .. functionInvocation .. ")"
                 end
             else
                 return function(...)
                     local args = getScriptArgs({...})
-                    local functionInvokation = getFunctionInvokation(hscFunction, args)
-                    --logger:debug("Executing: {}", functionInvokation)
+                    local functionInvokation = getFunctionInvocation(hscFunction, args)
+                    -- Balltze.logger.debug("Executing: {}", functionInvokation)
                     executeScript(functionInvokation, hscFunction.funcName, args)
                 end
             end
         else
-            logger:error("Function " .. key .. " not found in HSC documentation")
-            return function ()
-                
+            Balltze.logger.error("Function " .. key .. " not found in HSC documentation")
+            return function()
+
             end
         end
     end

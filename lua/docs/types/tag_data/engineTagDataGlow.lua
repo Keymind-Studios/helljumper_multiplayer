@@ -1,46 +1,46 @@
----@class EngineTagGlowBoundaryEffectEnum : Enum 
+---@class EngineTagDataGlowBoundaryEffectEnum : Enum 
 
----@class EngineTagGlowBoundaryEffectBounce : EngineTagGlowBoundaryEffectEnum 
----@class EngineTagGlowBoundaryEffectWrap : EngineTagGlowBoundaryEffectEnum 
+---@class EngineTagDataGlowBoundaryEffectBounce : EngineTagDataGlowBoundaryEffectEnum 
+---@class EngineTagDataGlowBoundaryEffectWrap : EngineTagDataGlowBoundaryEffectEnum 
 
----@alias EngineTagGlowBoundaryEffect 
----| EngineTagGlowBoundaryEffectBounce
----| EngineTagGlowBoundaryEffectWrap
+---@alias EngineTagDataGlowBoundaryEffect 
+---| EngineTagDataGlowBoundaryEffectBounce
+---| EngineTagDataGlowBoundaryEffectWrap
 
----@class EngineTagGlowBoundaryEffectTable 
----@field tBounce EngineTagGlowBoundaryEffectBounce
----@field tWrap EngineTagGlowBoundaryEffectWrap
+---@class EngineTagDataGlowBoundaryEffectTable 
+---@field tBounce EngineTagDataGlowBoundaryEffectBounce
+---@field tWrap EngineTagDataGlowBoundaryEffectWrap
 Engine.tag.glowBoundaryEffect = {} 
 
----@class EngineTagGlowNormalParticleDistributionEnum : Enum 
+---@class EngineTagDataGlowNormalParticleDistributionEnum : Enum 
 
----@class EngineTagGlowNormalParticleDistributionDistributedRandomly : EngineTagGlowNormalParticleDistributionEnum 
----@class EngineTagGlowNormalParticleDistributionDistributedUniformly : EngineTagGlowNormalParticleDistributionEnum 
+---@class EngineTagDataGlowNormalParticleDistributionDistributedRandomly : EngineTagDataGlowNormalParticleDistributionEnum 
+---@class EngineTagDataGlowNormalParticleDistributionDistributedUniformly : EngineTagDataGlowNormalParticleDistributionEnum 
 
----@alias EngineTagGlowNormalParticleDistribution 
----| EngineTagGlowNormalParticleDistributionDistributedRandomly
----| EngineTagGlowNormalParticleDistributionDistributedUniformly
+---@alias EngineTagDataGlowNormalParticleDistribution 
+---| EngineTagDataGlowNormalParticleDistributionDistributedRandomly
+---| EngineTagDataGlowNormalParticleDistributionDistributedUniformly
 
----@class EngineTagGlowNormalParticleDistributionTable 
----@field onDistributedRandomly EngineTagGlowNormalParticleDistributionDistributedRandomly
----@field onDistributedUniformly EngineTagGlowNormalParticleDistributionDistributedUniformly
+---@class EngineTagDataGlowNormalParticleDistributionTable 
+---@field onDistributedRandomly EngineTagDataGlowNormalParticleDistributionDistributedRandomly
+---@field onDistributedUniformly EngineTagDataGlowNormalParticleDistributionDistributedUniformly
 Engine.tag.glowNormalParticleDistribution = {} 
 
----@class EngineTagGlowTrailingParticleDistributionEnum : Enum 
+---@class EngineTagDataGlowTrailingParticleDistributionEnum : Enum 
 
----@class EngineTagGlowTrailingParticleDistributionEmitVertically : EngineTagGlowTrailingParticleDistributionEnum 
----@class EngineTagGlowTrailingParticleDistributionEmitNormalUp : EngineTagGlowTrailingParticleDistributionEnum 
----@class EngineTagGlowTrailingParticleDistributionEmitRandomly : EngineTagGlowTrailingParticleDistributionEnum 
+---@class EngineTagDataGlowTrailingParticleDistributionEmitVertically : EngineTagDataGlowTrailingParticleDistributionEnum 
+---@class EngineTagDataGlowTrailingParticleDistributionEmitNormalUp : EngineTagDataGlowTrailingParticleDistributionEnum 
+---@class EngineTagDataGlowTrailingParticleDistributionEmitRandomly : EngineTagDataGlowTrailingParticleDistributionEnum 
 
----@alias EngineTagGlowTrailingParticleDistribution 
----| EngineTagGlowTrailingParticleDistributionEmitVertically
----| EngineTagGlowTrailingParticleDistributionEmitNormalUp
----| EngineTagGlowTrailingParticleDistributionEmitRandomly
+---@alias EngineTagDataGlowTrailingParticleDistribution 
+---| EngineTagDataGlowTrailingParticleDistributionEmitVertically
+---| EngineTagDataGlowTrailingParticleDistributionEmitNormalUp
+---| EngineTagDataGlowTrailingParticleDistributionEmitRandomly
 
----@class EngineTagGlowTrailingParticleDistributionTable 
----@field onEmitVertically EngineTagGlowTrailingParticleDistributionEmitVertically
----@field onEmitNormalUp EngineTagGlowTrailingParticleDistributionEmitNormalUp
----@field onEmitRandomly EngineTagGlowTrailingParticleDistributionEmitRandomly
+---@class EngineTagDataGlowTrailingParticleDistributionTable 
+---@field onEmitVertically EngineTagDataGlowTrailingParticleDistributionEmitVertically
+---@field onEmitNormalUp EngineTagDataGlowTrailingParticleDistributionEmitNormalUp
+---@field onEmitRandomly EngineTagDataGlowTrailingParticleDistributionEmitRandomly
 Engine.tag.glowTrailingParticleDistribution = {} 
 
 ---@class MetaEngineTagDataGlowFlags 
