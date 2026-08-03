@@ -29,6 +29,13 @@ objectPaths.weapons = {
     skewer_weap = "keymind\\helljumper\\objects\\weapons\\support_high\\skewer\\skewer"
 }
 
+objectPaths.weaponHudInterface = {
+    ma38_hud = "keymind\\helljumper\\objects\\weapons\\rifle\\assault_rifle\\assault_rifle_ma38",
+    ma38ADS_hud = "keymind\\helljumper\\objects\\weapons\\rifle\\assault_rifle\\assault_rifle_ma38_ads",
+    ma38ADS_mask_hud = "keymind\\helljumper\\objects\\weapons\\rifle\\assault_rifle\\assault_rifle_ma38_ads_mask"
+
+}
+
 objectPaths.deviceControl = {
     ap_726_ammo_150 = "keymind\\helljumper\\objects\\devices\\ammo_crates\\ap_726_ammo_150", -- Armor Piercing Ammo = 150 rounds
     ex_726_ammo_150 = "keymind\\helljumper\\objects\\devices\\ammo_crates\\ex_726_ammo_150", -- Explosive Ammo = 150 rounds
