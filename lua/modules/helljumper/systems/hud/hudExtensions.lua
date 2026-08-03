@@ -1,12 +1,23 @@
 -- Lua libraries
 local engine = Engine
 local balltze = Balltze
-local objectTypes = Engine.tag.objectType
-local getObject = Engine.gameState.getObject
-local getPlayer = Engine.gameState.getPlayer
-local playSound = engine.userInterface.playSound
+local getObject = Engine.object.getObject
+local getPlayer = Engine.player.getPlayer
+local hsc = require "hsc"
 local sounds = require "helljumper.systems.constants.sounds"
 
+-- v2 removed Engine.userInterface.playSound, so play these through HSC like the rest of the
+-- project does. The project wide command attaches the sound to a player with
+-- (list_get (players) n), but v2's Player carries no players list index, and "none" suits
+-- these UI sounds better anyway: it plays them non positionally, for this client only.
+local playSoundCommand = [[(begin (sound_impulse_start "%s" none %s))]]
+
+local function playSound(tagPath, gain)
+    if not tagPath then
+        return
+    end
+    execute_script(playSoundCommand:format(tagPath, gain or 1.0))
+end
 
 local hudExtensions = {state = {playerCriticalHealth = false}}
 
@@ -16,7 +27,7 @@ function hudExtensions.radarHideOnZoom()
     if not player then
         return
     end
-    local biped = getObject(player.objectHandle, objectTypes.biped)
+    local biped = getObject(player.unitHandle, "biped")
     if not biped then
         return
     end
@@ -35,22 +46,22 @@ function hudExtensions.changeGrenadeSound()
     if not player then
         return
     end
-    local biped = getObject(player.objectHandle, objectTypes.biped)
+    local biped = getObject(player.unitHandle, "biped")
     if not biped then
         return
     end
-    local isPlayerOnMenu = engine.userInterface.getRootWidget() == nil
-    if not isPlayerOnMenu then
+    local isPlayerOnMenu = engine.uiWidget.getActiveWidget() ~= nil
+    if isPlayerOnMenu then
         return
     end
     local currentGrenadeType = biped.currentGrenadeIndex
     if lastGrenadeType ~= currentGrenadeType then
         lastGrenadeType = currentGrenadeType
-        logger:debug("Grenade Type:  {}  ", currentGrenadeType)
+        balltze.logger.debug("Grenade Type:  {}  ", currentGrenadeType)
         if currentGrenadeType == 0 then
-            playSound(sounds.soundTag.uiGrenadeFrag.handle)
+            playSound(sounds.soundTag.uiGrenadeFrag and sounds.soundTag.uiGrenadeFrag.path)
         elseif currentGrenadeType == 1 then
-            playSound(sounds.soundTag.uiGrenadePlasma.handle)
+            playSound(sounds.soundTag.uiGrenadePlasma and sounds.soundTag.uiGrenadePlasma.path)
         end
     end
 end
@@ -58,9 +69,13 @@ end
 
 -- Blur HUD vision on critical health
 function hudExtensions.hudBlurOnLowHealth()
-    local player = blam.biped(get_dynamic_player())
-    if player then
-        if player.health <= 0.25 and player.shield <= 0 and blam.isNull(player.vehicleObjectId) then
+    local player = getPlayer()
+    local biped = player and getObject(player.unitHandle, "biped")
+    if biped then
+        -- A biped riding a vehicle is parented to it, which is what the old vehicleObjectId
+        -- null check was really asking.
+        local isOnVehicle = not biped.parentObject:isNull()
+        if biped.vitals.health <= 0.25 and biped.vitals.shield <= 0 and not isOnVehicle then
             if not hudExtensions.state.playerCriticalHealth then
                 hudExtensions.state.playerCriticalHealth = true
                 hudExtensions.hudBlur(true)
@@ -69,43 +84,13 @@ function hudExtensions.hudBlurOnLowHealth()
             if hudExtensions.state.playerCriticalHealth then
                 hudExtensions.hudBlur(false)
             end
-                hudExtensions.state.playerCriticalHealth = false
-            end
+            hudExtensions.state.playerCriticalHealth = false
+        end
     elseif hudExtensions.state.playerCriticalHealth then
         hudExtensions.hudBlur(false, true)
         hudExtensions.state.playerCriticalHealth = false
     end
 end
-
---Balltze migration HUD blur doesn't work
---function hudExtensions.hudBlurOnLowHealth()
---    local player = getPlayer()
---    if not player then
---        return
---    end
---    local biped = getObject(player.objectHandle, objectTypes.biped)
---    if not biped then
---        return
---    end
---    local lowHealth = biped.vitals.health
---    local noShield = biped.vitals.shield
---    --local isOnVehicle = biped.vehicleSeatId == nil
---    if lowHealth <= 0.4 and noShield <= 0 then
---        if not hudExtensions.state.playerCriticalHealth then
---            hudExtensions.state.playerCriticalHealth = true
---            hudExtensions.hudBlur(true)
---        end
---    else
---        if hudExtensions.state.playerCriticalHealth then
---            hudExtensions.hudBlur(false)
---        end
---        hudExtensions.state.playerCriticalHealth = false
---    end
---    if hudExtensions.state.playerCriticalHealth then
---        hudExtensions.hudBlur(false, true)
---        hudExtensions.state.playerCriticalHealth = false
---    end
---end
 
 --- HUD Blur
 ---@param enableBlur boolean
