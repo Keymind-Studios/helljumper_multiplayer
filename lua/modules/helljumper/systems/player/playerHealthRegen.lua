@@ -1,12 +1,14 @@
 -- Lua libraries
 local engine = Engine
-local getObject = Engine.gameState.getObject
-local getPlayer = Engine.gameState.getPlayer
+local getObject = Engine.object.getObject
+local getPlayer = Engine.player.getPlayer
 
 local playerHealthRegen = {}
 
+-- v1 asked netgame for the server type and accepted "local" or "none", meaning "anything
+-- that is not a dedicated server". v2 folds both of those into the "local" connection type.
 local isGameClient = function()
-    return engine.netgame.getServerType() == "local" or engine.netgame.getServerType() == "none"
+    return engine.game.getGameConnectionType() == "local"
 end
 
 local maxHealth = 1
@@ -18,7 +20,7 @@ function playerHealthRegen.healthRegen()
         if not player then
             return
         end
-        local biped = getObject(player.objectHandle, engine.tag.objectType.biped)
+        local biped = getObject(player.unitHandle, "biped")
         if not biped then
             return
         end
