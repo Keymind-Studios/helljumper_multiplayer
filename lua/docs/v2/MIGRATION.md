@@ -171,7 +171,8 @@ end)
 | `mapLoad` (`.time == "before"`) | `map_load` | context: `:getMapName()` (was `context.mapName()`, a function you had to call — v2's is a proper method) |
 | `mapLoad` (`.time == "after"`) / `mapFileLoad` | `map_loaded` | new dedicated "finished loading" event; v1 conflated this into the same `mapLoad` handler via `.time` |
 | `gameInput`/`keyboardInput` | `player_input` | unified into one event for keyboard, mouse, **and** gamepad; context has `:getDevice()`, `:getKeyCode()`, `:getMouseButton()`, `:getGamepadButton()`, `:isMapped()`, `:cancel()` |
-| `uiWidgetCreate`/`uiWidgetBack`/`uiWidgetFocus`/`uiWidgetAccept`/`uiWidgetSound`/`uiWidgetListTab` | `widget_event_dispatch` | v1's six separate widget-interaction events are unified into one `widget_event_dispatch` event in v2; the context (`:getWidget()`, `:getEventRecord()`, `:getEventHandler()`) carries enough information to distinguish what kind of interaction occurred, but you'll need to inspect it yourself rather than getting a differently-named event per interaction type |
+| `uiWidgetCreate` | `widget_loaded` | fires once per widget, after it has been fully created; context is just `:getWidget()`, and it is a notification, so there is no `:cancel()` |
+| `uiWidgetBack`/`uiWidgetFocus`/`uiWidgetAccept`/`uiWidgetSound`/`uiWidgetListTab` | `widget_event_dispatch` | v1's five separate widget-interaction events are unified into one `widget_event_dispatch` event in v2; the context (`:getWidget()`, `:getEventRecord()`, `:getEventHandler()`) carries enough information to distinguish what kind of interaction occurred, but you'll need to inspect it yourself rather than getting a differently-named event per interaction type |
 | `frame` | `frame` | unchanged, no context |
 | — | `frame_begin`, `frame_end`, `tick` | new in v2 (`frame_begin`/`frame_end` didn't exist as separate events in v1; v1's `tick` event existed but is now confirmed genuinely context-less in both versions) |
 | `camera`, `hudHoldForActionMessage`, `networkGameChatMessage`, `objectDamage`, `rconMessage`, `uiRender`, `hudRender`, `postCarnageReportRender`, `hudElementBitmapRender`, `uiWidgetBackgroundRender`, `navpointsRender`, `serverConnect`, `soundPlayback`, `uiWidgetMouseButtonPress` | *(none)* | **no v2 equivalent currently** — if your plugin depends on any of these, there's no direct port available yet |
@@ -221,13 +222,16 @@ objects you spawned may already be gone by unload time regardless.
 
 These have no v1 counterpart at all — nothing to migrate away from, just new capabilities:
 
-- **`Engine.hud.addText(text, x, y, color?) -> HudText`** — adds a persistent on-screen text
+- **`Engine.hud.addText(text, x, y, options?) -> HudText`** — adds a persistent on-screen text
   overlay. Unlike v1's `hudRender`-style approach (or v2's own `frame` event), you do not draw
   it yourself every frame: call `addText` once and it stays on screen, automatically drawn for
   every active local player's HUD (including each split-screen pane), until you call
   `HudText:remove()` or the owning plugin is unloaded. Use `HudText:setText(text)` to update
-  the displayed string in place. There is currently no way to change the position, color, or
-  font of an existing `HudText` short of removing it and adding a new one.
+  the displayed string in place. `options` takes `color`, `font` (a font tag handle), `style`,
+  `justification`, `anchor`, `layer` and raw `flags`, all fixed at creation time. `layer`
+  chooses the drawing pass: `"hud"` (default) is the per-player HUD pass described above, while
+  `"ui"` draws once per frame in full screen space on top of the whole interface, so the text
+  stays visible in menus and while the HUD is hidden.
 - **`Engine.game.getGameConnectionType() -> GameConnectionType|nil`** — this machine's role in
   the current game session: `"local"` (single-player or non-networked), `"networkClient"`,
   `"networkServer"`, or `"filmPlayback"`.

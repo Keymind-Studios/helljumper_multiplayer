@@ -180,7 +180,7 @@ function Engine.tag.filterTags(group, pathFilter) end
 
 -- Import a tag (and its whole dependency tree) from another map into the currently loaded
 -- map's live tag table. The imported tag and every dependency are fully self-contained
--- copies — not references back into the source map. If a tag with the same path and group
+-- copies, not references back into the source map. If a tag with the same path and group
 -- already exists in the destination, it's reused instead of imported again. Errors if no map
 -- is loaded; returns nil if the source map or tag couldn't be found/imported.
 ---@param mapName string @name of the source map, without extension (e.g. "bloodgulch")
@@ -356,15 +356,23 @@ function HudText:setText(text) end
 -- Stop drawing this text. Calling this a second time is an error.
 function HudText:remove() end
 
--- Add a persistent text overlay to the HUD. It is redrawn automatically every frame for as
--- long as it exists — no need to draw it yourself from a "frame" (or any other) event
--- listener. It draws for every active local player's HUD (i.e. every split-screen pane), at
--- the same position relative to each pane. It's automatically taken down if the plugin that
--- created it is unloaded (e.g. on a map change for a map-scoped plugin) without having called
--- HudText:remove() itself.
+-- Options are fixed at creation time; to change one, remove the text and add a new one.
+---@class HudTextOptions
+---@field color? {a: number, r: number, g: number, b: number} @0-1 per channel; default opaque white
+---@field font? TagHandle @default: the globals terminal font
+---@field style? "plain"|"bold"|"italic"|"condense"|"underline" @default: "plain"
+---@field justification? "left"|"right"|"center" @default: the anchor's edge
+---@field anchor? "topLeft"|"topRight"|"bottomLeft"|"bottomRight"|"center" @default: "topLeft"
+---@field layer? "hud"|"ui" @default: "hud"; "ui" draws over menus, in full screen space
+---@field flags? integer @raw TextDrawGlobals flags
+
+-- Add a text overlay, redrawn every frame until it's removed or the plugin is unloaded. On the
+-- "hud" layer it draws on every local player's HUD pane (once per split-screen pane, not in
+-- menus); on the "ui" layer it draws once per frame over the whole interface, menus included.
+-- Text longer than the pane is clipped, not wrapped.
 ---@param text string
----@param x integer @pixels from the left edge of the HUD viewport
----@param y integer @pixels from the top edge of the HUD viewport
----@param color? {a: number, r: number, g: number, b: number} @0-1 per channel; defaults to opaque white
+---@param x integer @pixels inward from the anchored corner
+---@param y integer @pixels inward from the anchored corner
+---@param options? HudTextOptions
 ---@return HudText
-function Engine.hud.addText(text, x, y, color) end
+function Engine.hud.addText(text, x, y, options) end

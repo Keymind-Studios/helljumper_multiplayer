@@ -50,7 +50,7 @@ function BalltzeConfig:getBoolean(key) end
 ---@param value integer|number|string|boolean
 function BalltzeConfig:set(key, value) end
 
--- Open (or create) a JSON configuration file. `path` is a raw filesystem path — it is NOT
+-- Open (or create) a JSON configuration file. `path` is a raw filesystem path, it is NOT
 -- sandboxed to the plugin's own directory the way Balltze.filesystem is, so build an absolute
 -- path yourself (e.g. via Balltze.filesystem.getPluginPath()) if you want it scoped there.
 ---@param path string
@@ -117,6 +117,7 @@ function Balltze.loadSettings() end
 ---@overload fun(eventName: "map_load", callbackFunction: fun(event: MapLoadEvent), priority?: EventListenerPriority): EventListener
 ---@overload fun(eventName: "map_loaded", callbackFunction: fun(event: MapLoadedEvent), priority?: EventListenerPriority): EventListener
 ---@overload fun(eventName: "player_input", callbackFunction: fun(event: PlayerInputEvent), priority?: EventListenerPriority): EventListener
+---@overload fun(eventName: "widget_loaded", callbackFunction: fun(event: WidgetLoadedEvent), priority?: EventListenerPriority): EventListener
 ---@overload fun(eventName: "widget_event_dispatch", callbackFunction: fun(event: WidgetEventDispatchEvent), priority?: EventListenerPriority): EventListener
 function Balltze.addEventListener(eventName, callbackFunction, priority) end
 
@@ -262,7 +263,7 @@ function Balltze.logger.muteDebug(setting) end
 
 Balltze.memory = {}
 
--- Every Balltze.memory function is a raw, unchecked pointer dereference at `address` — an
+-- Every Balltze.memory function is a raw, unchecked pointer dereference at `address`, an
 -- invalid address crashes the process. There is no bounds checking.
 
 ---@param address integer
