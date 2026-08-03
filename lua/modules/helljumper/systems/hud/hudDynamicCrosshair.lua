@@ -1,7 +1,6 @@
-local engine = Engine
 local balltze = Balltze
-local objectTypes = Engine.tag.objectType
-local getPlayer = Engine.gameState.getPlayer
+local getObject = Engine.object.getObject
+local getPlayer = Engine.player.getPlayer
 local path = require "helljumper.systems.constants.objectPaths"
 local weapons = require "helljumper.systems.constants.weapons"
 --local blam = require "blam"
@@ -20,16 +19,14 @@ local ceil = math.ceil
 local crossHairAnimations = {
 
     -- AssaultRifleMA38
-    ---@param weaponHudTag MetaEngineTag|MetaEngineWeaponHudInterfaceTag
-    ---@param weaponObject MetaEngineBaseObject|MetaEngineWeaponObject
+    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.ma38_weap] = function(weaponHudTag, weaponObject, crosshairIndex)
+    [path.weapons.ma38_weap] = function(crosshair, weaponObject, crosshairIndex)
         local reticleInitial = 4
         local reticleAdditional = 16
         local dotReticleInitial = 0.08
         local dotReticleAdditional = 0
-        local crosshair =
-            weaponHudTag.data.crosshairs.elements[1].crosshairOverlays.elements[crosshairIndex]
         local animTimer = weaponObject.readyTicks + weaponObject.magazines[1].reloadTicksRemaining
         if animTimer > 20 then
             animTimer = 20
@@ -52,16 +49,14 @@ local crossHairAnimations = {
     end,
 
     -- LmgSaw
-    ---@param weaponHudTag MetaEngineTag|MetaEngineWeaponHudInterfaceTag
-    ---@param weaponObject MetaEngineBaseObject|MetaEngineWeaponObject
+    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.saw_weap] = function(weaponHudTag, weaponObject, crosshairIndex)
+    [path.weapons.saw_weap] = function(crosshair, weaponObject, crosshairIndex)
         local reticleInitial = 4
         local reticleAdditional = 16
         local dotReticleInitial = 0.08
         local dotReticleAdditional = 0
-        local crosshair =
-            weaponHudTag.data.crosshairs.elements[1].crosshairOverlays.elements[crosshairIndex]
         local animTimer = weaponObject.readyTicks + weaponObject.magazines[1].reloadTicksRemaining
         if animTimer > 20 then
             animTimer = 20
@@ -84,16 +79,14 @@ local crossHairAnimations = {
     end,
 
     -- Needler
-    ---@param weaponHudTag MetaEngineTag|MetaEngineWeaponHudInterfaceTag
-    ---@param weaponObject MetaEngineBaseObject|MetaEngineWeaponObject
+    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.needler_weap] = function(weaponHudTag, weaponObject, crosshairIndex)
+    [path.weapons.needler_weap] = function(crosshair, weaponObject, crosshairIndex)
         local reticleInitial = 12
         local reticleAdditional = 15
         local dotReticleInitial = 0.08
         local dotReticleAdditional = 0
-        local crosshair =
-            weaponHudTag.data.crosshairs.elements[1].crosshairOverlays.elements[crosshairIndex]
         local animTimer = weaponObject.readyTicks + weaponObject.magazines[1].reloadTicksRemaining
         if animTimer > 20 then
             animTimer = 20
@@ -112,17 +105,15 @@ local crossHairAnimations = {
     end,
 
     -- Disruptor
-    ---@param weaponHudTag MetaEngineTag|MetaEngineWeaponHudInterfaceTag
-    ---@param weaponObject MetaEngineBaseObject|MetaEngineWeaponObject
+    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.zapper_weap] = function(weaponHudTag, weaponObject, crosshairIndex)
+    [path.weapons.zapper_weap] = function(crosshair, weaponObject, crosshairIndex)
         local reticleInitialPos = 0
         local reticleAdditionalPos = 1.5
         local reticleScaleInitial = 0.22
         local reticleScaleAdditional = 0.26
         local reticleScaleZero = 0
-        local crosshair =
-            weaponHudTag.data.crosshairs.elements[1].crosshairOverlays.elements[crosshairIndex]
         local animTimerA = weaponObject.readyTicks * 2 +
                                weaponObject.magazines[1].reloadTicksRemaining * 2
         if animTimerA > 20 then
@@ -152,16 +143,14 @@ local crossHairAnimations = {
     end,
 
     -- BattleRifle65H
-    ---@param weaponHudTag MetaEngineTag|MetaEngineWeaponHudInterfaceTag
-    ---@param weaponObject MetaEngineBaseObject|MetaEngineWeaponObject
+    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.br65h_weap] = function(weaponHudTag, weaponObject, crosshairIndex)
+    [path.weapons.br65h_weap] = function(crosshair, weaponObject, crosshairIndex)
         local zoomMaskInitial = 3
         local zoomMaskAdditional = 0.22
         local zoomInitial = 0.21
         local zoomAdditional = 0.018
-        local crosshair =
-            weaponHudTag.data.crosshairs.elements[1].crosshairOverlays.elements[crosshairIndex]
         local heat = weaponObject.heat
         local scaleMask = zoomMaskInitial + heat * zoomMaskAdditional
         local scaleZoom = zoomInitial + heat * zoomAdditional
@@ -175,10 +164,10 @@ local crossHairAnimations = {
     end,
 
     -- DMR392
-    ---@param weaponHudTag MetaEngineTag|MetaEngineWeaponHudInterfaceTag
-    ---@param weaponObject MetaEngineBaseObject|MetaEngineWeaponObject
+    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.dmr_weap] = function(weaponHudTag, weaponObject, crosshairIndex)
+    [path.weapons.dmr_weap] = function(crosshair, weaponObject, crosshairIndex)
         local reticleAddPos = 3
         local reticleScaleInitial = 0.15
         local reticleScaleAdditional = 0.1
@@ -186,8 +175,6 @@ local crossHairAnimations = {
         local zoomMaskAdditional = 0.06
         local zoomInitial = 0.5
         local zoomAdditional = 0.06
-        local crosshair =
-            weaponHudTag.data.crosshairs.elements[1].crosshairOverlays.elements[crosshairIndex]
         local heat = weaponObject.heat
         local scaleMask = zoomMaskInitial + heat * zoomMaskAdditional
         local scaleZoom = zoomInitial + heat * zoomAdditional
@@ -210,14 +197,12 @@ local crossHairAnimations = {
     end,
 
     -- ShotgunM90
-    ---@param weaponHudTag MetaEngineTag|MetaEngineWeaponHudInterfaceTag
-    ---@param weaponObject MetaEngineBaseObject|MetaEngineWeaponObject
+    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.m90_weap] = function(weaponHudTag, weaponObject, crosshairIndex)
+    [path.weapons.m90_weap] = function(crosshair, weaponObject, crosshairIndex)
         local reticleScaleInitial = 0.23
         local reticleScaleAdditional = 0.07
-        local crosshair =
-            weaponHudTag.data.crosshairs.elements[1].crosshairOverlays.elements[crosshairIndex]
         local readyTime = weaponObject.readyTicks
         if readyTime > 10 then
             readyTime = 6
@@ -234,19 +219,17 @@ local crossHairAnimations = {
         end
     end,
 
-    ---@class MagnumM6S
-    ---@param weaponHudTag MetaEngineTag|MetaEngineWeaponHudInterfaceTag
-    ---@param weaponObject MetaEngineBaseObject|MetaEngineWeaponObject
+    -- MagnumM6S
+    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.m6s_weap] = function(weaponHudTag, weaponObject, crosshairIndex)
+    [path.weapons.m6s_weap] = function(crosshair, weaponObject, crosshairIndex)
         local reticleInitial = 0.2
         local reticleAdditional = 0.6
         local zoomMaskInitial = 1.5
         local zoomMaskAdditional = 0.22
         local zoomInitial = 0.44
         local zoomAdditional = 0.057
-        local crosshair =
-            weaponHudTag.data.crosshairs.elements[1].crosshairOverlays.elements[crosshairIndex]
         local readyTime = weaponObject.readyTicks
         if readyTime > 10 then
             readyTime = 6
@@ -276,16 +259,14 @@ local crossHairAnimations = {
     end,
 
     -- SpnkrRocketLauncher
-    ---@param weaponHudTag MetaEngineTag|MetaEngineWeaponHudInterfaceTag
-    ---@param weaponObject MetaEngineBaseObject|MetaEngineWeaponObject
+    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.spnkr_weap] = function(weaponHudTag, weaponObject, crosshairIndex)
+    [path.weapons.spnkr_weap] = function(crosshair, weaponObject, crosshairIndex)
         local zoomMaskInitial = 1.7
         local zoomMaskAdditional = 0.6
         local zoomInitial = 0.5
         local zoomAdditional = 0.15
-        local crosshair =
-            weaponHudTag.data.crosshairs.elements[1].crosshairOverlays.elements[crosshairIndex]
         local heat = weaponObject.heat
         local scaleMask = zoomMaskInitial + heat * zoomMaskAdditional
         local scaleZoom = zoomInitial + heat * zoomAdditional
@@ -299,10 +280,10 @@ local crossHairAnimations = {
     end,
 
     -- VK78Commando
-    ---@param weaponHudTag MetaEngineTag|MetaEngineWeaponHudInterfaceTag
-    ---@param weaponObject MetaEngineBaseObject|MetaEngineWeaponObject
+    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.vk78_weap] = function(weaponHudTag, weaponObject, crosshairIndex)
+    [path.weapons.vk78_weap] = function(crosshair, weaponObject, crosshairIndex)
         local zoomFullInitial = 0.4
         local zoomFullAdditional = 0.03
         local zoomMaskInitial = 2
@@ -318,8 +299,6 @@ local crossHairAnimations = {
         local strokeLess = 0.08
         local dotReticleInitial = 0.09
         local dotReticleAdditional = 0
-        local crosshair =
-            weaponHudTag.data.crosshairs.elements[1].crosshairOverlays.elements[crosshairIndex]
         local animTimer = weaponObject.readyTicks + weaponObject.magazines[1].reloadTicksRemaining
         if animTimer > 20 then
             animTimer = 10
@@ -374,10 +353,10 @@ local crossHairAnimations = {
     end,
 
     -- SniperRifle
-    ---@param weaponHudTag MetaEngineTag|MetaEngineWeaponHudInterfaceTag
-    ---@param weaponObject MetaEngineBaseObject|MetaEngineWeaponObject
+    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.sniper_weap] = function(weaponHudTag, weaponObject, crosshairIndex)
+    [path.weapons.sniper_weap] = function(crosshair, weaponObject, crosshairIndex)
         local reticleInitial = 0
         local reticleAdditional = 0.3
         local zoomMaskInitial = 2.209
@@ -388,8 +367,6 @@ local crossHairAnimations = {
         local zoomLevelsAdditional = 0.12
         local zoomLevelPosInitial = -200
         local zoomLevelPosAdditional = 10
-        local crosshair =
-            weaponHudTag.data.crosshairs.elements[1].crosshairOverlays.elements[crosshairIndex]
         local readyTime = weaponObject.readyTicks
         if readyTime > 10 then
             readyTime = 6
@@ -421,18 +398,16 @@ local crossHairAnimations = {
     end,
 
     -- Skewer
-    ---@param weaponHudTag MetaEngineTag|MetaEngineWeaponHudInterfaceTag
-    ---@param weaponObject MetaEngineBaseObject|MetaEngineWeaponObject
+    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.skewer_weap] = function(weaponHudTag, weaponObject, crosshairIndex)
+    [path.weapons.skewer_weap] = function(crosshair, weaponObject, crosshairIndex)
         local zoomFullInitial = 0.47
         local zoomFullAdditional = 0.1
         local zoomMaskInitial = 0.88
         local zoomMaskAdditional = 0.1
         local reticleAddPos = 10
         local reticleAddScale = 0.25
-        local crosshair =
-            weaponHudTag.data.crosshairs.elements[1].crosshairOverlays.elements[crosshairIndex]
         local animTimer = weaponObject.readyTicks * 2 +
                               weaponObject.magazines[1].reloadTicksRemaining * 2
         if animTimer > 20 then
@@ -462,17 +437,15 @@ local crossHairAnimations = {
     end,
 
     -- StormRifle
-    ---@param weaponHudTag MetaEngineTag|MetaEngineWeaponHudInterfaceTag
-    ---@param weaponObject MetaEngineBaseObject|MetaEngineWeaponObject
+    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.storm_weap] = function(weaponHudTag, weaponObject, crosshairIndex)
+    [path.weapons.storm_weap] = function(crosshair, weaponObject, crosshairIndex)
         local reticleAddPos = 3
         local reticleScaleInitial = 0.3
         local reticleScaleAdditional = 0.07
         local dotReticleInitial = 0.09
         local dotReticleAdditional = 0
-        local crosshair =
-            weaponHudTag.data.crosshairs.elements[1].crosshairOverlays.elements[crosshairIndex]
         local readyTime = weaponObject.readyTicks
         if readyTime > 10 then
             readyTime = 6
@@ -509,15 +482,13 @@ local crossHairAnimations = {
     end,
 
     -- PlasmaPistol
-    ---@param weaponHudTag MetaEngineTag|MetaEngineWeaponHudInterfaceTag
-    ---@param weaponObject MetaEngineBaseObject|MetaEngineWeaponObject
+    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.pp_weap] = function(weaponHudTag, weaponObject, crosshairIndex)
+    [path.weapons.pp_weap] = function(crosshair, weaponObject, crosshairIndex)
         local reticleAddPos = 3.5
         local reticleScaleInitial = 0.19
         local reticleScaleAdditional = 0.08
-        local crosshair =
-            weaponHudTag.data.crosshairs.elements[1].crosshairOverlays.elements[crosshairIndex]
         local readyTime = weaponObject.readyTicks
         if readyTime > 10 then
             readyTime = 6
@@ -541,16 +512,14 @@ local crossHairAnimations = {
     end,
 
     -- PlasmaCaster
-    ---@param weaponHudTag MetaEngineTag|MetaEngineWeaponHudInterfaceTag
-    ---@param weaponObject MetaEngineBaseObject|MetaEngineWeaponObject
+    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.caster_weap] = function(weaponHudTag, weaponObject, crosshairIndex)
+    [path.weapons.caster_weap] = function(crosshair, weaponObject, crosshairIndex)
         local reticleInitPos = 2
         local reticleAddPos = 3
         local reticleScaleInitial = 0.18
         local reticleScaleAdditional = 0.025
-        local crosshair =
-            weaponHudTag.data.crosshairs.elements[1].crosshairOverlays.elements[crosshairIndex]
         local readyTime = weaponObject.readyTicks
         if readyTime > 10 then
             readyTime = 6
@@ -585,7 +554,7 @@ function dynamicCrosshair.dynamicReticles()
     if not player then
         return
     end
-    local biped = getObject(player.objectHandle, objectTypes.biped)
+    local biped = getObject(player.unitHandle, "biped")
     if not biped then
         return
     end
@@ -597,7 +566,7 @@ function dynamicCrosshair.dynamicReticles()
     if not weaponObjectHandle or (weaponObjectHandle and weaponObjectHandle:isNull()) then
         return
     end
-    local weaponObject = getObject(weaponObjectHandle, objectTypes.weapon)
+    local weaponObject = getObject(weaponObjectHandle, "weapon")
     if not weaponObject then
         return
     end
@@ -605,20 +574,37 @@ function dynamicCrosshair.dynamicReticles()
         return tag.handle.value == weaponObject.tagHandle.value
     end)
     if not weaponTag then
-        logger:error("Weapon tag constant must exist on weapon list")
+        balltze.logger.error("Weapon tag constant must exist on weapon list")
         return
     end
     local crossHairAnimation = crossHairAnimations[weaponTag.path]
     if crossHairAnimation then
+        -- v2 has no .data on a tag entry; :getData() replaces it. Resolved once here rather
+        -- than inside the loop, which would rebuild the whole tag view per crosshair.
+        local weaponHudInterfaceHandle = weaponTag:getData().hudInterface.tagHandle
         local hudInterfaceTag = table.find(weapons.weaponHudInterfaceTag, function(tag)
-            return weaponTag.data.hudInterface.tagHandle.value == tag.handle.value
+            return weaponHudInterfaceHandle.value == tag.handle.value
         end)
         if not hudInterfaceTag then
-            logger:error("HUD weapon interface must exist on hud list")
+            balltze.logger.error("HUD weapon interface must exist on hud list")
             return
         end
-        for crosshairIndex = 1, hudInterfaceTag.data.crosshairs.count do
-            crossHairAnimation(hudInterfaceTag, weaponObject, crosshairIndex)
+        -- Tag blocks are plain arrays in v2: no .elements wrapper and no .count field.
+        local hudInterfaceTagData = hudInterfaceTag:getData()
+        ---@cast hudInterfaceTagData WeaponHudInterface
+        -- Reticle pieces are not laid out the same way in every weapon's tag: the MA38 uses
+        -- one crosshair group per piece holding a single overlay each, while others keep
+        -- several overlays inside one group. Flattening every overlay of every group makes
+        -- crosshairIndex mean "nth reticle piece" under either layout.
+        local crosshairOverlays = {}
+        for groupIndex = 1, #hudInterfaceTagData.crosshairs do
+            local groupOverlays = hudInterfaceTagData.crosshairs[groupIndex].crosshairOverlays
+            for overlayIndex = 1, #groupOverlays do
+                crosshairOverlays[#crosshairOverlays + 1] = groupOverlays[overlayIndex]
+            end
+        end
+        for crosshairIndex = 1, #crosshairOverlays do
+            crossHairAnimation(crosshairOverlays[crosshairIndex], weaponObject, crosshairIndex)
         end
     end
 end
