@@ -1,7 +1,7 @@
 {
   "name": "Helljumper Multiplayer",
   "author": "Keymind Dev Team",
-  "plugin_main": "Keymind Dev Team.lua",
+  "plugin_main": "helljumper_multiplayer.lua",
   "version": "1.0.0",
   "target_api": "2.0.0",
   "maps": [
