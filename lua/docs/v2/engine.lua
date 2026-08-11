@@ -1,7 +1,3 @@
--- SPDX-License-Identifier: GPL-3.0-only
--- This file documents the Balltze Lua plugin API v2 (Engine namespace).
--- It should not be included; it exists purely for IDE autocomplete/type-checking.
-
 ---@meta _
 ---@diagnostic disable: missing-return
 ---@diagnostic disable: unused-local
@@ -341,29 +337,30 @@ function Engine.uiWidget.textBoxWidgetIsFocused(widget) end
 
 
 -------------------------------------------------------
--- Engine.hud
+-- Engine.interface
 -------------------------------------------------------
 
-Engine.hud = {}
+Engine.interface = {}
 
----@class HudText
-local HudText = {}
+---@class InterfaceText
+local InterfaceText = {}
 
 -- Replace this text's displayed string.
 ---@param text string
-function HudText:setText(text) end
+function InterfaceText:setText(text) end
 
 -- Stop drawing this text. Calling this a second time is an error.
-function HudText:remove() end
+function InterfaceText:remove() end
 
 -- Options are fixed at creation time; to change one, remove the text and add a new one.
----@class HudTextOptions
+---@class InterfaceTextOptions
 ---@field color? {a: number, r: number, g: number, b: number} @0-1 per channel; default opaque white
 ---@field font? TagHandle @default: the globals terminal font
 ---@field style? "plain"|"bold"|"italic"|"condense"|"underline" @default: "plain"
 ---@field justification? "left"|"right"|"center" @default: the anchor's edge
 ---@field anchor? "topLeft"|"topRight"|"bottomLeft"|"bottomRight"|"center" @default: "topLeft"
 ---@field layer? "hud"|"ui" @default: "hud"; "ui" draws over menus, in full screen space
+---@field shadow? boolean @default: true; false draws the text without a drop shadow
 ---@field flags? integer @raw TextDrawGlobals flags
 
 -- Add a text overlay, redrawn every frame until it's removed or the plugin is unloaded. On the
@@ -373,6 +370,32 @@ function HudText:remove() end
 ---@param text string
 ---@param x integer @pixels inward from the anchored corner
 ---@param y integer @pixels inward from the anchored corner
----@param options? HudTextOptions
----@return HudText
-function Engine.hud.addText(text, x, y, options) end
+---@param options? InterfaceTextOptions
+---@return InterfaceText
+function Engine.interface.addText(text, x, y, options) end
+
+---@class HudDrawFlags
+---@field flashing boolean
+---@field disabled boolean
+---@field inMultiplayer boolean
+
+---@class HudStaticElement
+local HudStaticElement = {}
+
+---@param flags HudDrawFlags
+function HudStaticElement:setFlags(flags) end
+
+---@param tick integer @tick the flash started at, or -1
+function HudStaticElement:setFlashStartTime(tick) end
+
+function HudStaticElement:remove() end
+
+-- Add a static element to the HUD, drawn every frame in each local player's pane
+-- until removed. The definition comes from a HUD interface tag, so the element is
+-- dropped when the map changes.
+---@param anchor HudInterfaceAnchor
+---@param staticElement HudInterfaceStaticElementDefinition
+---@param flags? HudDrawFlags
+---@param flashStartTime? integer @tick the flash started at, or -1
+---@return HudStaticElement
+function Engine.interface.addHudStaticElement(anchor, staticElement, flags, flashStartTime) end

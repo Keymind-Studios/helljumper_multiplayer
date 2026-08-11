@@ -1,7 +1,3 @@
--- SPDX-License-Identifier: GPL-3.0-only
--- This file documents the Balltze Lua plugin API v2 (Balltze namespace).
--- It should not be included; it exists purely for IDE autocomplete/type-checking.
-
 ---@meta _
 ---@diagnostic disable: missing-return
 ---@diagnostic disable: unused-local
