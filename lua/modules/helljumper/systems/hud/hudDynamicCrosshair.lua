@@ -1,9 +1,8 @@
-local balltze = Balltze
 local getObject = Engine.object.getObject
 local getPlayer = Engine.player.getPlayer
-local path = require "helljumper.systems.constants.objectPaths"
-local weapons = require "helljumper.systems.constants.weapons"
---local blam = require "blam"
+local getTagData = Engine.tag.getTagData
+local getTagEntry = Engine.tag.getTagEntry
+local path = require "helljumper.systems.constants.paths"
 
 local dynamicCrosshair = {}
 
@@ -19,10 +18,12 @@ local ceil = math.ceil
 local crossHairAnimations = {
 
     -- AssaultRifleMA38
-    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
     ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.ma38_weap] = function(crosshair, weaponObject, crosshairIndex)
+    ---@param overlayIndex integer
+    [path.weapon.human.assaultRifleMa38] = function(overlay, weaponObject, crosshairIndex,
+                                                    overlayIndex)
         local reticleInitial = 4
         local reticleAdditional = 16
         local dotReticleInitial = 0.08
@@ -35,26 +36,29 @@ local crossHairAnimations = {
         local heatOrig = weaponObject.heat
         local scaleDot = dotReticleInitial + heat * dotReticleAdditional
         if crosshairIndex == 1 then
-            crosshair.anchorOffset.x = floor(-reticleInitial - heat) -- Left
+            if overlayIndex == 1 then
+                overlay.anchorOffset.x = floor(-reticleInitial - heat) -- Left
+            elseif overlayIndex == 2 then
+                overlay.anchorOffset.x = ceil(reticleInitial + heat) -- Right
+            elseif overlayIndex == 3 then
+                overlay.anchorOffset.y = floor(-reticleInitial - heat) -- Up
+            elseif overlayIndex == 4 then
+                overlay.anchorOffset.y = ceil(reticleInitial + heat) -- Down
+            end
         elseif crosshairIndex == 2 then
-            crosshair.anchorOffset.x = ceil(reticleInitial + heat) -- Right
-        elseif crosshairIndex == 3 then
-            crosshair.anchorOffset.y = floor(-reticleInitial - heat) -- Up
-        elseif crosshairIndex == 4 then
-            crosshair.anchorOffset.y = ceil(reticleInitial + heat) -- Down
-        elseif crosshairIndex == 5 then
-            crosshair.heightScale = scaleDot * heatOrig
-            crosshair.widthScale = scaleDot * heatOrig
+            overlay.heightScale = scaleDot * heatOrig
+            overlay.widthScale = scaleDot * heatOrig
         end
     end,
 
     -- LmgSaw
-    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
     ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.saw_weap] = function(crosshair, weaponObject, crosshairIndex)
+    ---@param overlayIndex integer
+    [path.weapon.human.saw] = function(overlay, weaponObject, crosshairIndex, overlayIndex)
         local reticleInitial = 4
-        local reticleAdditional = 16
+        local reticleAdditional = 20
         local dotReticleInitial = 0.08
         local dotReticleAdditional = 0
         local animTimer = weaponObject.readyTicks + weaponObject.magazines[1].reloadTicksRemaining
@@ -65,24 +69,24 @@ local crossHairAnimations = {
         local heatOrig = weaponObject.heat
         local scaleDot = dotReticleInitial + heat * dotReticleAdditional
         if crosshairIndex == 1 then
-            crosshair.anchorOffset.x = floor(-reticleInitial - heat) -- Left
+            overlay.anchorOffset.x = floor(-reticleInitial - heat) -- Left
         elseif crosshairIndex == 2 then
-            crosshair.anchorOffset.x = ceil(reticleInitial + heat) -- Right
+            overlay.anchorOffset.x = ceil(reticleInitial + heat) -- Right
         elseif crosshairIndex == 3 then
-            crosshair.anchorOffset.y = floor(-reticleInitial - heat) -- Up
+            overlay.anchorOffset.y = floor(-reticleInitial - heat) -- Up
         elseif crosshairIndex == 4 then
-            crosshair.anchorOffset.y = ceil(reticleInitial + heat) -- Down
+            overlay.anchorOffset.y = ceil(reticleInitial + heat) -- Down
         elseif crosshairIndex == 5 then
-            crosshair.heightScale = scaleDot * heatOrig
-            crosshair.widthScale = scaleDot * heatOrig
+            overlay.heightScale = scaleDot * heatOrig
+            overlay.widthScale = scaleDot * heatOrig
         end
     end,
 
     -- Needler
-    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
     ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.needler_weap] = function(crosshair, weaponObject, crosshairIndex)
+    [path.weapon.covenant.needler] = function(overlay, weaponObject, crosshairIndex)
         local reticleInitial = 12
         local reticleAdditional = 15
         local dotReticleInitial = 0.08
@@ -95,20 +99,20 @@ local crossHairAnimations = {
         local heatOrig = weaponObject.heat
         local scaleDot = dotReticleInitial + heat * dotReticleAdditional
         if crosshairIndex == 1 then
-            crosshair.anchorOffset.x = floor(-reticleInitial - heat) -- Left
+            overlay.anchorOffset.x = floor(-reticleInitial - heat) -- Left
         elseif crosshairIndex == 2 then
-            crosshair.anchorOffset.x = ceil(reticleInitial + heat) -- Right
+            overlay.anchorOffset.x = ceil(reticleInitial + heat) -- Right
         elseif crosshairIndex == 3 then
-            crosshair.heightScale = scaleDot * heatOrig
-            crosshair.widthScale = scaleDot * heatOrig
+            overlay.heightScale = scaleDot * heatOrig
+            overlay.widthScale = scaleDot * heatOrig
         end
     end,
 
     -- Disruptor
-    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
     ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.zapper_weap] = function(crosshair, weaponObject, crosshairIndex)
+    [path.weapon.covenant.disruptor] = function(overlay, weaponObject, crosshairIndex)
         local reticleInitialPos = 0
         local reticleAdditionalPos = 1.5
         local reticleScaleInitial = 0.22
@@ -127,26 +131,26 @@ local crossHairAnimations = {
         local reticleAddPos = reticleInitialPos + heat * reticleAdditionalPos
         local reticleScale = reticleScaleInitial + heat * reticleScaleAdditional
         if crosshairIndex == 1 then
-            crosshair.anchorOffset.x = floor(
-                                           -reticleInitialPos - reticleAddPos * heat - animTimerA /
-                                               4 * 0.9) -- Left
-            crosshair.widthScale = reticleScale
+            overlay.anchorOffset.x = floor(
+                                        -reticleInitialPos - reticleAddPos * heat - animTimerA / 4 *
+                                            0.9) -- Left
+            overlay.widthScale = reticleScale
         elseif crosshairIndex == 2 then
-            crosshair.anchorOffset.x = ceil(reticleInitialPos + reticleAddPos * heat + animTimerA /
-                                                4 * 0.9) -- Right
-            crosshair.widthScale = reticleScale
+            overlay.anchorOffset.x = ceil(reticleInitialPos + reticleAddPos * heat + animTimerA / 4 *
+                                              0.9) -- Right
+            overlay.widthScale = reticleScale
         elseif crosshairIndex == 3 then
-            crosshair.widthScale = reticleScaleZero - reticleScaleInitial + animTimerA / 42 -
-                                       animTimerB / 70
-            crosshair.heightScale = reticleScaleZero - reticleScaleInitial + animTimerA / 42
+            overlay.widthScale = reticleScaleZero - reticleScaleInitial + animTimerA / 42 -
+                                     animTimerB / 70
+            overlay.heightScale = reticleScaleZero - reticleScaleInitial + animTimerA / 42
         end
     end,
 
     -- BattleRifle65H
-    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
     ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.br65h_weap] = function(crosshair, weaponObject, crosshairIndex)
+    [path.weapon.human.br65h] = function(overlay, weaponObject, crosshairIndex)
         local zoomMaskInitial = 3
         local zoomMaskAdditional = 0.22
         local zoomInitial = 0.21
@@ -155,19 +159,19 @@ local crossHairAnimations = {
         local scaleMask = zoomMaskInitial + heat * zoomMaskAdditional
         local scaleZoom = zoomInitial + heat * zoomAdditional
         if crosshairIndex == 1 then
-            crosshair.widthScale = scaleMask
-            crosshair.heightScale = scaleMask
+            overlay.widthScale = scaleMask
+            overlay.heightScale = scaleMask
         elseif crosshairIndex == 2 then
-            crosshair.widthScale = scaleZoom
-            crosshair.heightScale = scaleZoom
+            overlay.widthScale = scaleZoom
+            overlay.heightScale = scaleZoom
         end
     end,
 
     -- DMR392
-    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
     ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.dmr_weap] = function(crosshair, weaponObject, crosshairIndex)
+    [path.weapon.human.dmr392] = function(overlay, weaponObject, crosshairIndex)
         local reticleAddPos = 3
         local reticleScaleInitial = 0.15
         local reticleScaleAdditional = 0.1
@@ -180,27 +184,27 @@ local crossHairAnimations = {
         local scaleZoom = zoomInitial + heat * zoomAdditional
         local reticlePosition = heat * reticleAddPos
         if crosshairIndex == 1 then
-            crosshair.widthScale = scaleMask
-            crosshair.heightScale = scaleMask
+            overlay.widthScale = scaleMask
+            overlay.heightScale = scaleMask
         elseif crosshairIndex == 2 then
-            crosshair.widthScale = scaleZoom
-            crosshair.heightScale = scaleZoom
+            overlay.widthScale = scaleZoom
+            overlay.heightScale = scaleZoom
         elseif crosshairIndex == 3 then
-            crosshair.anchorOffset.x = floor(-reticlePosition * (4 / 3) * 0.98)
+            overlay.anchorOffset.x = floor(-reticlePosition * (4 / 3) * 0.98)
         elseif crosshairIndex == 4 then
-            crosshair.anchorOffset.x = ceil(reticlePosition * (4 / 3) * 0.98)
+            overlay.anchorOffset.x = ceil(reticlePosition * (4 / 3) * 0.98)
         elseif crosshairIndex == 5 then
-            crosshair.anchorOffset.y = floor(-reticlePosition * (4 / 3) * 0.98)
+            overlay.anchorOffset.y = floor(-reticlePosition * (4 / 3) * 0.98)
         elseif crosshairIndex == 6 then
-            crosshair.anchorOffset.y = ceil(reticlePosition * (4 / 3) * 0.98)
+            overlay.anchorOffset.y = ceil(reticlePosition * (4 / 3) * 0.98)
         end
     end,
 
     -- ShotgunM90
-    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
     ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.m90_weap] = function(crosshair, weaponObject, crosshairIndex)
+    [path.weapon.human.shotgunM90] = function(overlay, weaponObject, crosshairIndex)
         local reticleScaleInitial = 0.23
         local reticleScaleAdditional = 0.07
         local readyTime = weaponObject.readyTicks
@@ -214,16 +218,16 @@ local crossHairAnimations = {
         local heat = weaponObject.heat + (readyTime / 6 * 0.5) + (readyTime / 6)
         local reticleScale = reticleScaleInitial + heat * reticleScaleAdditional
         if crosshairIndex == 1 then
-            crosshair.widthScale = reticleScale
-            crosshair.heightScale = reticleScale
+            overlay.widthScale = reticleScale
+            overlay.heightScale = reticleScale
         end
     end,
 
     -- MagnumM6S
-    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
     ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.m6s_weap] = function(crosshair, weaponObject, crosshairIndex)
+    [path.weapon.human.magnumM6s] = function(overlay, weaponObject, crosshairIndex)
         local reticleInitial = 0.2
         local reticleAdditional = 0.6
         local zoomMaskInitial = 1.5
@@ -244,25 +248,25 @@ local crossHairAnimations = {
         local scaleMask = zoomMaskInitial + heat * zoomMaskAdditional
         local scaleZoom = zoomInitial + heat * zoomAdditional
         if crosshairIndex == 1 then
-            crosshair.widthScale = scaleMask
-            crosshair.heightScale = scaleMask
+            overlay.widthScale = scaleMask
+            overlay.heightScale = scaleMask
         elseif crosshairIndex == 2 then
-            crosshair.widthScale = scaleZoom
-            crosshair.heightScale = scaleZoom
+            overlay.widthScale = scaleZoom
+            overlay.heightScale = scaleZoom
         elseif crosshairIndex == 3 then
-            crosshair.widthScale = scaleReticle + readyTime / 8 * 0.5 + reloadTime / 8 * 0.4
-            crosshair.heightScale = scaleReticle + readyTime / 8 * 0.5 + reloadTime / 8 * 0.4
+            overlay.widthScale = scaleReticle + readyTime / 8 * 0.5 + reloadTime / 8 * 0.4
+            overlay.heightScale = scaleReticle + readyTime / 8 * 0.5 + reloadTime / 8 * 0.4
         elseif crosshairIndex == 4 then
-            crosshair.widthScale = 0.165
-            crosshair.heightScale = 0.165
+            overlay.widthScale = 0.165
+            overlay.heightScale = 0.165
         end
     end,
 
     -- SpnkrRocketLauncher
-    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
     ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.spnkr_weap] = function(crosshair, weaponObject, crosshairIndex)
+    [path.weapon.human.spnkr] = function(overlay, weaponObject, crosshairIndex)
         local zoomMaskInitial = 1.7
         local zoomMaskAdditional = 0.6
         local zoomInitial = 0.5
@@ -271,19 +275,19 @@ local crossHairAnimations = {
         local scaleMask = zoomMaskInitial + heat * zoomMaskAdditional
         local scaleZoom = zoomInitial + heat * zoomAdditional
         if crosshairIndex == 1 then
-            crosshair.widthScale = scaleMask
-            crosshair.heightScale = scaleMask
+            overlay.widthScale = scaleMask
+            overlay.heightScale = scaleMask
         elseif crosshairIndex == 2 then
-            crosshair.widthScale = scaleZoom
-            crosshair.heightScale = scaleZoom
+            overlay.widthScale = scaleZoom
+            overlay.heightScale = scaleZoom
         end
     end,
 
     -- VK78Commando
-    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
     ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.vk78_weap] = function(crosshair, weaponObject, crosshairIndex)
+    [path.weapon.human.vk78Commando] = function(overlay, weaponObject, crosshairIndex)
         local zoomFullInitial = 0.4
         local zoomFullAdditional = 0.03
         local zoomMaskInitial = 2
@@ -313,50 +317,50 @@ local crossHairAnimations = {
         local scaleStroke = strokeInitial + heat * strokeAdditional
         local scaleDot = dotReticleInitial + heat * dotReticleAdditional
         if crosshairIndex == 2 then
-            crosshair.widthScale = scaleMask
-            crosshair.heightScale = scaleMask
+            overlay.widthScale = scaleMask
+            overlay.heightScale = scaleMask
         elseif crosshairIndex == 3 then
-            crosshair.widthScale = scaleFull
-            crosshair.heightScale = scaleFull
+            overlay.widthScale = scaleFull
+            overlay.heightScale = scaleFull
         elseif crosshairIndex == 4 then
-            crosshair.widthScale = scaleFull
-            crosshair.heightScale = scaleFull
+            overlay.widthScale = scaleFull
+            overlay.heightScale = scaleFull
         elseif crosshairIndex == 5 then
-            crosshair.widthScale = scaleBlur
-            crosshair.heightScale = scaleBlur
+            overlay.widthScale = scaleBlur
+            overlay.heightScale = scaleBlur
         elseif crosshairIndex == 6 then
-            crosshair.widthScale = scaleBlur
-            crosshair.heightScale = scaleBlur
+            overlay.widthScale = scaleBlur
+            overlay.heightScale = scaleBlur
         elseif crosshairIndex == 7 then
-            crosshair.widthScale = scaleReticle
-            crosshair.heightScale = scaleReticle
+            overlay.widthScale = scaleReticle
+            overlay.heightScale = scaleReticle
         elseif crosshairIndex == 8 then
-            crosshair.anchorOffset.x = floor(-reticleInitPos - posReticleAdd * heat) -- Left
-            crosshair.widthScale = scaleStroke - strokeLess
-            crosshair.heightScale = scaleStroke
+            overlay.anchorOffset.x = floor(-reticleInitPos - posReticleAdd * heat) -- Left
+            overlay.widthScale = scaleStroke - strokeLess
+            overlay.heightScale = scaleStroke
         elseif crosshairIndex == 9 then
-            crosshair.anchorOffset.x = ceil(reticleInitPos + posReticleAdd * heat) -- Right
-            crosshair.widthScale = scaleStroke - strokeLess
-            crosshair.heightScale = scaleStroke
+            overlay.anchorOffset.x = ceil(reticleInitPos + posReticleAdd * heat) -- Right
+            overlay.widthScale = scaleStroke - strokeLess
+            overlay.heightScale = scaleStroke
         elseif crosshairIndex == 10 then
-            crosshair.anchorOffset.y = floor(-reticleInitPos - posReticleAdd * heat) -- Left
-            crosshair.widthScale = scaleStroke
-            crosshair.heightScale = scaleStroke - strokeLess
+            overlay.anchorOffset.y = floor(-reticleInitPos - posReticleAdd * heat) -- Left
+            overlay.widthScale = scaleStroke
+            overlay.heightScale = scaleStroke - strokeLess
         elseif crosshairIndex == 11 then
-            crosshair.anchorOffset.y = ceil(reticleInitPos + posReticleAdd * heat) -- Left
-            crosshair.widthScale = scaleStroke
-            crosshair.heightScale = scaleStroke - strokeLess
+            overlay.anchorOffset.y = ceil(reticleInitPos + posReticleAdd * heat) -- Left
+            overlay.widthScale = scaleStroke
+            overlay.heightScale = scaleStroke - strokeLess
         elseif crosshairIndex == 12 then
-            crosshair.heightScale = scaleDot * heatOrig
-            crosshair.widthScale = scaleDot * heatOrig
+            overlay.heightScale = scaleDot * heatOrig
+            overlay.widthScale = scaleDot * heatOrig
         end
     end,
 
     -- SniperRifle
-    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
     ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.sniper_weap] = function(crosshair, weaponObject, crosshairIndex)
+    [path.weapon.human.sniper] = function(overlay, weaponObject, crosshairIndex)
         local reticleInitial = 0
         local reticleAdditional = 0.3
         local zoomMaskInitial = 2.209
@@ -382,26 +386,27 @@ local crossHairAnimations = {
         local scaleZoomLevels = zoomLevelsInitial + heat * zoomLevelsAdditional
         local positionZoomLevels = heat * zoomLevelPosAdditional
         if crosshairIndex == 2 then
-            crosshair.widthScale = scaleReticle + readyTime / 25 * 0.5
-            crosshair.heightScale = scaleReticle + readyTime / 25 * 0.5
+            overlay.widthScale = scaleReticle + readyTime / 25 * 0.5
+            overlay.heightScale = scaleReticle + readyTime / 25 * 0.5
         elseif crosshairIndex == 3 then
-            crosshair.widthScale = scaleMask
-            crosshair.heightScale = scaleMask
+            overlay.widthScale = scaleMask
+            overlay.heightScale = scaleMask
         elseif crosshairIndex == 4 then
-            crosshair.widthScale = scaleZoom
-            crosshair.heightScale = scaleZoom
+            overlay.widthScale = scaleZoom
+            overlay.heightScale = scaleZoom
         elseif crosshairIndex == 5 then
-            crosshair.widthScale = scaleZoomLevels
-            crosshair.heightScale = scaleZoomLevels
-            crosshair.anchorOffset.x = floor(zoomLevelPosInitial -positionZoomLevels * heat - reloadTime / 2 * 0.9)
+            overlay.widthScale = scaleZoomLevels
+            overlay.heightScale = scaleZoomLevels
+            overlay.anchorOffset.x = floor(zoomLevelPosInitial - positionZoomLevels * heat -
+                                               reloadTime / 2 * 0.9)
         end
     end,
 
     -- Skewer
-    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
     ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.skewer_weap] = function(crosshair, weaponObject, crosshairIndex)
+    [path.weapon.covenant.skewer] = function(overlay, weaponObject, crosshairIndex)
         local zoomFullInitial = 0.47
         local zoomFullAdditional = 0.1
         local zoomMaskInitial = 0.88
@@ -418,29 +423,29 @@ local crossHairAnimations = {
         local scaleFull = zoomFullInitial + heat * zoomFullAdditional
         local posReticleAdd = heat * reticleAddPos
         if crosshairIndex == 1 then
-            crosshair.widthScale = scaleMask
-            crosshair.heightScale = scaleMask
+            overlay.widthScale = scaleMask
+            overlay.heightScale = scaleMask
         elseif crosshairIndex == 2 then
-            crosshair.widthScale = scaleFull
-            crosshair.heightScale = scaleFull
+            overlay.widthScale = scaleFull
+            overlay.heightScale = scaleFull
         elseif crosshairIndex == 3 then
-            crosshair.widthScale = scaleFull
-            crosshair.heightScale = scaleFull
+            overlay.widthScale = scaleFull
+            overlay.heightScale = scaleFull
         elseif crosshairIndex == 4 then
-            crosshair.anchorOffset.x = floor(-posReticleAdd * heat - animTimer / 2 * 0.9)
+            overlay.anchorOffset.x = floor(-posReticleAdd * heat - animTimer / 2 * 0.9)
         elseif crosshairIndex == 5 then
-            crosshair.anchorOffset.x = ceil(posReticleAdd * heat + animTimer / 2 * 0.9)
+            overlay.anchorOffset.x = ceil(posReticleAdd * heat + animTimer / 2 * 0.9)
         elseif crosshairIndex == 6 then
-            crosshair.widthScale = -reticleAddScale + animTimer / 30
-            crosshair.heightScale = -reticleAddScale + animTimer / 30
+            overlay.widthScale = -reticleAddScale + animTimer / 30
+            overlay.heightScale = -reticleAddScale + animTimer / 30
         end
     end,
 
     -- StormRifle
-    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
     ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.storm_weap] = function(crosshair, weaponObject, crosshairIndex)
+    [path.weapon.covenant.stormRifle] = function(overlay, weaponObject, crosshairIndex)
         local reticleAddPos = 3
         local reticleScaleInitial = 0.3
         local reticleScaleAdditional = 0.07
@@ -461,31 +466,31 @@ local crossHairAnimations = {
         local scaleDot = dotReticleInitial + heat * dotReticleAdditional
 
         if crosshairIndex == 1 then
-            crosshair.anchorOffset.x = floor(-reticlePos)
-            crosshair.anchorOffset.y = floor(-reticlePos)
+            overlay.anchorOffset.x = floor(-reticlePos)
+            overlay.anchorOffset.y = floor(-reticlePos)
         elseif crosshairIndex == 2 then
-            crosshair.anchorOffset.x = ceil(reticlePos)
-            crosshair.anchorOffset.y = ceil(reticlePos)
+            overlay.anchorOffset.x = ceil(reticlePos)
+            overlay.anchorOffset.y = ceil(reticlePos)
         elseif crosshairIndex == 3 then
-            crosshair.anchorOffset.x = ceil(reticlePos)
-            crosshair.anchorOffset.y = floor(-reticlePos)
+            overlay.anchorOffset.x = ceil(reticlePos)
+            overlay.anchorOffset.y = floor(-reticlePos)
         elseif crosshairIndex == 4 then
-            crosshair.anchorOffset.x = floor(-reticlePos)
-            crosshair.anchorOffset.y = ceil(reticlePos)
+            overlay.anchorOffset.x = floor(-reticlePos)
+            overlay.anchorOffset.y = ceil(reticlePos)
         elseif crosshairIndex == 5 then
-            crosshair.widthScale = scaleDot * heatOrig
-            crosshair.heightScale = scaleDot * heatOrig
+            overlay.widthScale = scaleDot * heatOrig
+            overlay.heightScale = scaleDot * heatOrig
         elseif crosshairIndex == 6 then
-            crosshair.widthScale = -reticleScale
-            crosshair.heightScale = -reticleScale
+            overlay.widthScale = -reticleScale
+            overlay.heightScale = -reticleScale
         end
     end,
 
     -- PlasmaPistol
-    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
     ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.pp_weap] = function(crosshair, weaponObject, crosshairIndex)
+    [path.weapon.covenant.plasmaPistol] = function(overlay, weaponObject, crosshairIndex)
         local reticleAddPos = 3.5
         local reticleScaleInitial = 0.19
         local reticleScaleAdditional = 0.08
@@ -501,21 +506,21 @@ local crossHairAnimations = {
         local reticleScale = reticleScaleInitial + heat * reticleScaleAdditional
         local reticlePos = heat * reticleAddPos ^ 2
         if crosshairIndex == 1 then
-            crosshair.anchorOffset.x = floor(-reticlePos)
-            crosshair.anchorOffset.y = ceil(reticlePos * 0.45)
+            overlay.anchorOffset.x = floor(-reticlePos)
+            overlay.anchorOffset.y = ceil(reticlePos * 0.45)
         elseif crosshairIndex == 2 then
-            crosshair.anchorOffset.y = floor(-reticlePos)
+            overlay.anchorOffset.y = floor(-reticlePos)
         elseif crosshairIndex == 3 then
-            crosshair.anchorOffset.x = ceil(reticlePos)
-            crosshair.anchorOffset.y = ceil(reticlePos * 0.45)
+            overlay.anchorOffset.x = ceil(reticlePos)
+            overlay.anchorOffset.y = ceil(reticlePos * 0.45)
         end
     end,
 
     -- PlasmaCaster
-    ---@param crosshair WeaponHudInterfaceCrosshairsCrosshairOverlays
+    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
     ---@param weaponObject WeaponObject
     ---@param crosshairIndex integer
-    [path.weapons.caster_weap] = function(crosshair, weaponObject, crosshairIndex)
+    [path.weapon.covenant.plasmaCaster] = function(overlay, weaponObject, crosshairIndex)
         local reticleInitPos = 2
         local reticleAddPos = 3
         local reticleScaleInitial = 0.18
@@ -536,18 +541,16 @@ local crossHairAnimations = {
         local reticleScale = reticleScaleInitial + heat * reticleScaleAdditional
         local reticlePos = heat * reticleAddPos ^ 2
         if crosshairIndex == 1 then
-            crosshair.anchorOffset.x = floor(-reticleInitPos - reticlePos)
-            crosshair.anchorOffset.y = ceil(reticleInitPos + reticlePos * 0.45)
+            overlay.anchorOffset.x = floor(-reticleInitPos - reticlePos)
+            overlay.anchorOffset.y = ceil(reticleInitPos + reticlePos * 0.45)
         elseif crosshairIndex == 2 then
-            crosshair.anchorOffset.y = floor(-reticleInitPos - reticlePos)
+            overlay.anchorOffset.y = floor(-reticleInitPos - reticlePos)
         elseif crosshairIndex == 3 then
-            crosshair.anchorOffset.x = ceil(reticleInitPos + reticlePos)
-            crosshair.anchorOffset.y = ceil(reticleInitPos + reticlePos * 0.45)
+            overlay.anchorOffset.x = ceil(reticleInitPos + reticlePos)
+            overlay.anchorOffset.y = ceil(reticleInitPos + reticlePos * 0.45)
         end
     end
 }
-
---local lastWeaponTagHandle
 
 function dynamicCrosshair.dynamicReticles()
     local player = getPlayer()
@@ -558,10 +561,6 @@ function dynamicCrosshair.dynamicReticles()
     if not biped then
         return
     end
-    --local blamBiped = blam.biped(get_object(player.objectHandle.value))
-    --assert(blamBiped, "Biped tag must exist")
-    -- TODO Ask Mango if "weaponSlot" prop exists in Balltze, to remove blam dependency
-    -- The function is biped.currentWeaponId
     local weaponObjectHandle = biped.weapons[biped.currentWeaponId + 1]
     if not weaponObjectHandle or (weaponObjectHandle and weaponObjectHandle:isNull()) then
         return
@@ -570,41 +569,57 @@ function dynamicCrosshair.dynamicReticles()
     if not weaponObject then
         return
     end
-    local weaponTag = table.find(weapons.weaponTag, function(tag)
-        return tag.handle.value == weaponObject.tagHandle.value
-    end)
-    if not weaponTag then
-        balltze.logger.error("Weapon tag constant must exist on weapon list")
+    -- Read off the tag entry rather than matched against the tags constants: the path is what keys
+    -- crossHairAnimations, and getTagEntry hands it over without walking every weapon tag in the
+    -- map. constants.tags holds bare TagHandles now, which carry neither a path nor a handle field,
+    -- and it only holds them once tags.get() has run.
+    local weaponTagEntry = getTagEntry(weaponObject.tagHandle)
+    local crossHairAnimation = weaponTagEntry and crossHairAnimations[weaponTagEntry.path]
+    if not crossHairAnimation then
+        -- A weapon this table says nothing about has no reticle of its own to animate.
         return
     end
-    local crossHairAnimation = crossHairAnimations[weaponTag.path]
-    if crossHairAnimation then
-        -- v2 has no .data on a tag entry; :getData() replaces it. Resolved once here rather
-        -- than inside the loop, which would rebuild the whole tag view per crosshair.
-        local weaponHudInterfaceHandle = weaponTag:getData().hudInterface.tagHandle
-        local hudInterfaceTag = table.find(weapons.weaponHudInterfaceTag, function(tag)
-            return weaponHudInterfaceHandle.value == tag.handle.value
-        end)
-        if not hudInterfaceTag then
-            balltze.logger.error("HUD weapon interface must exist on hud list")
-            return
-        end
-        -- Tag blocks are plain arrays in v2: no .elements wrapper and no .count field.
-        local hudInterfaceTagData = hudInterfaceTag:getData()
-        ---@cast hudInterfaceTagData WeaponHudInterface
-        -- Reticle pieces are not laid out the same way in every weapon's tag: the MA38 uses
-        -- one crosshair group per piece holding a single overlay each, while others keep
-        -- several overlays inside one group. Flattening every overlay of every group makes
-        -- crosshairIndex mean "nth reticle piece" under either layout.
-        local crosshairOverlays = {}
-        for groupIndex = 1, #hudInterfaceTagData.crosshairs do
-            local groupOverlays = hudInterfaceTagData.crosshairs[groupIndex].crosshairOverlays
-            for overlayIndex = 1, #groupOverlays do
-                crosshairOverlays[#crosshairOverlays + 1] = groupOverlays[overlayIndex]
+    -- v2 has no .data on a tag entry; the weapon tag data is what carries the HUD it was authored
+    -- with. Resolved once here rather than inside the loop, which would rebuild the whole tag view
+    -- per crosshair.
+    local weaponTagData = getTagData(weaponObject.tagHandle, "weapon")
+    if not weaponTagData then
+        return
+    end
+    ---@cast weaponTagData Weapon
+    local hudInterface = weaponTagData.hudInterface
+    -- A weapon with no HUD of its own has no reticle to move. Its reference still carries a path
+    -- field, so the handle is what says whether anything is actually there.
+    if not hudInterface or hudInterface.tagHandle:isNull() then
+        return
+    end
+    -- Taken straight off the handle the weapon tag already carries. This used to look the handle up
+    -- in a list of HUD tags gathered by path substring, which meant a weapon whose HUD had a sibling
+    -- sharing its name, an ADS one for instance, could end up with the sibling on the list and its
+    -- own HUD nowhere on it.
+    local hudInterfaceTagData = getTagData(hudInterface.tagHandle, "weapon_hud_interface")
+    if not hudInterfaceTagData then
+        return
+    end
+    -- Tag blocks are plain arrays in v2: no .elements wrapper and no .count field.
+    ---@cast hudInterfaceTagData WeaponHudInterface
+    -- An empty tag block comes back as nil rather than as an array of length zero, so a HUD with no
+    -- crosshairs at all is caught here rather than indexed into.
+    local crosshairs = hudInterfaceTagData.crosshairs
+    if not crosshairs then
+        return
+    end
+    -- Walked nested rather than flattened into a running count, so what the animation reads as
+    -- crosshair 1 overlay 2 is what the tag holds as the second overlay of the first crosshair.
+    -- Every overlay of every crosshair is handed over, which is what lets a weapon spread its
+    -- reticle over one crosshair per piece or keep those pieces as overlays of a single one.
+    for crosshairIndex = 1, #crosshairs do
+        local crosshairOverlays = crosshairs[crosshairIndex].crosshairOverlays
+        if crosshairOverlays then
+            for overlayIndex = 1, #crosshairOverlays do
+                crossHairAnimation(crosshairOverlays[overlayIndex], weaponObject, crosshairIndex,
+                                   overlayIndex)
             end
-        end
-        for crosshairIndex = 1, #crosshairOverlays do
-            crossHairAnimation(crosshairOverlays[crosshairIndex], weaponObject, crosshairIndex)
         end
     end
 end
