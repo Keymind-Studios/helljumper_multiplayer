@@ -1,9 +1,9 @@
 local script = require "script"
---local sleep = script.sleep
---local engine = Engine
 local multiplayer = require "helljumper.multiplayer"
 
 local map = {}
+
+script.cleanup()
 
 function map.main()
     multiplayer.load()
@@ -15,5 +15,13 @@ function map.loop()
     multiplayer.gameplaySystems()
 end
 script.continuous(map.loop)
+
+function map.frame()
+    multiplayer.frameSystems()
+end
+
+function map.unload()
+    multiplayer.unload()
+end
 
 return map
