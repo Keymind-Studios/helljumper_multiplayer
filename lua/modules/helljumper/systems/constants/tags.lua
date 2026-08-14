@@ -53,6 +53,14 @@ function tags.get()
         skewer = lookupTag(tag.weapon.covenant.skewer, "weapon_hud_interface"),
         stalkerRifle = lookupTag(tag.weapon.covenant.stalkerRifle, "weapon_hud_interface"),
         stormRifle = lookupTag(tag.weapon.covenant.stormRifle, "weapon_hud_interface"),
+        -- HUDs a weapon reaches through another HUD's child hud reference, so they are looked up by
+        -- a path of their own rather than by the weapon's the way the ones above are.
+        child = {
+            sniperRifleTicks = lookupTag(tag.weaponHudInterface.child.sniperRifleTicks,
+                                         "weapon_hud_interface"),
+            sniperRifleExtMeters = lookupTag(tag.weaponHudInterface.child.sniperRifleExtMeters,
+                                             "weapon_hud_interface")
+        }
     }
     balltze.logger.debug("Loaded {}, {}, {} Tags", tags.weapon, tags.sound, tags.weaponHudInterface)
 end
