@@ -1,5 +1,4 @@
 -- Tag Paths
-
 local tag = {}
 
 tag.biped = {
@@ -49,6 +48,24 @@ tag.weapon = {
     flood = {}
 }
 
+tag.weaponHudInterface = {
+    ads = {
+        assaultRifleMa38 = "keymind\\helljumper\\objects\\weapons\\rifle\\assault_rifle\\assault_rifle_ma38_ads",
+        needler = "keymind\\helljumper\\objects\\weapons\\pistol\\needler\\needler_t54c_ads",
+        plasmaRifle = "keymind\\helljumper\\objects\\weapons\\pistol\\plasma_rifle\\plasma_rifle_ads",
+        saw = "keymind\\helljumper\\objects\\weapons\\rifle\\lmg_saw\\lmg_saw_ads",
+        shotgunM90 = "keymind\\helljumper\\objects\\weapons\\rifle\\shotgun_m90\\shotgun_m90_ads",
+
+    },
+    -- HUDs reached through another HUD's "child hud" reference rather than through a weapon. A
+    -- weapon's own HUD is never named here: hudDynamicCrosshair takes that one off the weapon tag.
+    child = {
+        -- sniper_rifle_srs99c -> sniper_rifle_ticks -> sniper_rifle_ext_meters
+        sniperRifleTicks = "keymind\\helljumper\\objects\\weapons\\rifle\\sniper_rifle\\sniper_rifle_ticks",
+        sniperRifleExtMeters = "keymind\\helljumper\\objects\\weapons\\rifle\\sniper_rifle\\sniper_rifle_ext_meters"
+    }
+}
+
 tag.equipment = {
     human = {},
     covenant = {},
@@ -66,7 +83,8 @@ tag.deviceControl = {
         ir_726_ammo_150 = "keymind\\helljumper\\objects\\devices\\ammo_crates\\ir_726_ammo_150",
         -- Disruption Ammo = 150 rounds
         ds_726_ammo_150 = "keymind\\helljumper\\objects\\devices\\ammo_crates\\dr_726_ammo_150"
-    }
+    },
+    door = {}
 }
 
 tag.sound = {
@@ -86,6 +104,20 @@ tag.sound = {
         menus = {}
     },
     sfx = {}
+}
+
+tag.vectorFont = {
+    ui = {
+        hud = {
+            gearText = "keymind\\helljumper\\ui\\fonts\\chud_gear_names",
+            adsLarger = "keymind\\helljumper\\ui\\fonts\\chud_ads_larger",
+            adsSmall = "keymind\\helljumper\\ui\\fonts\\chud_ads_small",
+            messagesLarger = "keymind\\helljumper\\ui\\fonts\\chud_messages_larger",
+            messagesSmall = "keymind\\helljumper\\ui\\fonts\\chud_messages_small"
+        },
+        console = "keymind\\helljumper\\fonts\\console_font",
+        system = "keymind\\helljumper\\fonts\\system_font"
+    }
 }
 
 return tag
