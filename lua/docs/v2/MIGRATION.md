@@ -73,7 +73,7 @@ v2 keeps the same two top-level names but reorganizes what's under them:
 | `Balltze.math.*` (bezier curves) | **removed** — no bezier curve helpers in v2 currently |
 | `Balltze.output.*` (subtitles, BIK video, font metrics) | **removed** — no equivalent in v2 currently. For simple on-screen text, see `Engine.hud.addText` below (a new v2-only capability, not a direct v1 port). |
 | `Balltze.features.*` (cross-map tag import, aspect ratio) | Cross-map tag import is now `Engine.tag.importTag` (see §3) — no longer under `Balltze.features`. Aspect ratio handling has no v2 equivalent currently. |
-| `Balltze.chimera.*` (Chimera-script compatibility shim) | **removed entirely** — if you relied on this for a Chimera-ported script, there is no v2 equivalent; you'll need to port directly to the native v2 API |
+| `Balltze.chimera.*` (Chimera-script compatibility shim) | **removed entirely** — if you relied on this for a Chimera-ported script, there is no v2 equivalent; you'll need to port directly to the native v2 API. The one exception is Chimera's `get_global`/`set_global`, which now have native replacements — see §7. |
 | `Engine.core.consolePrint` | `Engine.terminal.print` |
 | `Engine.core.getTickCount/getEngineEdition` | `Engine.game.getTickCount/getGameEngineType` — note the *name* changed too (`getEngineEdition` → `getGameEngineType`), not just the namespace, and the returned value's possible strings differ (v1: `"retail"\|"demo"\|"custom"`; v2 `GameEngineType` reflects the active *game engine mode*, e.g. `"slayer"`, not the disc edition) |
 | `Engine.core.getCameraType/getCameraData/getResolution` | **removed** — no v2 equivalent currently |
@@ -177,7 +177,7 @@ end)
 | — | `frame_begin`, `frame_end`, `tick` | new in v2 (`frame_begin`/`frame_end` didn't exist as separate events in v1; v1's `tick` event existed but is now confirmed genuinely context-less in both versions) |
 | `camera`, `hudHoldForActionMessage`, `networkGameChatMessage`, `objectDamage`, `rconMessage`, `uiRender`, `hudRender`, `postCarnageReportRender`, `hudElementBitmapRender`, `uiWidgetBackgroundRender`, `navpointsRender`, `serverConnect`, `soundPlayback`, `uiWidgetMouseButtonPress` | *(none)* | **no v2 equivalent currently** — if your plugin depends on any of these, there's no direct port available yet |
 
-There is still no raw `hudRender`-style per-frame draw event in v2. If your v1 plugin used `hudRender` just to draw text every frame, you likely don't need a replacement event at all — see `Engine.hud.addText` under §7, a declarative alternative that avoids per-frame drawing entirely.
+There is still no raw `hudRender`-style per-frame draw event in v2. If your v1 plugin used `hudRender` just to draw text every frame, you likely don't need a replacement event at all — see `Engine.hud.addText` under §8, a declarative alternative that avoids per-frame drawing entirely.
 
 Listener priority strings are unchanged: `"highest" | "above_default" | "default" | "lowest"`.
 
@@ -218,7 +218,43 @@ does validate the handle still refers to a live object before touching it (raisi
 catchable Lua error instead of crashing if not) — but design your own cleanup logic assuming
 objects you spawned may already be gone by unload time regardless.
 
-## 7. New in v2 (no v1 equivalent)
+## 7. Script globals
+
+v1 had no native way to read or write HSC globals. The only route was `Balltze.chimera.*`, the
+Chimera-script compatibility shim, which forwarded to Chimera's `get_global(name)` and
+`set_global(name, value)`. That shim is gone in v2 (see §2), and the replacement is native:
+
+```lua
+-- Chimera / v1 shim
+local count = get_global("lua_short")
+set_global("lua_short", count + 1)
+
+-- v2
+local count = Engine.script.getGlobal("lua_short")
+Engine.script.setGlobal("lua_short", count + 1)
+```
+
+Semantics worth knowing:
+
+- **Names are case insensitive**, and the engine's own globals are searched before the current
+  scenario's, so a scenario global that shadows an engine name is unreachable by name. This is
+  the engine's own lookup order, not something v2 imposes.
+- **Only boolean, real, short and long globals are supported.** Any other declared type (object
+  references, ai, device groups, ...) raises a Lua error naming the offending type, rather than
+  returning a meaningless number. Chimera silently reported those as "unimplemented".
+- **An unknown name is an error, not `nil`.** Wrap the call in `pcall` if you want to probe for a
+  global's existence, since there is no separate "does this global exist" query.
+- `setGlobal` converts the value to the global's declared type, so writing `1.7` to a short
+  global stores `1`. Booleans accept any Lua truthy value; the numeric types require a number.
+
+**One real behavioral fix over Chimera:** writing an *engine* global now takes effect. Engine
+globals are C variables that the scripting runtime shadows in a value table, and the runtime
+refreshes that table from the C variable on every read. Chimera's `set_global` only wrote the
+shadow copy, so writes to engine globals were silently reverted on the next read. v2 propagates
+the write back to the backing variable. Scenario globals (the overwhelmingly common case, and
+what a script like `lua_short` is) have no backing variable and behaved correctly in both.
+
+## 8. New in v2 (no v1 equivalent)
 
 These have no v1 counterpart at all — nothing to migrate away from, just new capabilities:
 

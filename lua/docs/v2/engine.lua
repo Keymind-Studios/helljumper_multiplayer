@@ -55,6 +55,18 @@ Engine.script = {}
 ---@param script string
 function Engine.script.execute(script) end
 
+-- Read a script global by name. Errors if no global has that name, or if its type is not
+-- boolean, real, short or long. Engine globals are searched before the scenario's own.
+---@param name string @case insensitive
+---@return boolean|number
+function Engine.script.getGlobal(name) end
+
+-- Write a script global by name. The value is converted to the global's declared type.
+-- Errors if no global has that name, or if its type is not boolean, real, short or long.
+---@param name string @case insensitive
+---@param value boolean|number
+function Engine.script.setGlobal(name, value) end
+
 
 -------------------------------------------------------
 -- Engine.tag
@@ -227,6 +239,37 @@ function Engine.object.objectAttachToMarker(objectHandle, objectMarker, attachme
 
 
 -------------------------------------------------------
+-- Engine.physics
+-------------------------------------------------------
+
+Engine.physics = {}
+
+---@alias CollisionTestPreset
+---| "environment" # structure and water surfaces only
+---| "lineOfSight" # what blocks vision: structure, vehicles, scenery, machines
+---| "projectiles" # what stops a projectile: structure, water and every object type
+---| "objects" # every object type, ignores structure
+---| "bipedMovement" # hits what blocks a walking biped: structure, vehicles, scenery, machines; passes through bipeds
+---| "bipedMovementSolid" # like "bipedMovement" but also hits bipeds
+---| "deadBipedMovement" # hits what blocks a dead biped: structure, scenery, machines
+---| "vehicleMovement" # hits what blocks a vehicle: structure, scenery, machines
+
+---@class CollisionResult
+---@field point Point3d @hit point in world space
+---@field type CollisionResultType @"structure", "media" or "object"
+---@field objectHandle ObjectHandle? @nil when the hit was against the structure BSP
+
+-- Cast a ray and return the first hit, or nil if nothing was hit.
+-- delta is the full displacement, not a unit direction; the ray spans origin to origin + delta.
+---@param origin Point3d|{x: number, y: number, z: number}
+---@param delta Vector3d|{i: number, j: number, k: number}
+---@param flags? CollisionTestPreset @default "environment"
+---@param excludedObjectHandle? ObjectHandle|integer @unit to ignore during the test
+---@return CollisionResult|nil
+function Engine.physics.castRay(origin, delta, flags, excludedObjectHandle) end
+
+
+-------------------------------------------------------
 -- Engine.player
 -------------------------------------------------------
 
@@ -373,11 +416,6 @@ function InterfaceText:remove() end
 ---@param options? InterfaceTextOptions
 ---@return InterfaceText
 function Engine.interface.addText(text, x, y, options) end
-
----@class HudDrawFlags
----@field flashing boolean
----@field disabled boolean
----@field inMultiplayer boolean
 
 ---@class HudStaticElement
 local HudStaticElement = {}
