@@ -65,6 +65,20 @@
 ---| "squad" # Enter a Squad name
 ---| "platoon" # Enter a Platoon name
 
+---@alias ai_default_state string
+---|"none" # Select None
+---|"sleeping" # Select Sleeping
+---|"alert" # Select Alert
+---|"moving_repeat_same_position" # Select Moving Repeat Same Position
+---|"moving_loop" # Select Moving Loop
+---|"moving_loop_back_and_forth" # Select Moving Loop Back and Forth
+---|"moving_loop_randomly" # Select Moving Loop Randomly
+---|"moving_randomly" # Select Moving Randomly
+---|"guarding" # Select Guarding
+---|"guarding_at_guard_position" # Select Guarding At Guard Position
+---|"searching" # Select Searching
+---|"fleeing" # Select Fleeing
+
 ---@alias conversation string # Name of a conversation from the current scenario
 
 ---@alias actor_type
