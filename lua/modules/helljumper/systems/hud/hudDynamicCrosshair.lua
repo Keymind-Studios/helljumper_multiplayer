@@ -15,542 +15,739 @@ local dynamicCrosshair = {}
 local floor = math.floor
 local ceil = math.ceil
 
-local crossHairAnimations = {
+-- The arithmetic every handler was writing out by hand, in one place. Nothing here is required: a
+-- handler is handed the tag struct itself and can write any field of it directly. These only exist
+-- so the two idioms this module repeats the most stop being copied around.
+local hudWrite = {}
+
+--- What a value driven by the heat comes to: where it sits cold, plus how far the heat carries it
+---@param driver number @usually weaponObject.heat, but any 0..1 the animation wants to drive off
+---@param initial number
+---@param additional number
+---@return number
+function hudWrite.ramp(driver, initial, additional)
+    return initial + driver * additional
+end
+
+--- Size of anything the HUD draws, whichever of the two ways its block keeps it
+---
+--- Guerilla shows every one of these as the same pair of boxes, width scale and height scale, but
+--- the tag does not keep them the same way: a crosshair overlay, an overlay element's overlay, a
+--- meter and a number each carry two loose fields, while a static element carries a single Vector2d
+--- one level further in, under the .staticElement it is written through. Which one is in hand is
+--- read off the struct rather than asked for, so a handler passes what it has and stops caring.
+---@param element WeaponHudInterfaceCrosshairsCrosshairOverlays|WeaponHudInterfaceMeterElement|WeaponHudInterfaceNumberElement|WeaponHudInterfaceOverlayElementOverlays|HudInterfaceStaticElementDefinition
+---@param width number
+---@param height? number @same as width when left out, which is what a round reticle piece wants
+function hudWrite.scale(element, width, height)
+    local vector = element.scale
+    if vector then
+        vector.i = width
+        vector.j = height or width
+    else
+        element.widthScale = width
+        element.heightScale = height or width
+    end
+end
+
+--- How far along x a piece sits, rounded away from the middle so it never lands short of it
+---
+--- The tag keeps these offsets as whole pixels. Rounding away from zero is what the animations
+--- were already doing by hand, floor on the way left and ceil on the way right.
+---@param element WeaponHudInterfaceCrosshairsCrosshairOverlays|WeaponHudInterfaceMeterElement|WeaponHudInterfaceNumberElement|WeaponHudInterfaceOverlayElementOverlays|HudInterfaceStaticElementDefinition
+---@param value number
+function hudWrite.offsetX(element, value)
+    element.anchorOffset.x = value < 0 and floor(value) or ceil(value)
+end
+
+--- How far along y a piece sits, rounded the same way
+---@param element WeaponHudInterfaceCrosshairsCrosshairOverlays|WeaponHudInterfaceMeterElement|WeaponHudInterfaceNumberElement|WeaponHudInterfaceOverlayElementOverlays|HudInterfaceStaticElementDefinition
+---@param value number
+function hudWrite.offsetY(element, value)
+    element.anchorOffset.y = value < 0 and floor(value) or ceil(value)
+end
+
+--- The four channels Guerilla shows, as the one number every colour field in the tag keeps them in
+---
+--- Where that number goes depends on the block: an overlay or a number keeps its colours under
+--- .defaultColor.parameters, a static element under .staticElement.color.parameters, and a meter
+--- keeps bare ones of its own in colorAtMeterMinimum, colorAtMeterMaximum, flashColor and
+--- emptyColor. This packs the value; the handler says where it lands.
+---@param a integer
+---@param r integer
+---@param g integer
+---@param b integer
+---@return integer
+function hudWrite.color(a, r, g, b)
+    -- Arithmetic rather than shifts, so this does not depend on which Lua it is running under: the
+    -- server side of this project still goes through compat53.
+    return a * 0x1000000 + r * 0x10000 + g * 0x100 + b
+end
+
+-- The two HUD blocks that keep their writable pieces one level further in. A block named here is
+-- walked twice, element and then piece, and its handler is called once per piece with both indices.
+-- Every other block is walked once and its handler called with the element itself.
+local nestedBlocks = {crosshairs = "crosshairOverlays", overlayElements = "overlays"}
+
+-- One handler per weapon_hud_interface block, named exactly as the tag names them. Declaring the
+-- signatures here once is what keeps them out of the entries below: a weapon's table is typed
+-- against this, so every handler inside it takes its parameter types from these lines and carries
+-- no annotation of its own. Adding a block to a weapon is the one line that names it, nothing more.
+--
+-- Every index is named after what it counts, and the two blocks that nest hand over the piece
+-- rather than the box holding it. What arrives is one overlay either way, and the two indices say
+-- which box it came out of and which overlay of that box it is: an overlay element's handler
+-- reading overlayElementIndex 2 and overlayIndex 3 has the third overlay of the second overlay
+-- element in hand. All indices count from one, in the order the tag lists them.
+--
+-- A handler is handed the tag struct itself, so what it can write is whatever the tag holds:
+-- offsets, scales, colours, flags, sequence indices, any of it.
+-- childHuds is the same shape all the way down, so an entry can be nested the way the tags are: the
+-- HUD a weapon points at, the one that hands off to, and the one after that. A link that names the
+-- one below it hands its own childHuds down; a link with no entry, or one that declares none,
+-- leaves the lookup where it was, so a HUD three deep can also be named straight from the weapon
+-- rather than through the two above it. Only blocks with a handler are walked either way.
+---@class WeaponHudEntry
+---@field crosshairs? fun(overlay: WeaponHudInterfaceCrosshairsCrosshairOverlays, weaponObject: WeaponObject, crosshairIndex: integer, overlayIndex: integer)
+---@field overlayElements? fun(overlay: WeaponHudInterfaceOverlayElementOverlays, weaponObject: WeaponObject, overlayElementIndex: integer, overlayIndex: integer)
+---@field staticElements? fun(element: WeaponHudInterfaceStaticElement, weaponObject: WeaponObject, staticElementIndex: integer)
+---@field meterElements? fun(meter: WeaponHudInterfaceMeterElement, weaponObject: WeaponObject, meterIndex: integer)
+---@field numberElements? fun(numberElement: WeaponHudInterfaceNumberElement, weaponObject: WeaponObject, numberIndex: integer)
+---@field childHuds? table<string, WeaponHudEntry>
+
+-- Every weapon whose HUD this module writes, keyed by weapon tag path
+---@type table<string, WeaponHudEntry>
+local weaponHuds = {
 
     -- AssaultRifleMA38
-    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
-    ---@param weaponObject WeaponObject
-    ---@param crosshairIndex integer
-    ---@param overlayIndex integer
-    [path.weapon.human.assaultRifleMa38] = function(overlay, weaponObject, crosshairIndex,
-                                                    overlayIndex)
-        local reticleInitial = 4
-        local reticleAdditional = 16
-        local dotReticleInitial = 0.08
-        local dotReticleAdditional = 0
-        local animTimer = weaponObject.readyTicks + weaponObject.magazines[1].reloadTicksRemaining
-        if animTimer > 20 then
-            animTimer = 20
-        end
-        local heat = weaponObject.heat * reticleAdditional + animTimer / 2
-        local heatOrig = weaponObject.heat
-        local scaleDot = dotReticleInitial + heat * dotReticleAdditional
-        if crosshairIndex == 1 then
-            if overlayIndex == 1 then
-                overlay.anchorOffset.x = floor(-reticleInitial - heat) -- Left
-            elseif overlayIndex == 2 then
-                overlay.anchorOffset.x = ceil(reticleInitial + heat) -- Right
-            elseif overlayIndex == 3 then
-                overlay.anchorOffset.y = floor(-reticleInitial - heat) -- Up
-            elseif overlayIndex == 4 then
-                overlay.anchorOffset.y = ceil(reticleInitial + heat) -- Down
+    [path.weapon.human.assaultRifleMa38] = {
+        crosshairs = function(overlay, weaponObject, crosshairIndex, overlayIndex)
+            local reticleInitial = 4
+            local reticleAdditional = 16
+            local dotReticleInitial = 0.08
+            local dotReticleAdditional = 0
+            local animTimer = weaponObject.readyTicks +
+                                  weaponObject.magazines[1].reloadTicksRemaining
+            if animTimer > 20 then
+                animTimer = 20
             end
-        elseif crosshairIndex == 2 then
-            overlay.heightScale = scaleDot * heatOrig
-            overlay.widthScale = scaleDot * heatOrig
+            -- Left spelled out: ramp reads as "where it sits cold, plus how far the heat carries
+            -- it", and the timer riding in the middle of this sum is not that
+            local heat = weaponObject.heat * reticleAdditional + animTimer / 2
+            local scaleDot = hudWrite.ramp(heat, dotReticleInitial, dotReticleAdditional)
+            if crosshairIndex == 1 then
+                if overlayIndex == 1 then
+                    hudWrite.offsetX(overlay, -reticleInitial - heat) -- Left
+                elseif overlayIndex == 2 then
+                    hudWrite.offsetX(overlay, reticleInitial + heat) -- Right
+                elseif overlayIndex == 3 then
+                    hudWrite.offsetY(overlay, -reticleInitial - heat) -- Up
+                elseif overlayIndex == 4 then
+                    hudWrite.offsetY(overlay, reticleInitial + heat) -- Down
+                end
+            elseif crosshairIndex == 2 then
+                hudWrite.scale(overlay, scaleDot * weaponObject.heat)
+            end
         end
-    end,
+    },
 
     -- LmgSaw
-    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
-    ---@param weaponObject WeaponObject
-    ---@param crosshairIndex integer
-    ---@param overlayIndex integer
-    [path.weapon.human.saw] = function(overlay, weaponObject, crosshairIndex, overlayIndex)
-        local reticleInitial = 4
-        local reticleAdditional = 20
-        local dotReticleInitial = 0.08
-        local dotReticleAdditional = 0
-        local animTimer = weaponObject.readyTicks + weaponObject.magazines[1].reloadTicksRemaining
-        if animTimer > 20 then
-            animTimer = 20
+    [path.weapon.human.saw] = {
+        crosshairs = function(overlay, weaponObject, crosshairIndex, overlayIndex)
+            local reticleInitial = 4
+            local reticleAdditional = 20
+            local dotReticleInitial = 0.08
+            local dotReticleAdditional = 0
+            local animTimer = weaponObject.readyTicks +
+                                  weaponObject.magazines[1].reloadTicksRemaining
+            if animTimer > 20 then
+                animTimer = 20
+            end
+            local heat = weaponObject.heat * reticleAdditional + animTimer / 2
+            local scaleDot = hudWrite.ramp(heat, dotReticleInitial, dotReticleAdditional)
+            if crosshairIndex == 1 then
+                hudWrite.offsetX(overlay, -reticleInitial - heat) -- Left
+            elseif crosshairIndex == 2 then
+                hudWrite.offsetX(overlay, reticleInitial + heat) -- Right
+            elseif crosshairIndex == 3 then
+                hudWrite.offsetY(overlay, -reticleInitial - heat) -- Up
+            elseif crosshairIndex == 4 then
+                hudWrite.offsetY(overlay, reticleInitial + heat) -- Down
+            elseif crosshairIndex == 5 then
+                hudWrite.scale(overlay, scaleDot * weaponObject.heat)
+            end
         end
-        local heat = weaponObject.heat * reticleAdditional + animTimer / 2
-        local heatOrig = weaponObject.heat
-        local scaleDot = dotReticleInitial + heat * dotReticleAdditional
-        if crosshairIndex == 1 then
-            overlay.anchorOffset.x = floor(-reticleInitial - heat) -- Left
-        elseif crosshairIndex == 2 then
-            overlay.anchorOffset.x = ceil(reticleInitial + heat) -- Right
-        elseif crosshairIndex == 3 then
-            overlay.anchorOffset.y = floor(-reticleInitial - heat) -- Up
-        elseif crosshairIndex == 4 then
-            overlay.anchorOffset.y = ceil(reticleInitial + heat) -- Down
-        elseif crosshairIndex == 5 then
-            overlay.heightScale = scaleDot * heatOrig
-            overlay.widthScale = scaleDot * heatOrig
-        end
-    end,
+    },
 
     -- Needler
-    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
-    ---@param weaponObject WeaponObject
-    ---@param crosshairIndex integer
-    [path.weapon.covenant.needler] = function(overlay, weaponObject, crosshairIndex)
-        local reticleInitial = 12
-        local reticleAdditional = 15
-        local dotReticleInitial = 0.08
-        local dotReticleAdditional = 0
-        local animTimer = weaponObject.readyTicks + weaponObject.magazines[1].reloadTicksRemaining
-        if animTimer > 20 then
-            animTimer = 20
+    [path.weapon.covenant.needler] = {
+        crosshairs = function(overlay, weaponObject, crosshairIndex)
+            local reticleInitial = 12
+            local reticleAdditional = 15
+            local dotReticleInitial = 0.08
+            local dotReticleAdditional = 0
+            local animTimer = weaponObject.readyTicks +
+                                  weaponObject.magazines[1].reloadTicksRemaining
+            if animTimer > 20 then
+                animTimer = 20
+            end
+            local heat = weaponObject.heat * reticleAdditional + animTimer / 2
+            local scaleDot = hudWrite.ramp(heat, dotReticleInitial, dotReticleAdditional)
+            if crosshairIndex == 1 then
+                hudWrite.offsetX(overlay, -reticleInitial - heat) -- Left
+            elseif crosshairIndex == 2 then
+                hudWrite.offsetX(overlay, reticleInitial + heat) -- Right
+            elseif crosshairIndex == 3 then
+                hudWrite.scale(overlay, scaleDot * weaponObject.heat)
+            end
         end
-        local heat = weaponObject.heat * reticleAdditional + animTimer / 2
-        local heatOrig = weaponObject.heat
-        local scaleDot = dotReticleInitial + heat * dotReticleAdditional
-        if crosshairIndex == 1 then
-            overlay.anchorOffset.x = floor(-reticleInitial - heat) -- Left
-        elseif crosshairIndex == 2 then
-            overlay.anchorOffset.x = ceil(reticleInitial + heat) -- Right
-        elseif crosshairIndex == 3 then
-            overlay.heightScale = scaleDot * heatOrig
-            overlay.widthScale = scaleDot * heatOrig
-        end
-    end,
+    },
 
     -- Disruptor
-    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
-    ---@param weaponObject WeaponObject
-    ---@param crosshairIndex integer
-    [path.weapon.covenant.disruptor] = function(overlay, weaponObject, crosshairIndex)
-        local reticleInitialPos = 0
-        local reticleAdditionalPos = 1.5
-        local reticleScaleInitial = 0.22
-        local reticleScaleAdditional = 0.26
-        local reticleScaleZero = 0
-        local animTimerA = weaponObject.readyTicks * 2 +
-                               weaponObject.magazines[1].reloadTicksRemaining * 2
-        if animTimerA > 20 then
-            animTimerA = 20
+    [path.weapon.covenant.disruptor] = {
+        crosshairs = function(overlay, weaponObject, crosshairIndex)
+            local reticleInitialPos = 0
+            local reticleAdditionalPos = 1.5
+            local reticleScaleInitial = 0.22
+            local reticleScaleAdditional = 0.26
+            local reticleScaleZero = 0
+            local animTimerA = weaponObject.readyTicks * 2 +
+                                   weaponObject.magazines[1].reloadTicksRemaining * 2
+            if animTimerA > 20 then
+                animTimerA = 20
+            end
+            local animTimerB = weaponObject.magazines[1].reloadTicksRemaining * 2 +
+                                   reticleScaleInitial
+            if animTimerB > 20 then
+                animTimerB = 10
+            end
+            local heat = weaponObject.heat
+            local reticleAddPos = hudWrite.ramp(heat, reticleInitialPos, reticleAdditionalPos)
+            local reticleScale = hudWrite.ramp(heat, reticleScaleInitial, reticleScaleAdditional)
+            if crosshairIndex == 1 then
+                hudWrite.offsetX(overlay,
+                                 -reticleInitialPos - reticleAddPos * heat - animTimerA / 4 * 0.9)
+                -- The width alone, the way it was: hudWrite.scale would take the height with it and
+                -- squash a piece that was never meant to move
+                overlay.widthScale = reticleScale
+            elseif crosshairIndex == 2 then
+                hudWrite.offsetX(overlay,
+                                 reticleInitialPos + reticleAddPos * heat + animTimerA / 4 * 0.9)
+                overlay.widthScale = reticleScale
+            elseif crosshairIndex == 3 then
+                -- Two scales that do not match: the width loses a little more than the height does
+                hudWrite.scale(overlay,
+                               reticleScaleZero - reticleScaleInitial + animTimerA / 42 -
+                                   animTimerB / 70,
+                               reticleScaleZero - reticleScaleInitial + animTimerA / 42)
+            end
         end
-        local animTimerB = weaponObject.magazines[1].reloadTicksRemaining * 2 + reticleScaleInitial
-        if animTimerB > 20 then
-            animTimerB = 10
-        end
-        local heat = weaponObject.heat
-        local reticleAddPos = reticleInitialPos + heat * reticleAdditionalPos
-        local reticleScale = reticleScaleInitial + heat * reticleScaleAdditional
-        if crosshairIndex == 1 then
-            overlay.anchorOffset.x = floor(
-                                        -reticleInitialPos - reticleAddPos * heat - animTimerA / 4 *
-                                            0.9) -- Left
-            overlay.widthScale = reticleScale
-        elseif crosshairIndex == 2 then
-            overlay.anchorOffset.x = ceil(reticleInitialPos + reticleAddPos * heat + animTimerA / 4 *
-                                              0.9) -- Right
-            overlay.widthScale = reticleScale
-        elseif crosshairIndex == 3 then
-            overlay.widthScale = reticleScaleZero - reticleScaleInitial + animTimerA / 42 -
-                                     animTimerB / 70
-            overlay.heightScale = reticleScaleZero - reticleScaleInitial + animTimerA / 42
-        end
-    end,
+    },
 
     -- BattleRifle65H
-    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
-    ---@param weaponObject WeaponObject
-    ---@param crosshairIndex integer
-    [path.weapon.human.br65h] = function(overlay, weaponObject, crosshairIndex)
-        local zoomMaskInitial = 3
-        local zoomMaskAdditional = 0.22
-        local zoomInitial = 0.21
-        local zoomAdditional = 0.018
-        local heat = weaponObject.heat
-        local scaleMask = zoomMaskInitial + heat * zoomMaskAdditional
-        local scaleZoom = zoomInitial + heat * zoomAdditional
-        if crosshairIndex == 1 then
-            overlay.widthScale = scaleMask
-            overlay.heightScale = scaleMask
-        elseif crosshairIndex == 2 then
-            overlay.widthScale = scaleZoom
-            overlay.heightScale = scaleZoom
+    [path.weapon.human.br65h] = {
+        crosshairs = function(overlay, weaponObject, crosshairIndex)
+            local zoomMaskInitial = 3
+            local zoomMaskAdditional = 0.22
+            local zoomInitial = 0.21
+            local zoomAdditional = 0.018
+            local heat = weaponObject.heat
+            local scaleMask = hudWrite.ramp(heat, zoomMaskInitial, zoomMaskAdditional)
+            local scaleZoom = hudWrite.ramp(heat, zoomInitial, zoomAdditional)
+            if crosshairIndex == 1 then
+                hudWrite.scale(overlay, scaleMask)
+            elseif crosshairIndex == 2 then
+                hudWrite.scale(overlay, scaleZoom)
+            end
         end
-    end,
+    },
 
     -- DMR392
-    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
-    ---@param weaponObject WeaponObject
-    ---@param crosshairIndex integer
-    [path.weapon.human.dmr392] = function(overlay, weaponObject, crosshairIndex)
-        local reticleAddPos = 3
-        local reticleScaleInitial = 0.15
-        local reticleScaleAdditional = 0.1
-        local zoomMaskInitial = 0.65
-        local zoomMaskAdditional = 0.06
-        local zoomInitial = 0.5
-        local zoomAdditional = 0.06
-        local heat = weaponObject.heat
-        local scaleMask = zoomMaskInitial + heat * zoomMaskAdditional
-        local scaleZoom = zoomInitial + heat * zoomAdditional
-        local reticlePosition = heat * reticleAddPos
-        if crosshairIndex == 1 then
-            overlay.widthScale = scaleMask
-            overlay.heightScale = scaleMask
-        elseif crosshairIndex == 2 then
-            overlay.widthScale = scaleZoom
-            overlay.heightScale = scaleZoom
-        elseif crosshairIndex == 3 then
-            overlay.anchorOffset.x = floor(-reticlePosition * (4 / 3) * 0.98)
-        elseif crosshairIndex == 4 then
-            overlay.anchorOffset.x = ceil(reticlePosition * (4 / 3) * 0.98)
-        elseif crosshairIndex == 5 then
-            overlay.anchorOffset.y = floor(-reticlePosition * (4 / 3) * 0.98)
-        elseif crosshairIndex == 6 then
-            overlay.anchorOffset.y = ceil(reticlePosition * (4 / 3) * 0.98)
+    [path.weapon.human.dmr392] = {
+        crosshairs = function(overlay, weaponObject, crosshairIndex)
+            local reticleAddPos = 3
+            local zoomMaskInitial = 0.65
+            local zoomMaskAdditional = 0.06
+            local zoomInitial = 0.5
+            local zoomAdditional = 0.06
+            local heat = weaponObject.heat
+            local scaleMask = hudWrite.ramp(heat, zoomMaskInitial, zoomMaskAdditional)
+            local scaleZoom = hudWrite.ramp(heat, zoomInitial, zoomAdditional)
+            local reticlePosition = heat * reticleAddPos * (4 / 3) * 0.98
+            if crosshairIndex == 1 then
+                hudWrite.scale(overlay, scaleMask)
+            elseif crosshairIndex == 2 then
+                hudWrite.scale(overlay, scaleZoom)
+            elseif crosshairIndex == 3 then
+                hudWrite.offsetX(overlay, -reticlePosition)
+            elseif crosshairIndex == 4 then
+                hudWrite.offsetX(overlay, reticlePosition)
+            elseif crosshairIndex == 5 then
+                hudWrite.offsetY(overlay, -reticlePosition)
+            elseif crosshairIndex == 6 then
+                hudWrite.offsetY(overlay, reticlePosition)
+            end
         end
-    end,
+    },
 
     -- ShotgunM90
-    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
-    ---@param weaponObject WeaponObject
-    ---@param crosshairIndex integer
-    [path.weapon.human.shotgunM90] = function(overlay, weaponObject, crosshairIndex)
-        local reticleScaleInitial = 0.23
-        local reticleScaleAdditional = 0.07
-        local readyTime = weaponObject.readyTicks
-        if readyTime > 10 then
-            readyTime = 6
+    [path.weapon.human.shotgunM90] = {
+        crosshairs = function(overlay, weaponObject, crosshairIndex)
+            local reticleScaleInitial = 0.23
+            local reticleScaleAdditional = 0.07
+            local readyTime = weaponObject.readyTicks
+            if readyTime > 10 then
+                readyTime = 6
+            end
+            -- readyTime twice and no reload, the way this one was tuned
+            local heat = weaponObject.heat + (readyTime / 6 * 0.5) + (readyTime / 6)
+            local reticleScale = hudWrite.ramp(heat, reticleScaleInitial, reticleScaleAdditional)
+            if crosshairIndex == 1 then
+                hudWrite.scale(overlay, reticleScale)
+            end
         end
-        local reloadTime = weaponObject.magazines[1].reloadTicksRemaining * 0.4
-        if reloadTime > 9 then
-            reloadTime = 0
-        end
-        local heat = weaponObject.heat + (readyTime / 6 * 0.5) + (readyTime / 6)
-        local reticleScale = reticleScaleInitial + heat * reticleScaleAdditional
-        if crosshairIndex == 1 then
-            overlay.widthScale = reticleScale
-            overlay.heightScale = reticleScale
-        end
-    end,
+    },
 
     -- MagnumM6S
-    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
-    ---@param weaponObject WeaponObject
-    ---@param crosshairIndex integer
-    [path.weapon.human.magnumM6s] = function(overlay, weaponObject, crosshairIndex)
-        local reticleInitial = 0.2
-        local reticleAdditional = 0.6
-        local zoomMaskInitial = 1.5
-        local zoomMaskAdditional = 0.22
-        local zoomInitial = 0.44
-        local zoomAdditional = 0.057
-        local readyTime = weaponObject.readyTicks
-        if readyTime > 10 then
-            readyTime = 6
+    [path.weapon.human.magnumM6s] = {
+        crosshairs = function(overlay, weaponObject, crosshairIndex)
+            local reticleInitial = 0.2
+            local reticleAdditional = 0.6
+            local zoomMaskInitial = 1.5
+            local zoomMaskAdditional = 0.22
+            local zoomInitial = 0.44
+            local zoomAdditional = 0.057
+            local readyTime = weaponObject.readyTicks
+            if readyTime > 10 then
+                readyTime = 6
+            end
+            local reloadTime = weaponObject.magazines[1].reloadTicksRemaining * 0.4
+            if reloadTime > 9 then
+                reloadTime = 0
+            end
+            local heat = weaponObject.heat
+            local scaleReticle = hudWrite.ramp(heat, reticleInitial, reticleAdditional)
+            local scaleMask = hudWrite.ramp(heat, zoomMaskInitial, zoomMaskAdditional)
+            local scaleZoom = hudWrite.ramp(heat, zoomInitial, zoomAdditional)
+            if crosshairIndex == 1 then
+                hudWrite.scale(overlay, scaleMask)
+            elseif crosshairIndex == 2 then
+                hudWrite.scale(overlay, scaleZoom)
+            elseif crosshairIndex == 3 then
+                hudWrite.scale(overlay, scaleReticle + readyTime / 8 * 0.5 + reloadTime / 8 * 0.4)
+            elseif crosshairIndex == 4 then
+                hudWrite.scale(overlay, 0.165)
+            end
         end
-        -- FIXME This also leaks memory due to magazines being a table with unknown elements
-        local reloadTime = weaponObject.magazines[1].reloadTicksRemaining * 0.4
-        if reloadTime > 9 then
-            reloadTime = 0
-        end
-        local heat = weaponObject.heat
-        local scaleReticle = reticleInitial + heat * reticleAdditional
-        local scaleMask = zoomMaskInitial + heat * zoomMaskAdditional
-        local scaleZoom = zoomInitial + heat * zoomAdditional
-        if crosshairIndex == 1 then
-            overlay.widthScale = scaleMask
-            overlay.heightScale = scaleMask
-        elseif crosshairIndex == 2 then
-            overlay.widthScale = scaleZoom
-            overlay.heightScale = scaleZoom
-        elseif crosshairIndex == 3 then
-            overlay.widthScale = scaleReticle + readyTime / 8 * 0.5 + reloadTime / 8 * 0.4
-            overlay.heightScale = scaleReticle + readyTime / 8 * 0.5 + reloadTime / 8 * 0.4
-        elseif crosshairIndex == 4 then
-            overlay.widthScale = 0.165
-            overlay.heightScale = 0.165
-        end
-    end,
+    },
 
     -- SpnkrRocketLauncher
-    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
-    ---@param weaponObject WeaponObject
-    ---@param crosshairIndex integer
-    [path.weapon.human.spnkr] = function(overlay, weaponObject, crosshairIndex)
-        local zoomMaskInitial = 1.7
-        local zoomMaskAdditional = 0.6
-        local zoomInitial = 0.5
-        local zoomAdditional = 0.15
-        local heat = weaponObject.heat
-        local scaleMask = zoomMaskInitial + heat * zoomMaskAdditional
-        local scaleZoom = zoomInitial + heat * zoomAdditional
-        if crosshairIndex == 1 then
-            overlay.widthScale = scaleMask
-            overlay.heightScale = scaleMask
-        elseif crosshairIndex == 2 then
-            overlay.widthScale = scaleZoom
-            overlay.heightScale = scaleZoom
+    [path.weapon.human.spnkr] = {
+        crosshairs = function(overlay, weaponObject, crosshairIndex)
+            local zoomMaskInitial = 1.7
+            local zoomMaskAdditional = 0.6
+            local zoomInitial = 0.5
+            local zoomAdditional = 0.15
+            local heat = weaponObject.heat
+            local scaleMask = hudWrite.ramp(heat, zoomMaskInitial, zoomMaskAdditional)
+            local scaleZoom = hudWrite.ramp(heat, zoomInitial, zoomAdditional)
+            if crosshairIndex == 1 then
+                hudWrite.scale(overlay, scaleMask)
+            elseif crosshairIndex == 2 then
+                hudWrite.scale(overlay, scaleZoom)
+            end
         end
-    end,
+    },
 
     -- VK78Commando
-    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
-    ---@param weaponObject WeaponObject
-    ---@param crosshairIndex integer
-    [path.weapon.human.vk78Commando] = function(overlay, weaponObject, crosshairIndex)
-        local zoomFullInitial = 0.4
-        local zoomFullAdditional = 0.03
-        local zoomMaskInitial = 2
-        local zoomMaskAdditional = 0.03
-        local zoomBlurInitial = 0.8
-        local zoomBlurAdditional = 0.2
-        local reticleInitPos = 3
-        local reticleAddPos = 16
-        local reticleInitScale = 0.2
-        local reticleAddScale = 0.16
-        local strokeInitial = 0.22
-        local strokeAdditional = 0.0015
-        local strokeLess = 0.08
-        local dotReticleInitial = 0.09
-        local dotReticleAdditional = 0
-        local animTimer = weaponObject.readyTicks + weaponObject.magazines[1].reloadTicksRemaining
-        if animTimer > 20 then
-            animTimer = 10
+    [path.weapon.human.vk78Commando] = {
+        crosshairs = function(overlay, weaponObject, crosshairIndex)
+            local zoomFullInitial = 0.4
+            local zoomFullAdditional = 0.03
+            local zoomMaskInitial = 2
+            local zoomMaskAdditional = 0.03
+            local zoomBlurInitial = 0.8
+            local zoomBlurAdditional = 0.2
+            local reticleInitPos = 3
+            local reticleAddPos = 16
+            local reticleInitScale = 0.2
+            local reticleAddScale = 0.16
+            local strokeInitial = 0.22
+            local strokeAdditional = 0.0015
+            local strokeLess = 0.08
+            local dotReticleInitial = 0.09
+            local dotReticleAdditional = 0
+            local animTimer = weaponObject.readyTicks +
+                                  weaponObject.magazines[1].reloadTicksRemaining
+            if animTimer > 20 then
+                animTimer = 10
+            end
+            local heat = weaponObject.heat + animTimer / 30
+            local heatOrig = weaponObject.heat
+            local scaleMask = hudWrite.ramp(heatOrig, zoomMaskInitial, zoomMaskAdditional)
+            local scaleFull = hudWrite.ramp(heatOrig, zoomFullInitial, zoomFullAdditional)
+            local scaleBlur = hudWrite.ramp(heatOrig, zoomBlurInitial, zoomBlurAdditional)
+            local scaleReticle = hudWrite.ramp(heat, reticleInitScale, reticleAddScale)
+            local scaleStroke = hudWrite.ramp(heat, strokeInitial, strokeAdditional)
+            local scaleDot = hudWrite.ramp(heat, dotReticleInitial, dotReticleAdditional)
+            local posReticleAdd = heat * 1.1 * reticleAddPos
+            if crosshairIndex == 2 then
+                hudWrite.scale(overlay, scaleMask)
+            elseif crosshairIndex == 3 or crosshairIndex == 4 then
+                hudWrite.scale(overlay, scaleFull)
+            elseif crosshairIndex == 5 or crosshairIndex == 6 then
+                hudWrite.scale(overlay, scaleBlur)
+            elseif crosshairIndex == 7 then
+                hudWrite.scale(overlay, scaleReticle)
+            elseif crosshairIndex == 8 then
+                hudWrite.offsetX(overlay, -reticleInitPos - posReticleAdd * heat) -- Left
+                -- Thinner across than it is tall, which is what a vertical stroke wants
+                hudWrite.scale(overlay, scaleStroke - strokeLess, scaleStroke)
+            elseif crosshairIndex == 9 then
+                hudWrite.offsetX(overlay, reticleInitPos + posReticleAdd * heat) -- Right
+                hudWrite.scale(overlay, scaleStroke - strokeLess, scaleStroke)
+            elseif crosshairIndex == 10 then
+                hudWrite.offsetY(overlay, -reticleInitPos - posReticleAdd * heat) -- Up
+                -- And the other way round for a horizontal one
+                hudWrite.scale(overlay, scaleStroke, scaleStroke - strokeLess)
+            elseif crosshairIndex == 11 then
+                hudWrite.offsetY(overlay, reticleInitPos + posReticleAdd * heat) -- Down
+                hudWrite.scale(overlay, scaleStroke, scaleStroke - strokeLess)
+            elseif crosshairIndex == 12 then
+                hudWrite.scale(overlay, scaleDot * heatOrig)
+            end
         end
-        local heat = weaponObject.heat + animTimer / 30
-        local heatOrig = weaponObject.heat
-        local scaleMask = zoomMaskInitial + heatOrig * zoomMaskAdditional
-        local scaleFull = zoomFullInitial + heatOrig * zoomFullAdditional
-        local scaleBlur = zoomBlurInitial + heatOrig * zoomBlurAdditional
-        local scaleReticle = reticleInitScale + heat * reticleAddScale
-        local posReticleAdd = heat * 1.1 * reticleAddPos
-        local scaleStroke = strokeInitial + heat * strokeAdditional
-        local scaleDot = dotReticleInitial + heat * dotReticleAdditional
-        if crosshairIndex == 2 then
-            overlay.widthScale = scaleMask
-            overlay.heightScale = scaleMask
-        elseif crosshairIndex == 3 then
-            overlay.widthScale = scaleFull
-            overlay.heightScale = scaleFull
-        elseif crosshairIndex == 4 then
-            overlay.widthScale = scaleFull
-            overlay.heightScale = scaleFull
-        elseif crosshairIndex == 5 then
-            overlay.widthScale = scaleBlur
-            overlay.heightScale = scaleBlur
-        elseif crosshairIndex == 6 then
-            overlay.widthScale = scaleBlur
-            overlay.heightScale = scaleBlur
-        elseif crosshairIndex == 7 then
-            overlay.widthScale = scaleReticle
-            overlay.heightScale = scaleReticle
-        elseif crosshairIndex == 8 then
-            overlay.anchorOffset.x = floor(-reticleInitPos - posReticleAdd * heat) -- Left
-            overlay.widthScale = scaleStroke - strokeLess
-            overlay.heightScale = scaleStroke
-        elseif crosshairIndex == 9 then
-            overlay.anchorOffset.x = ceil(reticleInitPos + posReticleAdd * heat) -- Right
-            overlay.widthScale = scaleStroke - strokeLess
-            overlay.heightScale = scaleStroke
-        elseif crosshairIndex == 10 then
-            overlay.anchorOffset.y = floor(-reticleInitPos - posReticleAdd * heat) -- Left
-            overlay.widthScale = scaleStroke
-            overlay.heightScale = scaleStroke - strokeLess
-        elseif crosshairIndex == 11 then
-            overlay.anchorOffset.y = ceil(reticleInitPos + posReticleAdd * heat) -- Left
-            overlay.widthScale = scaleStroke
-            overlay.heightScale = scaleStroke - strokeLess
-        elseif crosshairIndex == 12 then
-            overlay.heightScale = scaleDot * heatOrig
-            overlay.widthScale = scaleDot * heatOrig
-        end
-    end,
+    },
 
     -- SniperRifle
-    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
-    ---@param weaponObject WeaponObject
-    ---@param crosshairIndex integer
-    [path.weapon.human.sniper] = function(overlay, weaponObject, crosshairIndex)
-        local reticleInitial = 0
-        local reticleAdditional = 0.3
-        local zoomMaskInitial = 2.209
-        local zoomMaskAdditional = 0.03
-        local zoomInitial = 0.47
-        local zoomAdditional = 0.03
-        local zoomLevelsInitial = 0.45
-        local zoomLevelsAdditional = 0.12
-        local zoomLevelPosInitial = -200
-        local zoomLevelPosAdditional = 10
-        local readyTime = weaponObject.readyTicks
-        if readyTime > 10 then
-            readyTime = 6
-        end
-        local reloadTime = weaponObject.magazines[1].reloadTicksRemaining * 0.4
-        if reloadTime > 9 then
-            reloadTime = 0
-        end
-        local heat = weaponObject.heat
-        local scaleReticle = reticleInitial + heat * reticleAdditional
-        local scaleMask = zoomMaskInitial + heat * zoomMaskAdditional
-        local scaleZoom = zoomInitial + heat * zoomAdditional
-        local scaleZoomLevels = zoomLevelsInitial + heat * zoomLevelsAdditional
-        local positionZoomLevels = heat * zoomLevelPosAdditional
-        if crosshairIndex == 2 then
-            overlay.widthScale = scaleReticle + readyTime / 25 * 0.5
-            overlay.heightScale = scaleReticle + readyTime / 25 * 0.5
-        elseif crosshairIndex == 3 then
-            overlay.widthScale = scaleMask
-            overlay.heightScale = scaleMask
-        elseif crosshairIndex == 4 then
-            overlay.widthScale = scaleZoom
-            overlay.heightScale = scaleZoom
-        elseif crosshairIndex == 5 then
-            overlay.widthScale = scaleZoomLevels
-            overlay.heightScale = scaleZoomLevels
-            overlay.anchorOffset.x = floor(zoomLevelPosInitial - positionZoomLevels * heat -
-                                               reloadTime / 2 * 0.9)
-        end
-    end,
+    --
+    -- Its HUD is a chain rather than a single tag: sniper_rifle_srs99c hands off to
+    -- sniper_rifle_ticks, and that one to sniper_rifle_ext_meters. The crosshairs below belong to
+    -- the first; anything further down is named under childHuds by its own tag path.
+    [path.weapon.human.sniper] = {
+        crosshairs = function(overlay, weaponObject, crosshairIndex)
+            local reticleInitial = 0
+            local reticleAdditional = 0.3
+            local zoomMaskInitial = 0.9
+            local zoomMaskAdditional = 0.03
+            local zoomInitial = 0.45
+            local zoomAdditional = 0.03
+            local zoomLevelsInitial = 0.35
+            local zoomLevelsAdditional = 0.12
+            local zoomLevelPosInitial = -140
+            local zoomLevelPosAdditional = 10
+            local readyTime = weaponObject.readyTicks
+            if readyTime > 10 then
+                readyTime = 6
+            end
+            local reloadTime = weaponObject.magazines[1].reloadTicksRemaining * 0.4
+            if reloadTime > 9 then
+                reloadTime = 0
+            end
+            local heat = weaponObject.heat
+            local scaleReticle = hudWrite.ramp(heat, reticleInitial, reticleAdditional)
+            local scaleMask = hudWrite.ramp(heat, zoomMaskInitial, zoomMaskAdditional)
+            local scaleZoom = hudWrite.ramp(heat, zoomInitial, zoomAdditional)
+            local scaleZoomLevels = hudWrite.ramp(heat, zoomLevelsInitial, zoomLevelsAdditional)
+            local positionZoomLevels = heat * zoomLevelPosAdditional
+            if crosshairIndex == 2 then
+                hudWrite.scale(overlay, scaleReticle + readyTime / 25 * 0.5)
+            elseif crosshairIndex == 3 then
+                hudWrite.scale(overlay, scaleMask)
+            elseif crosshairIndex == 4 then
+                hudWrite.scale(overlay, scaleZoom)
+                --overlay.defaultColor.parameters.defaultColor = hudWrite.color(200, 169, 198, 243)
+                overlay.defaultColor.parameters.defaultColor = hudWrite.color(200, 0, 0, 0)
+            elseif crosshairIndex == 5 or crosshairIndex == 6 then
+                hudWrite.scale(overlay, scaleZoom)
+            elseif crosshairIndex == 7 then
+                hudWrite.scale(overlay, scaleZoomLevels)
+                hudWrite.offsetY(overlay, zoomLevelPosInitial - positionZoomLevels * heat -
+                                     reloadTime / 2 * 0.9)
+            end
+        end,
+        childHuds = {
+            [path.weaponHudInterface.child.sniperRifleTicks] = {
+                staticElements = function (element, weaponObject, staticElementIndex)
+                    local ticksInitialScale = 1
+                    local ticksAdditionalScale = 0.3
+                    local LTicksInitialPos = -280
+                    local LTicksAdditionalPos = -15
+                    local RTicksInitialPos = 280
+                    local RTicksAdditionalPos = 15
+                    local heat = weaponObject.heat
+                    local scaleReticle = hudWrite.ramp(heat, ticksInitialScale, ticksAdditionalScale)
+                    local LTickPos = hudWrite.ramp(heat, LTicksInitialPos, LTicksAdditionalPos)
+                    local RTickPos = hudWrite.ramp(heat, RTicksInitialPos, RTicksAdditionalPos)
+                    if staticElementIndex == 1 then
+                        hudWrite.scale(element.staticElement, scaleReticle)
+                        hudWrite.offsetX(element.staticElement, RTickPos)
+                    elseif staticElementIndex == 2 then
+                        hudWrite.scale(element.staticElement, scaleReticle)
+                        hudWrite.offsetX(element.staticElement, LTickPos)
+                    end
+                end,
+                childHuds = {
+                    [path.weaponHudInterface.child.sniperRifleExtMeters] = {
+                        meterElements = function(meter, weaponObject, meterIndex)
+                            -- A meter keeps its offset and its two scales bare, the way an overlay does,
+                            -- and its colours as four numbers of its own: colorAtMeterMinimum,
+                            -- colorAtMeterMaximum, flashColor and emptyColor. hudWrite.color packs one.
+                            if meterIndex == 1 then
+                                local meterInitial = 100
+                                local meterAdditional = 5
+                                local heat = weaponObject.heat * meterAdditional
+                                local scaleMeter = hudWrite.ramp(heat, 0.5, 0.01)
+                                hudWrite.scale(meter, scaleMeter)
+                                hudWrite.offsetY(meter, meterInitial + heat)
+                            end
+                        end
+                    }
+                }
+            }
+        }
+    },
 
     -- Skewer
-    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
-    ---@param weaponObject WeaponObject
-    ---@param crosshairIndex integer
-    [path.weapon.covenant.skewer] = function(overlay, weaponObject, crosshairIndex)
-        local zoomFullInitial = 0.47
-        local zoomFullAdditional = 0.1
-        local zoomMaskInitial = 0.88
-        local zoomMaskAdditional = 0.1
-        local reticleAddPos = 10
-        local reticleAddScale = 0.25
-        local animTimer = weaponObject.readyTicks * 2 +
-                              weaponObject.magazines[1].reloadTicksRemaining * 2
-        if animTimer > 20 then
-            animTimer = 20
+    [path.weapon.covenant.skewer] = {
+        crosshairs = function(overlay, weaponObject, crosshairIndex)
+            local zoomFullInitial = 0.47
+            local zoomFullAdditional = 0.1
+            local zoomMaskInitial = 0.88
+            local zoomMaskAdditional = 0.1
+            local reticleAddPos = 10
+            local reticleAddScale = 0.25
+            local animTimer = weaponObject.readyTicks * 2 +
+                                  weaponObject.magazines[1].reloadTicksRemaining * 2
+            if animTimer > 20 then
+                animTimer = 20
+            end
+            local heat = weaponObject.heat
+            local scaleMask = hudWrite.ramp(heat, zoomMaskInitial, zoomMaskAdditional)
+            local scaleFull = hudWrite.ramp(heat, zoomFullInitial, zoomFullAdditional)
+            local posReticleAdd = heat * reticleAddPos
+            if crosshairIndex == 1 then
+                hudWrite.scale(overlay, scaleMask)
+            elseif crosshairIndex == 2 or crosshairIndex == 3 then
+                hudWrite.scale(overlay, scaleFull)
+            elseif crosshairIndex == 4 then
+                hudWrite.offsetX(overlay, -posReticleAdd * heat - animTimer / 2 * 0.9)
+            elseif crosshairIndex == 5 then
+                hudWrite.offsetX(overlay, posReticleAdd * heat + animTimer / 2 * 0.9)
+            elseif crosshairIndex == 6 then
+                hudWrite.scale(overlay, -reticleAddScale + animTimer / 30)
+            end
         end
-        local heat = weaponObject.heat
-        local scaleMask = zoomMaskInitial + heat * zoomMaskAdditional
-        local scaleFull = zoomFullInitial + heat * zoomFullAdditional
-        local posReticleAdd = heat * reticleAddPos
-        if crosshairIndex == 1 then
-            overlay.widthScale = scaleMask
-            overlay.heightScale = scaleMask
-        elseif crosshairIndex == 2 then
-            overlay.widthScale = scaleFull
-            overlay.heightScale = scaleFull
-        elseif crosshairIndex == 3 then
-            overlay.widthScale = scaleFull
-            overlay.heightScale = scaleFull
-        elseif crosshairIndex == 4 then
-            overlay.anchorOffset.x = floor(-posReticleAdd * heat - animTimer / 2 * 0.9)
-        elseif crosshairIndex == 5 then
-            overlay.anchorOffset.x = ceil(posReticleAdd * heat + animTimer / 2 * 0.9)
-        elseif crosshairIndex == 6 then
-            overlay.widthScale = -reticleAddScale + animTimer / 30
-            overlay.heightScale = -reticleAddScale + animTimer / 30
-        end
-    end,
+    },
 
     -- StormRifle
-    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
-    ---@param weaponObject WeaponObject
-    ---@param crosshairIndex integer
-    [path.weapon.covenant.stormRifle] = function(overlay, weaponObject, crosshairIndex)
-        local reticleAddPos = 3
-        local reticleScaleInitial = 0.3
-        local reticleScaleAdditional = 0.07
-        local dotReticleInitial = 0.09
-        local dotReticleAdditional = 0
-        local readyTime = weaponObject.readyTicks
-        if readyTime > 10 then
-            readyTime = 6
+    [path.weapon.covenant.stormRifle] = {
+        crosshairs = function(overlay, weaponObject, crosshairIndex)
+            local reticleAddPos = 3
+            local reticleScaleInitial = 0.3
+            local reticleScaleAdditional = 0.07
+            local dotReticleInitial = 0.09
+            local dotReticleAdditional = 0
+            local readyTime = weaponObject.readyTicks
+            if readyTime > 10 then
+                readyTime = 6
+            end
+            local reloadTime = weaponObject.magazines[1].reloadTicksRemaining * 0.4
+            if reloadTime > 9 then
+                reloadTime = 0
+            end
+            local heat = weaponObject.heat + (readyTime / 6 * 0.5) + (reloadTime / 6 * 0.4)
+            local heatOrig = weaponObject.heat
+            local reticleScale = hudWrite.ramp(heat, reticleScaleInitial, -reticleScaleAdditional)
+            local scaleDot = hudWrite.ramp(heat, dotReticleInitial, dotReticleAdditional)
+            local reticlePos = heat * reticleAddPos * 2
+            if crosshairIndex == 1 then
+                hudWrite.offsetX(overlay, -reticlePos) -- Up and to the left
+                hudWrite.offsetY(overlay, -reticlePos)
+            elseif crosshairIndex == 2 then
+                hudWrite.offsetX(overlay, reticlePos) -- Down and to the right
+                hudWrite.offsetY(overlay, reticlePos)
+            elseif crosshairIndex == 3 then
+                hudWrite.offsetX(overlay, reticlePos) -- Up and to the right
+                hudWrite.offsetY(overlay, -reticlePos)
+            elseif crosshairIndex == 4 then
+                hudWrite.offsetX(overlay, -reticlePos) -- Down and to the left
+                hudWrite.offsetY(overlay, reticlePos)
+            elseif crosshairIndex == 5 then
+                hudWrite.scale(overlay, scaleDot * heatOrig)
+            elseif crosshairIndex == 6 then
+                hudWrite.scale(overlay, -reticleScale)
+            end
         end
-        local reloadTime = weaponObject.magazines[1].reloadTicksRemaining * 0.4
-        if reloadTime > 9 then
-            reloadTime = 0
-        end
-        local heat = weaponObject.heat + (readyTime / 6 * 0.5) + (reloadTime / 6 * 0.4)
-        local heatOrig = weaponObject.heat
-        local reticleScale = reticleScaleInitial + heat * -reticleScaleAdditional
-        local reticlePos = heat * reticleAddPos * 2
-        local scaleDot = dotReticleInitial + heat * dotReticleAdditional
-
-        if crosshairIndex == 1 then
-            overlay.anchorOffset.x = floor(-reticlePos)
-            overlay.anchorOffset.y = floor(-reticlePos)
-        elseif crosshairIndex == 2 then
-            overlay.anchorOffset.x = ceil(reticlePos)
-            overlay.anchorOffset.y = ceil(reticlePos)
-        elseif crosshairIndex == 3 then
-            overlay.anchorOffset.x = ceil(reticlePos)
-            overlay.anchorOffset.y = floor(-reticlePos)
-        elseif crosshairIndex == 4 then
-            overlay.anchorOffset.x = floor(-reticlePos)
-            overlay.anchorOffset.y = ceil(reticlePos)
-        elseif crosshairIndex == 5 then
-            overlay.widthScale = scaleDot * heatOrig
-            overlay.heightScale = scaleDot * heatOrig
-        elseif crosshairIndex == 6 then
-            overlay.widthScale = -reticleScale
-            overlay.heightScale = -reticleScale
-        end
-    end,
+    },
 
     -- PlasmaPistol
-    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
-    ---@param weaponObject WeaponObject
-    ---@param crosshairIndex integer
-    [path.weapon.covenant.plasmaPistol] = function(overlay, weaponObject, crosshairIndex)
-        local reticleAddPos = 3.5
-        local reticleScaleInitial = 0.19
-        local reticleScaleAdditional = 0.08
-        local readyTime = weaponObject.readyTicks
-        if readyTime > 10 then
-            readyTime = 6
+    [path.weapon.covenant.plasmaPistol] = {
+        crosshairs = function(overlay, weaponObject, crosshairIndex)
+            local reticleAddPos = 3.5
+            local readyTime = weaponObject.readyTicks
+            if readyTime > 10 then
+                readyTime = 6
+            end
+            local reloadTime = weaponObject.magazines[1].reloadTicksRemaining * 0.4
+            if reloadTime > 9 then
+                reloadTime = 0
+            end
+            local heat = weaponObject.heat + (readyTime / 6 * 0.5) + (reloadTime / 6 * 0.4)
+            local reticlePos = heat * reticleAddPos ^ 2
+            if crosshairIndex == 1 then
+                hudWrite.offsetX(overlay, -reticlePos) -- Left
+                hudWrite.offsetY(overlay, reticlePos * 0.45)
+            elseif crosshairIndex == 2 then
+                hudWrite.offsetY(overlay, -reticlePos) -- Up
+            elseif crosshairIndex == 3 then
+                hudWrite.offsetX(overlay, reticlePos) -- Right
+                hudWrite.offsetY(overlay, reticlePos * 0.45)
+            end
         end
-        local reloadTime = weaponObject.magazines[1].reloadTicksRemaining * 0.4
-        if reloadTime > 9 then
-            reloadTime = 0
+    },
+
+    -- PlasmaCaster
+    [path.weapon.covenant.plasmaCaster] = {
+        crosshairs = function(overlay, weaponObject, crosshairIndex)
+            local reticleInitPos = 2
+            local reticleAddPos = 3
+            local readyTime = weaponObject.readyTicks
+            if readyTime > 10 then
+                readyTime = 6
+            end
+            -- Off the reload alone and at twice its rate, which is this one's own way of counting
+            local reloadTimeB = weaponObject.magazines[1].reloadTicksRemaining * 2
+            if reloadTimeB > 20 then
+                reloadTimeB = 20
+            end
+            local heat = weaponObject.heat + (readyTime / 6 * 0.5) + (reloadTimeB / 45)
+            local reticlePos = heat * reticleAddPos ^ 2
+            if crosshairIndex == 1 then
+                hudWrite.offsetX(overlay, -reticleInitPos - reticlePos) -- Left
+                hudWrite.offsetY(overlay, reticleInitPos + reticlePos * 0.45)
+            elseif crosshairIndex == 2 then
+                hudWrite.offsetY(overlay, -reticleInitPos - reticlePos) -- Up
+            elseif crosshairIndex == 3 then
+                hudWrite.offsetX(overlay, reticleInitPos + reticlePos) -- Right
+                hudWrite.offsetY(overlay, reticleInitPos + reticlePos * 0.45)
+            end
         end
-        local heat = weaponObject.heat + (readyTime / 6 * 0.5) + (reloadTime / 6 * 0.4)
-        local reticleScale = reticleScaleInitial + heat * reticleScaleAdditional
-        local reticlePos = heat * reticleAddPos ^ 2
+    }
+}
+
+---@type WeaponHudEntry
+local exampleEntry = {
+
+    -- The reticle. Two levels: the crosshair block, then the overlays inside it.
+    crosshairs = function(overlay, weaponObject, crosshairIndex, overlayIndex)
+        local heat = weaponObject.heat
         if crosshairIndex == 1 then
-            overlay.anchorOffset.x = floor(-reticlePos)
-            overlay.anchorOffset.y = ceil(reticlePos * 0.45)
+            -- Four strokes opening out of the middle, one per overlay of the first crosshair
+            local spread = hudWrite.ramp(heat, 4, 16)
+            if overlayIndex == 1 then
+                hudWrite.offsetX(overlay, -spread)
+            elseif overlayIndex == 2 then
+                hudWrite.offsetX(overlay, spread)
+            elseif overlayIndex == 3 then
+                hudWrite.offsetY(overlay, -spread)
+            elseif overlayIndex == 4 then
+                hudWrite.offsetY(overlay, spread)
+            end
+            hudWrite.scale(overlay, hudWrite.ramp(heat, 0.22, -0.04))
         elseif crosshairIndex == 2 then
-            overlay.anchorOffset.y = floor(-reticlePos)
-        elseif crosshairIndex == 3 then
-            overlay.anchorOffset.x = ceil(reticlePos)
-            overlay.anchorOffset.y = ceil(reticlePos * 0.45)
+            -- The dot, and what else an overlay carries: its colours live in a colour block, and
+            -- its flags and sequence index are as writable as anything else
+            hudWrite.scale(overlay, hudWrite.ramp(heat, 0.08, 0.02))
+            overlay.defaultColor.parameters.defaultColor = hudWrite.color(230, 255, 255, 255)
+            overlay.defaultColor.parameters.flashingColor = hudWrite.color(255, 255, 0, 0)
+            overlay.sequenceIndex = heat > 0.5 and 1 or 0
+            overlay.flags.flashesWhenActive = heat > 0.8
         end
     end,
 
-    -- PlasmaCaster
-    ---@param overlay WeaponHudInterfaceCrosshairsCrosshairOverlays
-    ---@param weaponObject WeaponObject
-    ---@param crosshairIndex integer
-    [path.weapon.covenant.plasmaCaster] = function(overlay, weaponObject, crosshairIndex)
-        local reticleInitPos = 2
-        local reticleAddPos = 3
-        local reticleScaleInitial = 0.18
-        local reticleScaleAdditional = 0.025
-        local readyTime = weaponObject.readyTicks
-        if readyTime > 10 then
-            readyTime = 6
+    -- The animated overlays. Two levels, the same way the crosshairs are: an overlay element is a
+    -- box holding overlays, and what arrives here is one of those overlays, never the box.
+    overlayElements = function(overlay, weaponObject, overlayElementIndex, overlayIndex)
+        if overlayElementIndex == 1 and overlayIndex == 1 then
+            local heat = weaponObject.heat
+            hudWrite.scale(overlay, hudWrite.ramp(heat, 0.5, 0.1))
+            hudWrite.offsetY(overlay, hudWrite.ramp(heat, 0, -12))
+            overlay.frameRate = heat > 0.5 and 30 or 15
         end
-        local reloadTime = weaponObject.magazines[1].reloadTicksRemaining * 0.4
-        if reloadTime > 9 then
-            reloadTime = 0
+    end,
+
+    -- The backplate behind the ammo. One level, but the writable half sits under .staticElement,
+    -- and its size is a Vector2d rather than two loose scales, which hudWrite.scale sorts out.
+    staticElements = function(element, weaponObject, staticElementIndex)
+        if staticElementIndex == 1 then
+            local heat = weaponObject.heat
+            local definition = element.staticElement
+            hudWrite.scale(definition, hudWrite.ramp(heat, 0.55, 0.05))
+            hudWrite.offsetX(definition, hudWrite.ramp(heat, 18, 4))
+            hudWrite.offsetY(definition, 19)
+            definition.color.parameters.defaultColor = hudWrite.color(230, 255, 255, 255)
+            definition.sequenceIndex = 3
         end
-        local reloadTimeB = weaponObject.magazines[1].reloadTicksRemaining * 2
-        if reloadTimeB > 20 then
-            reloadTimeB = 20
+    end,
+
+    -- The loaded ammo meter. One level, everything bare on the element, and its four colours are
+    -- bare numbers of its own rather than a colour block.
+    meterElements = function(meter, weaponObject, meterIndex)
+        if meterIndex == 1 then
+            local heat = weaponObject.heat
+            hudWrite.scale(meter, hudWrite.ramp(heat, 0.58, 0.02))
+            hudWrite.offsetY(meter, hudWrite.ramp(heat, 52, -6))
+            meter.colorAtMeterMinimum = hudWrite.color(255, 134, 168, 221)
+            -- Reddening as the weapon heats up, the red channel taken up the same ramp everything
+            -- else rides on and rounded, since a colour channel is a whole number
+            meter.colorAtMeterMaximum = hudWrite.color(255, floor(hudWrite.ramp(heat, 134, 121)),
+                                                       168, 221)
+            meter.flashColor = hudWrite.color(255, 255, 0, 0)
+            meter.emptyColor = hudWrite.color(0, 0, 0, 0)
+            meter.flags.useMinmaxForStateChanges = heat > 0.5
+            meter.alphaMultiplier = 60
+            meter.translucency = 0.5
         end
-        local heat = weaponObject.heat + (readyTime / 6 * 0.5) + (reloadTimeB / 45)
-        local reticleScale = reticleScaleInitial + heat * reticleScaleAdditional
-        local reticlePos = heat * reticleAddPos ^ 2
-        if crosshairIndex == 1 then
-            overlay.anchorOffset.x = floor(-reticleInitPos - reticlePos)
-            overlay.anchorOffset.y = ceil(reticleInitPos + reticlePos * 0.45)
-        elseif crosshairIndex == 2 then
-            overlay.anchorOffset.y = floor(-reticleInitPos - reticlePos)
-        elseif crosshairIndex == 3 then
-            overlay.anchorOffset.x = ceil(reticleInitPos + reticlePos)
-            overlay.anchorOffset.y = ceil(reticleInitPos + reticlePos * 0.45)
+    end,
+
+    -- The total ammo readout. One level, and its colours are a colour block like an overlay's.
+    numberElements = function(numberElement, weaponObject, numberIndex)
+        if numberIndex == 1 then
+            local heat = weaponObject.heat
+            hudWrite.scale(numberElement, hudWrite.ramp(heat, 0.4, 0.06))
+            hudWrite.offsetX(numberElement, hudWrite.ramp(heat, 123, 8))
+            numberElement.defaultColor.parameters.defaultColor = hudWrite.color(255, 169, 198, 243)
+            numberElement.defaultColor.parameters.flashingColor = hudWrite.color(255, 255, 0, 0)
+            numberElement.maximumNumberOfDigits = 3
+            numberElement.flags.showLeadingZeros = true
         end
-    end
+    end,
+
+    -- Everything the weapon's own HUD hands off to, by the tag path of the HUD it lives in. A link
+    -- of the chain with no entry here is stepped over without breaking it, so naming only the last
+    -- of three is fine. The handlers inside are the same five keys, for that HUD's own blocks.
+    childHuds = {
+        [path.weaponHudInterface.child.sniperRifleExtMeters] = {
+            meterElements = function(meter, weaponObject, meterIndex)
+                if meterIndex == 1 then
+                    hudWrite.offsetX(meter, hudWrite.ramp(weaponObject.heat, 0, 20))
+                end
+            end
+        }
+    }
 }
+
+-- Handed out so a weapon's handlers can reach the same arithmetic the module uses. Nothing is
+-- forced through it: a handler writes the tag struct directly.
+dynamicCrosshair.write = hudWrite
+dynamicCrosshair.exampleEntry = exampleEntry
+
+--- Depth the child HUD walk gives up at
+---
+--- A tag whose child hud leads back to one already walked is caught by the handles seen along the
+--- way, so this is only a floor under a chain that is merely absurd rather than circular.
+local maxHudDepth = 8
 
 function dynamicCrosshair.dynamicReticles()
     local player = getPlayer()
@@ -570,13 +767,13 @@ function dynamicCrosshair.dynamicReticles()
         return
     end
     -- Read off the tag entry rather than matched against the tags constants: the path is what keys
-    -- crossHairAnimations, and getTagEntry hands it over without walking every weapon tag in the
-    -- map. constants.tags holds bare TagHandles now, which carry neither a path nor a handle field,
-    -- and it only holds them once tags.get() has run.
+    -- weaponHuds, and getTagEntry hands it over without walking every weapon tag in the map.
+    -- constants.tags holds bare TagHandles now, which carry neither a path nor a handle field, and
+    -- it only holds them once tags.get() has run.
     local weaponTagEntry = getTagEntry(weaponObject.tagHandle)
-    local crossHairAnimation = weaponTagEntry and crossHairAnimations[weaponTagEntry.path]
-    if not crossHairAnimation then
-        -- A weapon this table says nothing about has no reticle of its own to animate.
+    local weaponHud = weaponTagEntry and weaponHuds[weaponTagEntry.path]
+    if not weaponHud then
+        -- A weapon this table says nothing about has no HUD of its own to write.
         return
     end
     -- v2 has no .data on a tag entry; the weapon tag data is what carries the HUD it was authored
@@ -587,40 +784,72 @@ function dynamicCrosshair.dynamicReticles()
         return
     end
     ---@cast weaponTagData Weapon
-    local hudInterface = weaponTagData.hudInterface
-    -- A weapon with no HUD of its own has no reticle to move. Its reference still carries a path
-    -- field, so the handle is what says whether anything is actually there.
-    if not hudInterface or hudInterface.tagHandle:isNull() then
-        return
-    end
-    -- Taken straight off the handle the weapon tag already carries. This used to look the handle up
-    -- in a list of HUD tags gathered by path substring, which meant a weapon whose HUD had a sibling
-    -- sharing its name, an ADS one for instance, could end up with the sibling on the list and its
-    -- own HUD nowhere on it.
-    local hudInterfaceTagData = getTagData(hudInterface.tagHandle, "weapon_hud_interface")
-    if not hudInterfaceTagData then
-        return
-    end
-    -- Tag blocks are plain arrays in v2: no .elements wrapper and no .count field.
-    ---@cast hudInterfaceTagData WeaponHudInterface
-    -- An empty tag block comes back as nil rather than as an array of length zero, so a HUD with no
-    -- crosshairs at all is caught here rather than indexed into.
-    local crosshairs = hudInterfaceTagData.crosshairs
-    if not crosshairs then
-        return
-    end
-    -- Walked nested rather than flattened into a running count, so what the animation reads as
-    -- crosshair 1 overlay 2 is what the tag holds as the second overlay of the first crosshair.
-    -- Every overlay of every crosshair is handed over, which is what lets a weapon spread its
-    -- reticle over one crosshair per piece or keep those pieces as overlays of a single one.
-    for crosshairIndex = 1, #crosshairs do
-        local crosshairOverlays = crosshairs[crosshairIndex].crosshairOverlays
-        if crosshairOverlays then
-            for overlayIndex = 1, #crosshairOverlays do
-                crossHairAnimation(crosshairOverlays[overlayIndex], weaponObject, crosshairIndex,
-                                   overlayIndex)
+    -- Taken straight off the reference the weapon tag already carries. This used to look the handle
+    -- up in a list of HUD tags gathered by path substring, which meant a weapon whose HUD had a
+    -- sibling sharing its name, an ADS one for instance, could end up with the sibling on the list
+    -- and its own HUD nowhere on it.
+    local hudReference = weaponTagData.hudInterface
+    -- The weapon's own HUD is the first link of a chain: each one can hand off to another through
+    -- its child hud reference, and the sniper's reticle is spread over three of them. The first
+    -- link is written by the handlers sitting at the top of the weapon's entry, and every link past
+    -- it by whatever childHuds says about that link's own tag path.
+    ---@type WeaponHudEntry|nil
+    local handlers = weaponHud
+    -- Where the link below is looked up, and it travels down with the chain: a link whose entry
+    -- declares childHuds of its own hands them to the link under it, which is what lets an entry be
+    -- nested the way the tags are. A link with no entry, or one that declares none, leaves this
+    -- where it was, so a HUD three deep can also be named straight from the weapon.
+    local childHudLookup = weaponHud.childHuds
+    local walkedHuds = {}
+    for _ = 1, maxHudDepth do
+        -- A HUD with no child leaves a reference behind that still carries a path, so the handle is
+        -- what says whether there is another link or not.
+        if not hudReference or hudReference.tagHandle:isNull() then
+            return
+        end
+        local hudHandleValue = hudReference.tagHandle.value
+        if walkedHuds[hudHandleValue] then
+            -- A chain that leads back to a link already written would go round forever
+            return
+        end
+        walkedHuds[hudHandleValue] = true
+        local hudTagData = getTagData(hudReference.tagHandle, "weapon_hud_interface")
+        if not hudTagData then
+            return
+        end
+        ---@cast hudTagData WeaponHudInterface
+        if handlers then
+            if handlers.childHuds then
+                childHudLookup = handlers.childHuds
+            end
+            for blockName, handler in pairs(handlers) do
+                -- Tag blocks are plain arrays in v2: no .elements wrapper and no .count field. An
+                -- empty one comes back as nil rather than as an array of length zero, so a HUD
+                -- without the block a handler asks for is stepped over rather than indexed into.
+                local block
+                if blockName ~= "childHuds" then
+                    block = hudTagData[blockName]
+                end
+                if block then
+                    -- Named here, the block keeps its writable pieces one level further in and the
+                    -- handler wants both indices; otherwise the element itself is what is written.
+                    local nestedName = nestedBlocks[blockName]
+                    for elementIndex = 1, #block do
+                        local element = block[elementIndex]
+                        local pieces = nestedName and element[nestedName]
+                        if pieces then
+                            for pieceIndex = 1, #pieces do
+                                handler(pieces[pieceIndex], weaponObject, elementIndex, pieceIndex)
+                            end
+                        elseif not nestedName then
+                            handler(element, weaponObject, elementIndex)
+                        end
+                    end
+                end
             end
         end
+        hudReference = hudTagData.childHud
+        handlers = childHudLookup and hudReference and childHudLookup[hudReference.path]
     end
 end
 
