@@ -1,8 +1,9 @@
+local engine = Engine
 local getObject = Engine.object.getObject
 local getPlayer = Engine.player.getPlayer
 local getTagData = Engine.tag.getTagData
-local getTagEntry = Engine.tag.getTagEntry
 local path = require "helljumper.systems.constants.paths"
+local core = require "helljumper.systems.core.core"
 
 local dynamicCrosshair = {}
 
@@ -636,112 +637,61 @@ local weaponHuds = {
     }
 }
 
----@type WeaponHudEntry
-local exampleEntry = {
 
-    -- The reticle. Two levels: the crosshair block, then the overlays inside it.
-    crosshairs = function(overlay, weaponObject, crosshairIndex, overlayIndex)
-        local heat = weaponObject.heat
-        if crosshairIndex == 1 then
-            -- Four strokes opening out of the middle, one per overlay of the first crosshair
-            local spread = hudWrite.ramp(heat, 4, 16)
-            if overlayIndex == 1 then
-                hudWrite.offsetX(overlay, -spread)
-            elseif overlayIndex == 2 then
-                hudWrite.offsetX(overlay, spread)
-            elseif overlayIndex == 3 then
-                hudWrite.offsetY(overlay, -spread)
-            elseif overlayIndex == 4 then
-                hudWrite.offsetY(overlay, spread)
-            end
-            hudWrite.scale(overlay, hudWrite.ramp(heat, 0.22, -0.04))
-        elseif crosshairIndex == 2 then
-            -- The dot, and what else an overlay carries: its colours live in a colour block, and
-            -- its flags and sequence index are as writable as anything else
-            hudWrite.scale(overlay, hudWrite.ramp(heat, 0.08, 0.02))
-            overlay.defaultColor.parameters.defaultColor = hudWrite.color(230, 255, 255, 255)
-            overlay.defaultColor.parameters.flashingColor = hudWrite.color(255, 255, 0, 0)
-            overlay.sequenceIndex = heat > 0.5 and 1 or 0
-            overlay.flags.flashesWhenActive = heat > 0.8
-        end
-    end,
-
-    -- The animated overlays. Two levels, the same way the crosshairs are: an overlay element is a
-    -- box holding overlays, and what arrives here is one of those overlays, never the box.
-    overlayElements = function(overlay, weaponObject, overlayElementIndex, overlayIndex)
-        if overlayElementIndex == 1 and overlayIndex == 1 then
-            local heat = weaponObject.heat
-            hudWrite.scale(overlay, hudWrite.ramp(heat, 0.5, 0.1))
-            hudWrite.offsetY(overlay, hudWrite.ramp(heat, 0, -12))
-            overlay.frameRate = heat > 0.5 and 30 or 15
-        end
-    end,
-
-    -- The backplate behind the ammo. One level, but the writable half sits under .staticElement,
-    -- and its size is a Vector2d rather than two loose scales, which hudWrite.scale sorts out.
-    staticElements = function(element, weaponObject, staticElementIndex)
-        if staticElementIndex == 1 then
-            local heat = weaponObject.heat
-            local definition = element.staticElement
-            hudWrite.scale(definition, hudWrite.ramp(heat, 0.55, 0.05))
-            hudWrite.offsetX(definition, hudWrite.ramp(heat, 18, 4))
-            hudWrite.offsetY(definition, 19)
-            definition.color.parameters.defaultColor = hudWrite.color(230, 255, 255, 255)
-            definition.sequenceIndex = 3
-        end
-    end,
-
-    -- The loaded ammo meter. One level, everything bare on the element, and its four colours are
-    -- bare numbers of its own rather than a colour block.
-    meterElements = function(meter, weaponObject, meterIndex)
-        if meterIndex == 1 then
-            local heat = weaponObject.heat
-            hudWrite.scale(meter, hudWrite.ramp(heat, 0.58, 0.02))
-            hudWrite.offsetY(meter, hudWrite.ramp(heat, 52, -6))
-            meter.colorAtMeterMinimum = hudWrite.color(255, 134, 168, 221)
-            -- Reddening as the weapon heats up, the red channel taken up the same ramp everything
-            -- else rides on and rounded, since a colour channel is a whole number
-            meter.colorAtMeterMaximum = hudWrite.color(255, floor(hudWrite.ramp(heat, 134, 121)),
-                                                       168, 221)
-            meter.flashColor = hudWrite.color(255, 255, 0, 0)
-            meter.emptyColor = hudWrite.color(0, 0, 0, 0)
-            meter.flags.useMinmaxForStateChanges = heat > 0.5
-            meter.alphaMultiplier = 60
-            meter.translucency = 0.5
-        end
-    end,
-
-    -- The total ammo readout. One level, and its colours are a colour block like an overlay's.
-    numberElements = function(numberElement, weaponObject, numberIndex)
-        if numberIndex == 1 then
-            local heat = weaponObject.heat
-            hudWrite.scale(numberElement, hudWrite.ramp(heat, 0.4, 0.06))
-            hudWrite.offsetX(numberElement, hudWrite.ramp(heat, 123, 8))
-            numberElement.defaultColor.parameters.defaultColor = hudWrite.color(255, 169, 198, 243)
-            numberElement.defaultColor.parameters.flashingColor = hudWrite.color(255, 255, 0, 0)
-            numberElement.maximumNumberOfDigits = 3
-            numberElement.flags.showLeadingZeros = true
-        end
-    end,
-
-    -- Everything the weapon's own HUD hands off to, by the tag path of the HUD it lives in. A link
-    -- of the chain with no entry here is stepped over without breaking it, so naming only the last
-    -- of three is fine. The handlers inside are the same five keys, for that HUD's own blocks.
-    childHuds = {
-        [path.weaponHudInterface.child.sniperRifleExtMeters] = {
-            meterElements = function(meter, weaponObject, meterIndex)
-                if meterIndex == 1 then
-                    hudWrite.offsetX(meter, hudWrite.ramp(weaponObject.heat, 0, 20))
-                end
-            end
-        }
-    }
-}
 
 -- Handed out so a weapon's handlers can reach the same arithmetic the module uses. Nothing is
 -- forced through it: a handler writes the tag struct directly.
 dynamicCrosshair.write = hudWrite
-dynamicCrosshair.exampleEntry = exampleEntry
+
+-- Every entry above as the loaded map has it: the weapons keyed by the value of their tag handles,
+-- and the child HUDs inside them by theirs. The tick then reaches both with a handle it is already
+-- holding, rather than with a path it has to read out of a tag first.
+---@type table<integer, WeaponHudEntry>
+local weaponHudsByTag = {}
+
+--- One weapon's entry over again, with the tag paths inside it turned into the handles they name
+---@param entry WeaponHudEntry
+---@return WeaponHudEntry
+local function resolveHudEntry(entry)
+    local resolved = {}
+    for blockName, handler in pairs(entry) do
+        -- Every block's handler carries straight over; only the paths need doing anything to.
+        if blockName ~= "childHuds" then
+            resolved[blockName] = handler
+        end
+    end
+    local childHuds = entry.childHuds
+    if childHuds then
+        -- The same field under the same name and the same shape all the way down, keyed by handle
+        -- value instead of by path, which is what lets the walk carry on reading it the way it did.
+        local resolvedChildHuds = {}
+        for hudTagPath, childEntry in pairs(childHuds) do
+            local hudTagHandle = engine.tag.lookupTag(hudTagPath, "weapon_hud_interface")
+            if hudTagHandle then
+                resolvedChildHuds[hudTagHandle.value] = resolveHudEntry(childEntry)
+            end
+        end
+        resolved.childHuds = resolvedChildHuds
+    end
+    return resolved
+end
+
+--- Work out which of the loaded map's weapons and HUDs the entries above are about
+---
+--- Once a map, since a handle is only good for as long as the map it was looked up in. Called after
+--- tags.get(), the way every load in this project is.
+function dynamicCrosshair.load()
+    local entriesByTag = core.resolveTagKeys(weaponHuds, "weapon")
+    weaponHudsByTag = {}
+    for weaponTagValue, entry in pairs(entriesByTag) do
+        weaponHudsByTag[weaponTagValue] = resolveHudEntry(entry)
+    end
+end
+
+--- Let go of what belonged to the map that is going
+function dynamicCrosshair.unload()
+    weaponHudsByTag = {}
+end
 
 --- Depth the child HUD walk gives up at
 ---
@@ -766,12 +716,10 @@ function dynamicCrosshair.dynamicReticles()
     if not weaponObject then
         return
     end
-    -- Read off the tag entry rather than matched against the tags constants: the path is what keys
-    -- weaponHuds, and getTagEntry hands it over without walking every weapon tag in the map.
-    -- constants.tags holds bare TagHandles now, which carry neither a path nor a handle field, and
-    -- it only holds them once tags.get() has run.
-    local weaponTagEntry = getTagEntry(weaponObject.tagHandle)
-    local weaponHud = weaponTagEntry and weaponHuds[weaponTagEntry.path]
+    -- Reached with the handle the weapon carries. This used to go through the weapon's tag entry for
+    -- its path, which meant reading a string out of the tag on every tick to hash it with; the table
+    -- was keyed by that path when the map came up instead.
+    local weaponHud = weaponHudsByTag[weaponObject.tagHandle.value]
     if not weaponHud then
         -- A weapon this table says nothing about has no HUD of its own to write.
         return
@@ -849,7 +797,11 @@ function dynamicCrosshair.dynamicReticles()
             end
         end
         hudReference = hudTagData.childHud
-        handlers = childHudLookup and hudReference and childHudLookup[hudReference.path]
+        -- By the handle the reference carries, the same one the top of the loop reads to decide
+        -- whether there is a link at all, rather than by the path beside it. A null handle finds
+        -- nothing here and is turned back at the top of the next pass.
+        handlers = childHudLookup and hudReference and
+                       childHudLookup[hudReference.tagHandle.value]
     end
 end
 
