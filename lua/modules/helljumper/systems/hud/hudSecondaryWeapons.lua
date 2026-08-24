@@ -4,9 +4,10 @@ local engine = Engine
 local getObject = Engine.object.getObject
 local getPlayer = Engine.player.getPlayer
 local path = require "helljumper.systems.constants.paths"
+local colors = require "helljumper.systems.constants.colors"
 local core = require "helljumper.systems.core.core"
 
-local secondaryWeaponIcons = {}
+local secondaryWeapons = {}
 
 --------------------------------------------------------------------------------------------------
 -- Configuration
@@ -30,7 +31,9 @@ local defaultIcon = {
     position = {x = 164, y = 25},
     scale = {width = 0.45, height = 0.45},
     flags = {flashing = false, disabled = false, inMultiplayer = false},
-    --color = {a = 120, r = 84, g = 99, b = 122}
+    -- Every icon, not the one weapon it was tried on. Written into the HUD tag rather than drawn, so
+    -- it is the palette's own form and gets packed at the moment of the write.
+    color = colors.palette.secondaryWeaponIcon
 }
 
 ---@type table<string, SecondaryWeaponIconSettings>
@@ -40,10 +43,32 @@ local weaponIcons = {
     },
     [path.weapon.human.assaultRifleMa38] = {
         staticElementIndex = 4,
-        scale = {width = 0.125, height = 0.125},
-        color = {a = 120, r = 84, g = 99, b = 122}
+        scale = {width = 0.125, height = 0.125}
     }
 }
+
+-- The table above as the loaded map has it, by the value of each weapon's tag handle, so the tick
+-- reaches it with the handle the weapon already carries instead of a path read out of the tag.
+---@type table<integer, SecondaryWeaponIconSettings>
+local weaponIconsByTag = {}
+
+-- What the count beside the icon reads as with rounds to count, and what it says instead on a weapon
+-- that feeds off a battery.
+local ammoFormat = "%d"
+local batteryFormat = "%d%%"
+
+--- The one text this module draws, so its string is written into it rather than picked out of a
+--- table. It is the same text throughout, saying a number that keeps changing, which is what
+--- core.setText rewrites in place instead of taking away and putting back.
+local ammoText = {
+    text = "",
+    position = {x = 195, y = 45},
+    fontPath = path.vectorFont.ui.hud.adsSmall,
+    justification = "right",
+    anchor = "topRight"
+}
+
+local shownAmmoText = {isUp = false}
 
 --------------------------------------------------------------------------------------------------
 -- End of configuration
@@ -66,23 +91,21 @@ local writtenElements = {}
 
 --- The icon on screen right now, if there is one
 ---@class ShownSecondaryIcon
----@field key string @weapon, HUD tag and element in one string; what tells "still the same icon"
 ---@field element HudStaticElement|nil @nil on builds where addHudStaticElement hands nothing back
 ---@type ShownSecondaryIcon|nil
 local shownIcon = nil
 
+-- The weapon the icon on screen was worked out for, as the value of its tag handle, and nil for a
+-- tick that has not worked one out yet.
+--
+-- Kept apart from shownIcon rather than inside it because it also stands for a weapon that turned
+-- out to have no icon to show: that answer is worth keeping too, or a weapon with no HUD of its own
+-- would be read for one on every tick it is carried.
+local shownIconWeaponTagValue = nil
+
 --- A HUD that cannot be read, or has no element where the settings say, is worth saying out loud
 --- once rather than on every tick for as long as the weapon is carried.
 local warnedHudElements = {}
-
---- The four channels Guerilla shows, as the one number the tag actually keeps them in
----@param color {a: integer, r: integer, g: integer, b: integer}
----@return integer
-local function packColor(color)
-    -- Arithmetic rather than shifts, so this does not depend on which Lua it is running under: the
-    -- server side of this project still goes through compat53.
-    return color.a * 0x1000000 + color.r * 0x10000 + color.g * 0x100 + color.b
-end
 
 --- Several tables' fields laid over one another, later ones winning, so what a weapon leaves out
 --- comes from the defaults
@@ -140,7 +163,7 @@ local function writeElement(claim, hudTagPath, elementIndex, hudElement, setting
     local definition = hudElement.staticElement
     local anchorOffset = definition.anchorOffset
     local scale = definition.scale
-    local colors = definition.color.parameters
+    local colorParameters = definition.color.parameters
     if not writtenElements[claim] then
         writtenElements[claim] = {
             hudTagPath = hudTagPath,
@@ -149,7 +172,7 @@ local function writeElement(claim, hudTagPath, elementIndex, hudElement, setting
             anchorOffsetY = anchorOffset.y,
             scaleWidth = scale.i,
             scaleHeight = scale.j,
-            color = colors.defaultColor,
+            color = colorParameters.defaultColor,
             stateAttachedTo = hudElement.stateAttachedTo
         }
     end
@@ -168,7 +191,7 @@ local function writeElement(claim, hudTagPath, elementIndex, hudElement, setting
         end
     end
     if settings.color then
-        colors.defaultColor = packColor(settings.color)
+        colorParameters.defaultColor = colors.pack(settings.color)
     end
     if settings.stateAttachedTo then
         hudElement.stateAttachedTo = settings.stateAttachedTo
@@ -211,6 +234,7 @@ end
 
 --- Take the icon off the screen and hand back every HUD tag written for one
 local function removeIcon()
+    shownIconWeaponTagValue = nil
     if shownIcon then
         local element = shownIcon.element
         shownIcon = nil
@@ -221,29 +245,67 @@ local function removeIcon()
     restoreWrittenElements()
 end
 
---- Show the icon of the weapon the player would swap to next
-function secondaryWeaponIcons.showSecondaryWeaponIcons()
+--- Say what the weapon the player would swap to has left, or take the number away
+---@param weaponObject WeaponObject|nil @nil when there is nothing to swap to
+local function setAmmoText(weaponObject)
+    -- Outside the icon's guard on purpose, and so read on every tick: the icon is the same picture
+    -- for as long as the same weapon is in the next slot, but the number beside it is what changes
+    -- while that weapon sits there being reloaded and fired. core.setText is what keeps that cheap,
+    -- rewriting the string in place when only the count moved.
+    if not weaponObject then
+        -- Nothing to swap to: a dead player, one carrying the single weapon, or watching someone
+        -- else. Leaving the number up would have it outlive the weapon it was counted off.
+        core.removeText(shownAmmoText)
+        return
+    end
+    local weaponTagData = engine.tag.getTagData(weaponObject.tagHandle, "weapon")
+    ---@cast weaponTagData Weapon
+    if not weaponTagData then
+        core.removeText(shownAmmoText)
+        return
+    end
+    local totalAmmo = core.getWeaponTotalAmmo(weaponObject, weaponTagData)
+    if totalAmmo then
+        ammoText.text = ammoFormat:format(totalAmmo)
+    else
+        ammoText.text = batteryFormat:format(core.getBatteryPercent(weaponObject))
+    end
+    core.setText(shownAmmoText, ammoText, colors.interface.gearText)
+end
+
+--- Show the icon of the weapon the player would swap to next, and what it has left
+---
+--- The two are one function because they are one question asked once: which weapon is next. It used
+--- to be asked twice a tick, here for the icon and again in hudExtensions for the number, which put
+--- the two an accident apart from ever disagreeing about what the player would swap to.
+function secondaryWeapons.showSecondaryWeapons()
     local player = getPlayer()
     local biped = player and getObject(player.unitHandle, "biped")
     local weaponObject = biped and core.getNextWeapon(biped, biped.currentWeaponId)
+    setAmmoText(weaponObject)
     if not weaponObject then
         removeIcon()
         return
     end
-    local weaponTagEntry = engine.tag.getTagEntry(weaponObject.tagHandle)
-    local hudTagPath = weaponTagEntry and core.getWeaponHudTagPath(weaponObject)
-    if not weaponTagEntry or not hudTagPath then
-        removeIcon()
-        return
-    end
-    local settings = resolveSettings(defaultIcon, weaponIcons[weaponTagEntry.path])
-    local elementIndex = settings.staticElementIndex or defaultStaticElementIndex
-    local claim = hudTagPath .. "|" .. elementIndex
-    local key = weaponTagEntry.path .. "|" .. claim
-    if shownIcon and shownIcon.key == key then
+    -- Which icon this is, is a question about the weapon's tag and nothing else: the HUD it comes
+    -- out of and the element of it are both read off that tag, and so are the settings. So the tag
+    -- handle the weapon already carries is the whole of what says "still the same icon", and asking
+    -- it costs one integer compare. Everything below this line used to run on every tick to build
+    -- the two strings that were compared instead, the tag reads behind them included.
+    local weaponTagValue = weaponObject.tagHandle.value
+    if weaponTagValue == shownIconWeaponTagValue then
         return
     end
     removeIcon()
+    -- Set whatever comes of it, so a weapon that turns out to have no icon is worked out once too
+    shownIconWeaponTagValue = weaponTagValue
+    local hudTagPath = core.getWeaponHudTagPath(weaponObject)
+    if not hudTagPath then
+        return
+    end
+    local settings = resolveSettings(defaultIcon, weaponIconsByTag[weaponTagValue])
+    local elementIndex = settings.staticElementIndex or defaultStaticElementIndex
+    local claim = hudTagPath .. "|" .. elementIndex
     local hudTagData = core.getWeaponHudInterfaceTagData(hudTagPath)
     if not hudTagData then
         return
@@ -261,15 +323,25 @@ function secondaryWeaponIcons.showSecondaryWeaponIcons()
     local anchor = getIconAnchor(settings, hudTagData, hudElement)
     writeElement(claim, hudTagPath, elementIndex, hudElement, settings)
     shownIcon = {
-        key = key,
         element = engine.interface.addHudStaticElement(anchor, hudElement.staticElement,
                                                        settings.flags)
     }
 end
 
-function secondaryWeaponIcons.unload()
-    removeIcon()
-    warnedHudElements = {}
+--- Work out which of the loaded map's weapons the settings above are about
+---
+--- Once a map, since a tag handle is only good for as long as the map it was read out of. Called
+--- after tags.get(), the way every load in this project is.
+function secondaryWeapons.load()
+    weaponIconsByTag = core.resolveTagKeys(weaponIcons, "weapon")
 end
 
-return secondaryWeaponIcons
+function secondaryWeapons.unload()
+    removeIcon()
+    core.removeText(shownAmmoText)
+    warnedHudElements = {}
+    -- Let go of rather than carried into the next map: the keys in it are this map's handles.
+    weaponIconsByTag = {}
+end
+
+return secondaryWeapons
