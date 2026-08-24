@@ -7,6 +7,7 @@ local utils = require "helljumper.utils"
 local hsc = require "hsc"
 local input = require "helljumper.systems.core.input"
 local path = require "helljumper.systems.constants.paths"
+local colors = require "helljumper.systems.constants.colors"
 
 local aimingDownSights = {}
 
@@ -39,8 +40,10 @@ local damagingVitalsDrop = 0.01
 -- A vector_font tag carries its own size
 local defaultFontPath = path.vectorFont.ui.hud.adsLarger
 local smallFontPath = path.vectorFont.ui.hud.adsSmall
-local defaultTextColor = {a = 1.0, r = 181 / 255, g = 227 / 255, b = 255/255}
-local covenantColor = {a = 1.0, r = 227/255, g = 203/255, b = 255/255}
+-- The readouts go through Engine.interface, so these are its form of the two. Handed round and never
+-- copied, the way every colour that is drawn rather than written into a tag is.
+local defaultTextColor = colors.interface.adsReadout
+local covenantColor = colors.interface.adsReadoutCovenant
 
 ---@class AdsHudSettings
 ---@field widthScale number?
@@ -559,14 +562,20 @@ local function resolveSettings(defaults, settings)
     return resolved
 end
 
+-- The HUD tags named in the settings above, as the loaded map has them, by the path they are named
+-- with. Filled by aimingDownSights.load and emptied when the map goes.
+---@type table<string, TagHandle>
+local hudTagHandles = {}
+
 ---@param tagPath string
 ---@return WeaponHudInterface|nil
 local function getHudTagData(tagPath)
-    -- Looked up on each write instead of held as an upvalue: tag data lives in the loaded map, so a
-    -- cached view would dangle the moment the map changes.
-    local tagHandle = engine.tag.lookupTag(tagPath, "weapon_hud_interface")
+    -- The view is asked for on each write, because tag data lives in the loaded map and a cached one
+    -- would dangle the moment the map changes. The handle it is asked with is not: that was worked
+    -- out once, when the map came up. This used to look the path up here instead, which put a search
+    -- through the map's tags on every frame of every element on the way in or out.
+    local tagHandle = hudTagHandles[tagPath]
     if not tagHandle then
-        balltze.logger.error("ADS HUD tag does not exist: {}", tagPath)
         return nil
     end
     return engine.tag.getTagData(tagHandle, "weapon_hud_interface")
@@ -581,14 +590,9 @@ end
 ---@field phases AdsPhase[] @every phase above, the element's first
 ---@field originalValues {crosshairOverlays: {widthScale: number, heightScale: number, anchorOffsetX: integer, anchorOffsetY: integer, color: integer}[]|nil}|nil
 
---- The four channels Guerilla shows, as the one number the tag actually keeps them in
----@param color {a: integer, r: integer, g: integer, b: integer}
----@return integer
-local function packColor(color)
-    -- Arithmetic rather than shifts, so this does not depend on which Lua it is running under: the
-    -- server side of this project still goes through compat53.
-    return color.a * 0x1000000 + color.r * 0x10000 + color.g * 0x100 + color.b
-end
+-- The four channels Guerilla shows, as the one number the tag actually keeps them in. Shared, since
+-- this module is not the only one that writes a colour into a tag.
+local packColor = colors.pack
 
 --- Where a piece sits partway between where the tag put it and where the aim wants it
 ---
@@ -705,7 +709,7 @@ local function writeHudElements(shownHudElement)
                     -- the size it starts from, which is what keeps it off the screen until its turn.
                     if phase.progress > 0 then
                         local overlay = overlays[overlayIndex]
-                        local colors = overlay.defaultColor.parameters
+                        local colorParameters = overlay.defaultColor.parameters
                         -- Snapshotted the first time this one piece is about to be written, and not
                         -- when the aim was taken: the pieces no longer all start together, and one
                         -- still waiting its turn has not been touched and has nothing to put back.
@@ -719,7 +723,7 @@ local function writeHudElements(shownHudElement)
                                 heightScale = overlay.heightScale,
                                 anchorOffsetX = anchorOffset.x,
                                 anchorOffsetY = anchorOffset.y,
-                                color = colors.defaultColor
+                                color = colorParameters.defaultColor
                             }
                             originalOverlays[overlayCount] = original
                         end
@@ -766,7 +770,7 @@ local function writeHudElements(shownHudElement)
                                                        targetX or fromX, targetY or fromY, ease)
                             end
                             if overlaySetting.color then
-                                colors.defaultColor = packColor(overlaySetting.color)
+                                colorParameters.defaultColor = packColor(overlaySetting.color)
                             end
                         end
                     end
@@ -1351,6 +1355,33 @@ local function getAimBreakingAction(biped, weaponObject, adsWeapon)
         return "overheated"
     end
     return nil
+end
+
+--- Work out which of the loaded map's HUD tags the settings above name
+---
+--- Once a map, since a handle is an index into it. A path with nothing behind it is said out loud
+--- here, where it is said once, rather than on every frame the aim would have written it.
+function aimingDownSights.load()
+    hudTagHandles = {}
+    for _, adsWeapon in pairs(adsWeapons) do
+        for hudTagPath in pairs(adsWeapon.hudElements or {}) do
+            -- Asked for once per path and not once per weapon that names it: two weapons sharing a
+            -- HUD, which is what the plasma pair do, would otherwise be told off twice over it.
+            if not hudTagHandles[hudTagPath] then
+                local tagHandle = engine.tag.lookupTag(hudTagPath, "weapon_hud_interface")
+                if tagHandle then
+                    hudTagHandles[hudTagPath] = tagHandle
+                else
+                    balltze.logger.error("ADS HUD tag does not exist: {}", hudTagPath)
+                end
+            end
+        end
+    end
+end
+
+--- Let go of what belonged to the map that is going
+function aimingDownSights.unload()
+    hudTagHandles = {}
 end
 
 --- Work out what the aim is doing this tick and tell the rest of the module about it. Everything
