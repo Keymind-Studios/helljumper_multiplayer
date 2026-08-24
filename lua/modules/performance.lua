@@ -54,31 +54,61 @@ local function clearHudChannel(channel)
     end
 end
 
+-- v2 has no bounding box to lay text out in the way chimera's draw_text did: a text is placed at one
+-- point and justified about it. The box the callers still pass is collapsed to that point here, so
+-- "center" lands in the middle of the box it was measured against rather than at its left edge.
+---@param left integer
+---@param right integer|nil
+---@param align string|nil
+---@return integer x
+---@return string justification
+local function collapseBounds(left, right, align)
+    if align == "center" and right then
+        return math.floor((left + right) / 2), "center"
+    elseif align == "right" and right then
+        return right, "right"
+    end
+    return left, "left"
+end
+
 local function drawTextCompat(channel, text, left, top, right, bottom, font, align, ...)
-    local _ = {right, bottom, font, align}
-    if not (engine.hud and engine.hud.addText and left ~= nil and top ~= nil) then
+    -- font is chimera's name for one of the stock fonts; v2 wants a vector_font tag handle instead,
+    -- and the nil one it gets falls back to the globals terminal font, which is what this drew with.
+    local _ = {bottom, font}
+    -- Guarded rather than assumed because this module also loads on the server, where the frame
+    -- channel is a shim and nothing is ever drawn.
+    if not (engine.interface and engine.interface.addText and left ~= nil and top ~= nil) then
         engine.terminal.print("{}", tostring(text))
         return
     end
 
+    local x, justification = collapseBounds(left, right, align)
     local channelTexts = getHudChannel(channel)
-    local key = tostring(left) .. ":" .. tostring(top)
+    local key = tostring(x) .. ":" .. tostring(top)
     local hudColor, colorKey = parseHudColor(...)
     local entry = channelTexts[key]
 
     if entry and entry.colorKey ~= colorKey then
-        entry.text:remove()
+        if entry.text then
+            entry.text:remove()
+        end
         entry = nil
         channelTexts[key] = nil
     end
 
     if not entry then
-        local hudText = Engine.hud.addText(tostring(text), left, top, hudColor)
+        -- v2 takes an options table rather than a bare colour. Passing the colour straight through
+        -- drew the text in the default white and said nothing about it.
+        local hudText = engine.interface.addText(tostring(text), x, top,
+                                                 {color = hudColor, justification = justification})
         channelTexts[key] = {text = hudText, colorKey = colorKey, seen = true}
         return
     end
 
-    entry.text.setText(tostring(text))
+    -- setText is a method, so it takes the colon: called with a dot it went in without a self.
+    if entry.text then
+        entry.text:setText(tostring(text))
+    end
     entry.seen = true
 end
 
@@ -306,7 +336,7 @@ end
 -- On the server the frame channel is a no-op shim (subscribers are never called),
 -- so the client-specific API calls inside are unreachable and safe.
 
-balltze.addEventListener("frame", function()
+local function drawLuaMemory()
     if DebugLuaMemory then
         beginHudChannelFrame("lua-memory")
         local font = "smaller"
@@ -317,7 +347,7 @@ balltze.addEventListener("frame", function()
         local bounds = {left = 0, top = 400, right = 640, bottom = 480}
         local memory = collectgarbage("count")
         local sizeInMb = memory / 1024
-        local text = string.format("Coop Evolved Lua %.4f MB", sizeInMb)
+        local text = string.format("Helljumper Lua Memory %.4f MB", sizeInMb)
         drawText(text, bounds.left, bounds.top, bounds.right, bounds.bottom, font, align,
                  table.unpack(performance.colors.default))
         endHudChannelFrame("lua-memory")
@@ -329,9 +359,9 @@ balltze.addEventListener("frame", function()
     else
         clearHudChannel("lua-memory")
     end
-end)
+end
 
-balltze.addEventListener("frame", function()
+local function drawProfiler()
     if DebugPerformance then
         beginHudChannelFrame("performance")
         local align = "left"
@@ -423,6 +453,20 @@ balltze.addEventListener("frame", function()
     else
         clearHudChannel("performance")
     end
-end)
+end
+
+--- Draw both overlays for this frame
+---
+--- Called from the one frame listener the plugin keeps, rather than each overlay subscribing for
+--- itself. Balltze holds a single listener per event name, so the two subscriptions this module used
+--- to make left only the second one running, and whatever else in the project subscribed to "frame"
+--- after them took that one down too.
+---
+--- The two are called separately and not merged into one body because the profiler bails early when
+--- the console or a menu is open, and merging would have that bail take the memory readout with it.
+function performance.frame()
+    drawLuaMemory()
+    drawProfiler()
+end
 
 return performance
