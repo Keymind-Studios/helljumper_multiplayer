@@ -4,20 +4,17 @@ local getPlayer = Engine.player.getPlayer
 
 local playerHealthRegen = {}
 
-local isGameClient = function()
-    return engine.game.getGameConnectionType() == "local"
-end
-
 local maxHealth = 1
 local healthRegenerationAmount = 0.02
 
 ---@param player Player
-local function healthRegeneration(player)
+---@param isGameClient boolean
+local function healthRegeneration(player, isGameClient)
     local biped = getObject(player.unitHandle, "biped")
     if not biped then
         return
     end
-    if isGameClient() then
+    if isGameClient then
         if biped.vitals.health <= 0 then
             biped.vitals.health = 0.000000001
         end
@@ -34,10 +31,13 @@ local function healthRegeneration(player)
 end
 
 function playerHealthRegen.healthRegen()
+    -- Asked once for the whole list rather than once a player: what kind of game this is does not
+    -- change between two players of it.
+    local isGameClient = engine.game.getGameConnectionType() == "local"
     for playerIndex = 0, 15 do
         local player = getPlayer(playerIndex)
         if player then
-            healthRegeneration(player)
+            healthRegeneration(player, isGameClient)
         end
     end
 end
