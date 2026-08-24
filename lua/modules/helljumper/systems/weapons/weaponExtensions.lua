@@ -2,8 +2,6 @@
 local balltze = Balltze
 local getObject = Engine.object.getObject
 local getPlayer = Engine.player.getPlayer
-local getTagData = Engine.tag.getTagData
-local getTagEntry = Engine.tag.getTagEntry
 local weapons = require "helljumper.systems.constants.tags"
 
 local weaponExtensions = {}
@@ -36,18 +34,18 @@ local function syncPlayerAgeWithAmmo(player)
     end
     for weaponSlot = 1, weaponSlotCount do
         local weaponHandle = biped.weapons[weaponSlot]
+        -- Passed over rather than returned on, the same way the player loop passes over an empty
+        -- slot: a weapon that cannot be read would otherwise cut the loop short and leave the slots
+        -- after it untouched.
         if weaponHandle and not weaponHandle:isNull() then
             local weapon = getObject(weaponHandle, "weapon")
-            if not weapon then
-                return
-            end
             -- v1 walked every weapon of every player and aged them all; only the caster needs
             -- this, and ageing anything else would wear weapons the engine never wears.
-            local weaponTagEntry = getTagEntry(weapon.tagHandle)
-            if not weaponTagEntry then
-                return
-            end
-            if weapon and weaponTagEntry.handle.value == casterTag.value then
+            --
+            -- Asked of the handle the weapon already carries. Reading it back off a tag entry, which
+            -- is what this used to do, means looking the entry up by that same handle and taking the
+            -- handle out of it again.
+            if weapon and weapon.tagHandle.value == casterTag.value then
                 local magazine = weapon.magazines[1]
                 if magazine then
                     local isOutOfAmmo = magazine.roundsLoaded == 0 and magazine.roundsUnloaded == 0
