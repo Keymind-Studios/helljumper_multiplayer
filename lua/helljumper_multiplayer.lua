@@ -1,23 +1,22 @@
 package.preload["luna"] = nil
 package.loaded["luna"] = nil
 require "luna"
-require "chimeraCompat"()
 local balltze = Balltze
 local engine = Engine
-local blam = require "blam2"
 local script = require "script"
-local performance
+-- Declared up here rather than beside PluginUnload because the frame listener below closes over it:
+-- a `local main` further down would leave that closure reading a global that nothing ever assigns.
+local main
 
-DebugMode = true
+DebugMode = false
 DebugLuaMemory = true
 DebugPerformance = false
 
-if DebugMode then
-    -- Registers the frame listeners that draw the Lua memory / profiler overlays.
-    performance = require "performance"
-end
-
 local commands = require "helljumper.systems.debug.commands"
+-- Required here rather than from helljumper.main because the meter is meant to be counting from the
+-- moment the plugin loads: what it was written to catch is a cost in a map's first seconds, which is
+-- over before PluginOnGameStart hands main over. Its own flags decide whether anything comes out.
+local performanceMeter = require "helljumper.systems.debug.debugPerformanceMeter"
 
 -- Override assert function to print traceback as well
 local luaAssert = assert
@@ -37,60 +36,40 @@ end
 
 balltze.logger.muteDebug(not DebugMode)
 
-local isSapp = engine.game.getGameConnectionType() == "networkServer" and
-                   type(balltze.registerSappCallbacks) == "function"
-
-if not isSapp then
-    if balltze.chimera then
-        require "chimeraCompat"()
-    end
-end
-
-balltze.addEventListener("tick", function()
-    local tickStart
-    if DebugPerformance then
-        tickStart = os.clock()
-    end
+HelljumperTickListener = balltze.addEventListener("tick", function()
+    -- First thing on the tick, before anything it measures runs: what a system costs on this tick
+    -- then lands in the window that is opening rather than in the one just reported.
+    performanceMeter.tick()
     script.poll()
-    if DebugPerformance then
-        performance.tick(os.clock() - tickStart)
+end)
+
+-- The plugin's one frame listener, the counterpart of the tick one above.
+--
+-- Balltze keeps a single listener per event name: subscribing again replaces what was there rather
+-- than joining a list, and the winner is whoever registered last. Modules therefore do not subscribe
+-- for themselves; they expose a function and are called from here, in a known order. Before this,
+-- performance.lua's two subscriptions left only its profiler running, and the ADS module's took even
+-- that down as soon as the first tick reached it.
+--
+-- main is guarded because it is not always there: it only exists from PluginOnGameStart onward, and
+-- this listener is up from the moment the plugin loads.
+HelljumperFrameListener = balltze.addEventListener("frame", function()
+    performanceMeter.frame()
+    if main then
+        main.frame()
     end
 end)
 
-if not isSapp then
-    -- Commands for Alpha Firefight
-    for command, data in pairs(commands) do
-        -- local command = command:replace("debug_", "")
-        balltze.registerCommand(command, data.description, data.help, data.save or false,
-                                data.minArgs or 0, data.maxArgs or 0, false, true, function(args)
-            -- Balltze.logger.debug("{}", inspect(args))
-            if (args and data.minArgs and data.maxArgs) and (#args < data.minArgs) or
-                (#args > data.maxArgs) then
-                balltze.logger.error("Invalid number of arguments. Usage: {}, Example: {}",
-                                     data.help, data.example)
-                return true
-            end
-            -- data.func(table.unpack(args or {}))
-            local ok, message = pcall(data.func, table.unpack(args or {}))
-            if not ok then
-                balltze.logger.error("Error executing command \"{}\": {}", command, message)
-            end
-            return true
-        end)
-    end
-    balltze.loadSettings()
-end
-
-function PluginOnSappLoad()
-    if isSapp then
-        -- Register all SAPP callbacks now that all subscribers are in place
-        balltze.registerSappCallbacks()
-        blam.rcon.patch()
-    end
-end
-
 function PluginUnload()
     balltze.logger.info("Unloading Helljumper Plugin")
+    performanceMeter.unload()
+    if main then
+        local unloaded, err = pcall(main.unload)
+        if not unloaded then
+            balltze.logger.error("Failed to unload main: {}", err)
+        end
+        main = nil
+    end
 end
 
 function OnError(message)
@@ -99,5 +78,6 @@ function OnError(message)
 end
 
 function PluginOnGameStart()
-    script.setReferenceContext(require "helljumper.main")
+    main = require "helljumper.main"
+    script.setReferenceContext(main)
 end
