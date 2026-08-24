@@ -225,14 +225,18 @@ Chimera-script compatibility shim, which forwarded to Chimera's `get_global(name
 `set_global(name, value)`. That shim is gone in v2 (see §2), and the replacement is native:
 
 ```lua
--- Chimera / v1 shim
-local count = get_global("lua_short")
-set_global("lua_short", count + 1)
+-- v1, through the shim (Chimera's own names, kept as-is under Balltze.chimera)
+local count = Balltze.chimera.get_global("lua_short")
+Balltze.chimera.set_global("lua_short", count + 1)
 
 -- v2
 local count = Engine.script.getGlobal("lua_short")
 Engine.script.setGlobal("lua_short", count + 1)
 ```
+
+If you are porting a script written for Chimera itself rather than for a v1 Balltze plugin, the
+same two functions are bare globals there (`get_global(name)` / `set_global(name, value)`), with
+identical behavior.
 
 Semantics worth knowing:
 

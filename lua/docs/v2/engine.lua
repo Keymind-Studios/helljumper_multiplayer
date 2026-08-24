@@ -219,6 +219,11 @@ Engine.object = {}
 ---@overload fun(handle: ObjectHandle|integer, type: "deviceLightFixture"): DeviceLightFixtureObject|nil
 function Engine.object.getObject(handle, type) end
 
+-- Get the type of an object without fetching the object itself
+---@param handle ObjectHandle|integer
+---@return ObjectType|nil @nil if the handle doesn't refer to a live object
+function Engine.object.getObjectType(handle) end
+
 -- Spawn an object
 ---@param tagHandle TagHandle|integer
 ---@param parentObjectHandle? ObjectHandle|integer
@@ -229,6 +234,18 @@ function Engine.object.createObject(tagHandle, parentObjectHandle, position) end
 -- Delete an object. Errors if the handle doesn't refer to a currently live object.
 ---@param objectHandle ObjectHandle|integer
 function Engine.object.deleteObject(objectHandle) end
+
+-- Get an object's position
+---@param objectHandle ObjectHandle|integer
+---@return Point3d|nil @nil if the handle doesn't refer to a live object
+function Engine.object.getObjectPosition(objectHandle) end
+
+-- Move an object, redoing its BSP bookkeeping (cluster, visibility and collision), unlike writing the position fields directly
+---@param objectHandle ObjectHandle|integer
+---@param position Point3d|{x: number, y: number, z: number}
+---@param forward? Vector3d|{i: number, j: number, k: number} @if omitted, keeps the current rotation
+---@param up? Vector3d|{i: number, j: number, k: number} @if omitted, derived from the forward vector
+function Engine.object.setObjectPosition(objectHandle, position, forward, up) end
 
 -- Attach an object to another object's marker
 ---@param objectHandle ObjectHandle|integer
@@ -279,6 +296,12 @@ Engine.player = {}
 ---@param playerHandle? PlayerHandle|integer
 ---@return Player|nil
 function Engine.player.getPlayer(playerHandle) end
+
+-- Get the handle of a local player, or nil when no local player holds that index.
+-- Only split-screen has an index other than 0.
+---@param localPlayerIndex? integer @default 0
+---@return PlayerHandle|nil
+function Engine.player.getLocalPlayerHandle(localPlayerIndex) end
 
 
 -------------------------------------------------------
@@ -380,6 +403,31 @@ function Engine.uiWidget.textBoxWidgetIsFocused(widget) end
 
 
 -------------------------------------------------------
+-- Engine.input
+-------------------------------------------------------
+
+Engine.input = {}
+
+---@alias MouseButton "left"|"middle"|"right"|"x1"|"x2"|"x3"|"x4"|"x5"
+
+-- Get the state of a mouse button.
+---@param button MouseButton
+---@return integer heldFrames @frames the button has been held, 0 when it is up
+---@return boolean released @true only on the frame the button came up
+function Engine.input.getMouseButton(button) end
+
+-- Get the mouse movement of the current frame. Deltas since the last input poll, so reading
+-- them outside a frame event repeats the last frame's values.
+---@return integer x
+---@return integer y @positive is up
+function Engine.input.getMouseMovement() end
+
+-- Get the wheel notches turned during the current frame, positive being forward.
+---@return integer
+function Engine.input.getMouseWheel() end
+
+
+-------------------------------------------------------
 -- Engine.interface
 -------------------------------------------------------
 
@@ -437,3 +485,8 @@ function HudStaticElement:remove() end
 ---@param flashStartTime? integer @tick the flash started at, or -1
 ---@return HudStaticElement
 function Engine.interface.addHudStaticElement(anchor, staticElement, flags, flashStartTime) end
+
+-- Get the menu cursor position, in the same screen space as a text on the "ui" layer.
+-- The cursor only moves while a menu is up; elsewhere it keeps its last position.
+---@return Point2dInt
+function Engine.interface.getCursorPosition() end
