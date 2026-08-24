@@ -26,6 +26,32 @@ function core.resolveTexts(entries, defaults)
     return entries
 end
 
+--- The same table over again, keyed by the value of the tag handle each of its paths resolves to
+---
+--- What this is for is the tick: a table written by tag path has to be reached through
+--- getTagEntry(object.tagHandle).path, which reads a string out of the tag to hash it with, on every
+--- tick, for every module that does it. Keyed by the handle's value instead, the object's own
+--- tagHandle is the key and nothing is read or built to get at it.
+---
+--- Call it at map load and never before. A handle belongs to the map that was loaded when it was
+--- looked up, so what comes back here has to be thrown away with that map and worked out again for
+--- the next one. A path with no tag behind it is left out rather than warned about: not every map
+--- carries every weapon this project knows the name of.
+---@generic V
+---@param entriesByPath table<string, V>
+---@param tagClass string
+---@return table<integer, V>
+function core.resolveTagKeys(entriesByPath, tagClass)
+    local entriesByHandleValue = {}
+    for tagPath, entry in pairs(entriesByPath) do
+        local tagHandle = engine.tag.lookupTag(tagPath, tagClass)
+        if tagHandle then
+            entriesByHandleValue[tagHandle.value] = entry
+        end
+    end
+    return entriesByHandleValue
+end
+
 ---@class ShownText
 ---@field handle InterfaceText|nil
 ---@field isUp boolean
@@ -44,10 +70,7 @@ function core.removeText(shown)
     shown.color = nil
 end
 
---- A font that cannot be found is worth saying out loud once, not every time a text asks for it.
 local warnedFonts = {}
-
---- Put one text on screen in the colour asked for, taking away whatever was up before it
 ---@param shown ShownText
 ---@param entry TextEntry|nil @nil leaves the HUD clear
 ---@param color table
@@ -87,7 +110,6 @@ function core.setText(shown, entry, color)
     shown.color = color
 end
 
---- The weapon a biped is holding, if it is holding one
 ---@param biped BipedObject
 ---@return WeaponObject|nil
 function core.getHeldWeapon(biped)
@@ -98,7 +120,6 @@ function core.getHeldWeapon(biped)
     return getObject(weaponHandle, "weapon")
 end
 
---- The weapon the player would swap to from the one in hand
 ---@param biped BipedObject
 ---@param heldSlot integer @counted from zero, the way currentWeaponId reports it
 ---@return WeaponObject|nil
@@ -117,7 +138,6 @@ function core.getNextWeapon(biped, heldSlot)
     return nil
 end
 
---- The magazine a weapon feeds from, or nil when it runs off a battery instead
 ---@param weaponObject WeaponObject
 ---@param weaponTagData Weapon
 ---@return WeaponObjectMagazine|nil
@@ -130,7 +150,6 @@ function core.getWeaponMagazine(weaponObject, weaponTagData)
     return weaponObject.magazines[1]
 end
 
---- Whether the weapon in hand has nothing left to it
 ---@param weaponObject WeaponObject
 ---@return boolean
 function core.isWeaponEmpty(weaponObject)
@@ -146,7 +165,6 @@ function core.isWeaponEmpty(weaponObject)
     return weaponObject.age >= 1
 end
 
---- Every round a weapon has, in its magazines and in the reserve waiting to be loaded into them
 ---@param weaponObject WeaponObject
 ---@param weaponTagData Weapon
 ---@return integer|nil @nil on a weapon that runs off a battery rather than magazines
@@ -163,7 +181,6 @@ function core.getWeaponTotalAmmo(weaponObject, weaponTagData)
     return total
 end
 
---- What is left of a battery, as the percentage the game's own HUD reads it at
 ---@param weaponObject WeaponObject
 ---@return integer
 function core.getBatteryPercent(weaponObject)
@@ -176,7 +193,6 @@ function core.getBatteryPercent(weaponObject)
     return percent
 end
 
---- A weapon's own HUD tag, by path
 ---@param weaponObject WeaponObject
 ---@return string|nil
 function core.getWeaponHudTagPath(weaponObject)
@@ -194,7 +210,6 @@ function core.getWeaponHudTagPath(weaponObject)
     return hudInterface.path
 end
 
--- Get the data of a weapon hud interface
 ---@param hudTagPath string
 ---@return WeaponHudInterface|nil
 function core.getWeaponHudInterfaceTagData(hudTagPath)
@@ -205,11 +220,6 @@ function core.getWeaponHudInterfaceTagData(hudTagPath)
     return engine.tag.getTagData(tagHandle, "weapon_hud_interface")
 end
 
---- The cutscene flag a waypoint anchors to, found by the name the scenario gave it
----
---- By name and not by position in the block: which flag is the third one in a scenario is the map
---- author's business, and matching on the name is what lets this module borrow four of them out of a
---- list that has anything else in it too.
 ---@param flagName string
 ---@return ScenarioCutsceneFlags|nil
 function core.findCutsceneFlag(flagName)
