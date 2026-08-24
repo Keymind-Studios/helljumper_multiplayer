@@ -3,6 +3,22 @@ local balltze = Balltze
 local lookupTag = engine.tag.lookupTag
 local tag = require "helljumper.systems.constants.paths"
 
+--------------------------------------------------------------------------------------------------
+-- One handle per tag this project names, worked out when a map comes up.
+--
+-- What this is for is the one question a handle answers on its own: "is this object's tag that
+-- tag?", asked as object.tagHandle.value == tags.weapon.plasmaCaster.value. One named tag, compared
+-- against.
+--
+-- It is not where a module's own table gets keyed by handle. That is core.resolveTagKeys, called
+-- from the module's own load(), and it has to live there: this file would otherwise have to require
+-- the systems to know what tables they hold, which is backwards and, with hudExtensions, circular.
+--
+-- Everything here is looked up whether it is read or not, which costs a search a piece, once a map.
+-- That is nothing to the frame, so the list is kept as a catalogue of what the project knows the
+-- name of rather than pruned to today's readers.
+--------------------------------------------------------------------------------------------------
+
 local tags = {}
 
 function tags.get()
@@ -56,8 +72,6 @@ function tags.get()
         -- HUDs a weapon reaches through another HUD's child hud reference, so they are looked up by
         -- a path of their own rather than by the weapon's the way the ones above are.
         child = {
-            sniperRifleTicks = lookupTag(tag.weaponHudInterface.child.sniperRifleTicks,
-                                         "weapon_hud_interface"),
             sniperRifleExtMeters = lookupTag(tag.weaponHudInterface.child.sniperRifleExtMeters,
                                              "weapon_hud_interface")
         }
