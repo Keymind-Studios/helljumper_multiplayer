@@ -68,3 +68,7 @@ Desktop.ini
 data
 .gitignore
 tags
+
+# User-specific files and folders
+*.bat
+_docs/
