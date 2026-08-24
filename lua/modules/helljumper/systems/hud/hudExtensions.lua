@@ -6,6 +6,7 @@ local getPlayer = Engine.player.getPlayer
 local hsc = require "hsc"
 local path = require "helljumper.systems.constants.paths"
 local tags = require "helljumper.systems.constants.tags"
+local colors = require "helljumper.systems.constants.colors"
 local core = require "helljumper.systems.core.core"
 
 local hudExtensions = {state = {playerCriticalHealth = false}}
@@ -16,13 +17,18 @@ local hudExtensions = {state = {playerCriticalHealth = false}}
 --- were measured one by one, and the radar hiding, the only one that then acted every tick
 --- regardless, was on its own costing 1.290ms of the 1.323ms this function spent, which was most of
 --- what lua cost in the whole project. Anything added here wants the same guard.
+---
+--- The biped is resolved here and handed round rather than asked for six times over. It is handed
+--- round even when there is none: what the six do about a player who is dead, or between maps, is
+--- their own business and not the same answer for each, so each is still called and still says.
 function hudExtensions.init()
-    hudExtensions.hideElementsOnZoom()
-    hudExtensions.changeGrenadeSound()
-    hudExtensions.addGrenadeTypeText()
-    hudExtensions.addWeaponText()
-    hudExtensions.addSecondaryAmmoText()
-    hudExtensions.hudBlurOnLowHealth()
+    local player = getPlayer()
+    local biped = player and getObject(player.unitHandle, "biped")
+    hudExtensions.hideElementsOnZoom(biped)
+    hudExtensions.changeGrenadeSound(biped)
+    hudExtensions.addGrenadeTypeText(biped)
+    hudExtensions.addWeaponText(biped)
+    hudExtensions.hudBlurOnLowHealth(biped)
 end
 
 ----------------------------------------------------------------------------------------------
@@ -47,19 +53,6 @@ local function addZoomedMeterHuds(weaponTag, hudTags)
     if weaponTag and hudTags[1] then
         zoomedMeterHuds[weaponTag.value] = hudTags
     end
-end
-
---- Work out which of the loaded map's HUDs answer to a scope
----
---- Once a map, off constants.tags, so that the tick has a handle in hand and never a path to look
---- one up by. Called after tags.get(), which is what puts the handles there in the first place.
-function hudExtensions.load()
-    zoomedMeterHuds = {}
-    local weaponTags = tags.weapon
-    local childHudTags = tags.weaponHudInterface.child
-    -- One line per weapon: what is in hand, and the HUDs whose meters go away while its scope is
-    -- down. Nothing else changes when a weapon is added.
-    addZoomedMeterHuds(weaponTags.sniper, {childHudTags.sniperRifleExtMeters})
 end
 
 -- Shrunk away rather than moved: the offsets hudDynamicCrosshair animates are left alone, and
@@ -88,13 +81,13 @@ local function hideMeterElements(hudTag)
         local meterElement = meterElements[index]
         meterElement.widthScale = hiddenMeterScale
         meterElement.heightScale = hiddenMeterScale
+        meterElement.emptyColor = colors.pack(colors.palette.zoomMeterEmpty)
     end
 end
 
 local isZoomedShown = nil
-function hudExtensions.hideElementsOnZoom()
-    local player = getPlayer()
-    local biped = player and getObject(player.unitHandle, "biped")
+---@param biped BipedObject|nil
+function hudExtensions.hideElementsOnZoom(biped)
     if not biped then
         isZoomedShown = nil
         return
@@ -133,12 +126,8 @@ function hudExtensions.hideElementsOnZoom()
 end
 
 local lastGrenadeType = nil
-function hudExtensions.changeGrenadeSound()
-    local player = getPlayer()
-    if not player then
-        return
-    end
-    local biped = getObject(player.unitHandle, "biped")
+---@param biped BipedObject|nil
+function hudExtensions.changeGrenadeSound(biped)
     if not biped then
         return
     end
@@ -162,9 +151,10 @@ end
 --- Gear Text
 ----------------------------------------------------------------------------------------------
 local gearTextFont = path.vectorFont.ui.hud.gearText
-local secondaryAmmoTextFont = path.vectorFont.ui.hud.adsSmall
-local gearTextColor = {a = 1.0, r = 169 / 255, g = 198 / 255, b = 243 / 255}
-local gearTextEmptyColor = {a = 120 / 255, r = 200 / 255, g = 208 / 255, b = 255 / 255}
+-- The same two tables throughout and never a copy of them: core.setText tells a colour that has not
+-- changed by identity, and a fresh table each tick would have it redraw on every one.
+local gearTextColor = colors.interface.gearText
+local gearTextEmptyColor = colors.interface.gearTextEmpty
 
 ----------------------------------------------------------------------------------------------
 --- Gear Text: grenades
@@ -176,9 +166,8 @@ local grenadeTexts = core.resolveTexts({
 },{fontPath = gearTextFont, justification = "left", anchor = "topLeft"})
 
 local shownGrenadeText = {isUp = false}
-function hudExtensions.addGrenadeTypeText()
-    local player = getPlayer()
-    local biped = player and getObject(player.unitHandle, "biped")
+---@param biped BipedObject|nil
+function hudExtensions.addGrenadeTypeText(biped)
     if not biped then
         core.removeText(shownGrenadeText)
         return
@@ -223,12 +212,16 @@ local weaponTexts = core.resolveTexts({
     [path.weapon.covenant.fusionCoil] = {text = "PLASMA COIL"}
 }, weaponTextDefaults)
 
+-- The table above as the loaded map has it, by the value of each weapon's tag handle. Filled by
+-- hudExtensions.load, the same as the zoom's, and for the same reason.
+---@type table<integer, TextEntry>
+local weaponTextsByTag = {}
+
 local shownWeaponText = {isUp = false}
 
 --- Show the name of the weapon the player is holding, and only that one
-function hudExtensions.addWeaponText()
-    local player = getPlayer()
-    local biped = player and getObject(player.unitHandle, "biped")
+---@param biped BipedObject|nil
+function hudExtensions.addWeaponText(biped)
     local weaponObject = biped and core.getHeldWeapon(biped)
     if not weaponObject then
         -- Nothing in hand to name, on a dead player, mid swap, or watching someone else. Leaving the
@@ -236,10 +229,9 @@ function hudExtensions.addWeaponText()
         core.removeText(shownWeaponText)
         return
     end
-    -- Read off the tag entry rather than matched against the weapons constants: the path is what
-    -- keys weaponTexts, and getTagEntry hands it over without walking every weapon tag in the map.
-    local tagEntry = engine.tag.getTagEntry(weaponObject.tagHandle)
-    local entry = tagEntry and weaponTexts[tagEntry.path]
+    -- Reached with the handle the weapon carries rather than with a path read back out of its tag:
+    -- weaponTextsByTag was keyed by that handle's value when the map came up.
+    local entry = weaponTextsByTag[weaponObject.tagHandle.value]
     if not entry then
         -- A weapon this table says nothing about has no name to show for it.
         core.removeText(shownWeaponText)
@@ -249,70 +241,33 @@ function hudExtensions.addWeaponText()
                 core.isWeaponEmpty(weaponObject) and gearTextEmptyColor or gearTextColor)
 end
 
-----------------------------------------------------------------------------------------------
---- Gear Text: secondary weapon ammunition
-----------------------------------------------------------------------------------------------
-
--- What it reads as with rounds to count, and what it says instead on a weapon that has none.
-local secondaryAmmoFormat = "%d"
-local secondaryBatteryFormat = "%d%%"
-
---- The one text of its section, so its string is written into it rather than picked out of a table.
---- It is the same text throughout, saying a number that keeps changing, which is exactly what
---- core.setGearText rewrites in place instead of taking away and putting back.
-local secondaryAmmoText = {
-    text = "",
-    position = {x = 195, y = 45},
-    fontPath = secondaryAmmoTextFont,
-    justification = "right",
-    anchor = "topRight",
-}
-
-local shownSecondaryAmmoText = {isUp = false}
-
---- Show what the weapon the player would swap to has left
-function hudExtensions.addSecondaryAmmoText()
-    local player = getPlayer()
-    local biped = player and getObject(player.unitHandle, "biped")
-    -- v2 exposes the held slot as currentWeaponId, and which weapon comes after it round the four is
-    -- the swap order hudSecondaryWeapons walks for its icon.
-    local weaponObject = biped and core.getNextWeapon(biped, biped.currentWeaponId)
-    if not weaponObject then
-        -- Nothing to swap to: a dead player, one carrying the single weapon, or watching someone
-        -- else. Leaving the number up would have it outlive the weapon it was counted off.
-        core.removeText(shownSecondaryAmmoText)
-        return
-    end
-    local weaponTagData = engine.tag.getTagData(weaponObject.tagHandle, "weapon")
-    ---@cast weaponTagData Weapon
-    if not weaponTagData then
-        core.removeText(shownSecondaryAmmoText)
-        return
-    end
-    local totalAmmo = core.getWeaponTotalAmmo(weaponObject, weaponTagData)
-    if totalAmmo then
-        secondaryAmmoText.text = secondaryAmmoFormat:format(totalAmmo)
-    else
-        secondaryAmmoText.text = secondaryBatteryFormat:format(core.getBatteryPercent(weaponObject))
-    end
-    core.setText(shownSecondaryAmmoText, secondaryAmmoText, gearTextColor)
+--- Work out what the loaded map has of everything this module is configured for
+---
+--- Down here rather than beside the tables it fills because it fills more than one of them, and the
+--- last of those is declared just above. Once a map, off handles that are only good for as long as
+--- that map, and after tags.get(), which is what puts the ones it reads in constants.tags.
+function hudExtensions.load()
+    zoomedMeterHuds = {}
+    -- One line per weapon: what is in hand, and the HUDs whose meters go away while its scope is
+    -- down. Nothing else changes when a weapon is added.
+    addZoomedMeterHuds(tags.weapon.sniper, {tags.weaponHudInterface.child.sniperRifleExtMeters})
+    weaponTextsByTag = core.resolveTagKeys(weaponTexts, "weapon")
 end
 
 function hudExtensions.unload()
     core.removeText(shownGrenadeText)
     core.removeText(shownWeaponText)
-    core.removeText(shownSecondaryAmmoText)
     lastGrenadeType = nil
     isZoomedShown = nil
-    -- Let go of rather than carried into the next map: the handles in it belong to this one.
+    -- Let go of rather than carried into the next map: the handles in them belong to this one.
     zoomedMeterHuds = {}
+    weaponTextsByTag = {}
 end
 
 
 -- Blur HUD vision on critical health
-function hudExtensions.hudBlurOnLowHealth()
-    local player = getPlayer()
-    local biped = player and getObject(player.unitHandle, "biped")
+---@param biped BipedObject|nil
+function hudExtensions.hudBlurOnLowHealth(biped)
     if biped then
         -- A biped riding a vehicle is parented to it, which is what the old vehicleObjectId
         -- null check was really asking.
