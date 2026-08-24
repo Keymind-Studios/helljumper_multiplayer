@@ -19,12 +19,39 @@ local multiplayer = {}
 
 local measure = performanceMeter.run
 
+-- Every system, for the two ends of a map's life. What each does on the tick is gameplaySystems'
+-- business and is written out there by hand, because each line of it carries a name for the meter;
+-- this list carries no such thing, so a system is added to it once and is both loaded and unloaded
+-- by that. Before it there were two lists to remember, and a system left off either failed quietly:
+-- off the load, its tables stay empty and it does nothing; off the unload, it holds the last map's
+-- handles into the next one.
+--
+-- The performance meter is deliberately not here. It belongs to the plugin rather than to the map,
+-- counting from the moment the plugin loads, and helljumper_multiplayer.lua takes it up and down.
+local systems = {
+    input, healthRegen, pingObjectives, dynamicCross, weaponExtensions, hudExtensions,
+    secondaryWeaponIcons, aimingDownSights
+}
 
+--- What every system works out once, while the map it belongs to is coming up.
+---
+--- All of it is tag handles, or tables keyed by them, and a handle is an index into the loaded map:
+--- good until that map goes and meaningless after. Which is the whole point of doing it here. The
+--- tick then asks its questions with the handle an object already carries, instead of reading a path
+--- out of a tag thirty times a second to look the same thing up by.
+---
+--- Order matters once: loadTags.get() is what puts the handles in constants.tags, and a system that
+--- reads them reads them after. Past that the systems do not depend on one another's loading.
 function multiplayer.load()
     loadTags.get()
-    -- After it and not before: what this works out is keyed and filled by the handles that call
-    -- puts in constants.tags.
-    hudExtensions.load()
+    for index = 1, #systems do
+        local system = systems[index]
+        -- Only some of them have anything to work out, and a system that grows a load() later is
+        -- picked up by this without being named anywhere else.
+        if system.load then
+            system.load()
+        end
+    end
     balltze.logger.info("Loaded Helljumper Multiplayer Systems and Resources!")
 end
 
@@ -43,9 +70,10 @@ function multiplayer.gameplaySystems()
     measure("dynamicCrosshair", dynamicCross.dynamicReticles)
     measure("weaponAge", weaponExtensions.syncWeaponAge)
     measure("hudExtensions", hudExtensions.init)
-    measure("secondaryWeapons", secondaryWeaponIcons.showSecondaryWeaponIcons)
+    measure("secondaryWeapons", secondaryWeaponIcons.showSecondaryWeapons)
     measure("pingObjectives", pingObjectives.pingObjectives)
     measure("ads onTick", aimingDownSights.adsSystem)
+    
 end
 
 --- What is stepped on the frame rather than on the tick.
@@ -61,11 +89,18 @@ function multiplayer.frameSystems()
     measure("ads onFrame", aimingDownSights.updateShownElements)
 end
 
+--- Give back everything that belonged to the map that is going: what is drawn on the screen, what is
+--- written into its tags, and the handles into it that nothing may carry into the next one.
+---
+--- In the same order as the loading rather than backwards, since none of them undoes anything
+--- another one of them did.
 function multiplayer.unload()
-    input.unload()
-    hudExtensions.unload()
-    secondaryWeaponIcons.unload()
-    pingObjectives.unload()
+    for index = 1, #systems do
+        local system = systems[index]
+        if system.unload then
+            system.unload()
+        end
+    end
 end
 
 return multiplayer
