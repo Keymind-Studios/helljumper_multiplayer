@@ -290,11 +290,15 @@ function hudExtensions.hudBlurOnLowHealth(biped)
 end
 
 --- HUD Blur
+---
+--- The three go in as one script apiece rather than as calls through hsc, because the last of them
+--- leans on the engine's own (sleep 45): what holds the unblurred cinematic up for those ticks is
+--- the script thread the game runs this in, and a call at a time would have no thread to sleep.
 ---@param enableBlur boolean
 ---@param immediate any
 function hudExtensions.hudBlur(enableBlur, immediate)
     if enableBlur then
-        execute_script([[(begin
+        engine.script.execute([[(begin
                             (cinematic_screen_effect_start true)
                             (cinematic_screen_effect_set_convolution 2 1 1 1 5)
                             (cinematic_screen_effect_start false)
@@ -302,14 +306,14 @@ function hudExtensions.hudBlur(enableBlur, immediate)
         return true
     end
     if not enableBlur and immediate then
-        execute_script([[(begin
+        engine.script.execute([[(begin
                         (cinematic_screen_effect_set_convolution 2 1 1 0 1)
                         (cinematic_screen_effect_start false)
                         (cinematic_stop)
                     )]])
         return false
     end
-    execute_script([[(begin
+    engine.script.execute([[(begin
                         (cinematic_screen_effect_set_convolution 2 1 1 0 1)
                         (cinematic_screen_effect_start false)
                         (sleep 45)
