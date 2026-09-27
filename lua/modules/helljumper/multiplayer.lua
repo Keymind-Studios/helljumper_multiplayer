@@ -66,15 +66,26 @@ end
 --- The functions are passed by reference rather than wrapped in a closure, so this allocates nothing
 --- per tick, and the meter drops the measuring entirely when it has nowhere to publish a reading.
 function multiplayer.gameplaySystems()
-    measure("input", input.ensureListener)
-    measure("healthRegen", healthRegen.healthRegen)
+    -- Asked on every tick rather than once when this module is required: that happens at the main
+    -- menu, before any game is joined or hosted, and the answer would never change after it.
+    local connectionType = engine.game.getGameConnectionType()
+    local isGameClient = connectionType == "networkClient"
+    -- The machine whose copy of the game is the real one: a game of its own, or the host of one.
+    -- What it writes into an object is what the server sends out to every client; what a client
+    -- writes into its own copy is overwritten by the next update from the server.
+    local isGameHost = connectionType == "local" or connectionType == "networkServer"
+    if isGameHost then
+        measure("healthRegen", healthRegen.healthRegen)
+        measure("weaponAge", weaponExtensions.syncWeaponAge)
+        measure("pingObjectives", pingObjectives.pingObjectives)
+        measure("input", input.ensureListener)
+    end
+    if isGameClient then
+    end
     measure("dynamicCrosshair", dynamicCross.dynamicReticles)
-    measure("weaponAge", weaponExtensions.syncWeaponAge)
     measure("hudExtensions", hudExtensions.init)
     measure("secondaryWeapons", secondaryWeaponIcons.showSecondaryWeapons)
-    measure("pingObjectives", pingObjectives.pingObjectives)
     measure("ads onTick", aimingDownSights.adsSystem)
-    
 end
 
 --- What is stepped on the frame rather than on the tick.
