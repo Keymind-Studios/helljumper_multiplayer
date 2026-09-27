@@ -3,8 +3,8 @@ local balltze = Balltze
 local engine = Engine
 local getObject = Engine.object.getObject
 local getPlayer = Engine.player.getPlayer
-local utils = require "helljumper.utils"
 local hsc = require "hsc"
+local core = require "helljumper.systems.core.core"
 local input = require "helljumper.systems.core.input"
 local path = require "helljumper.systems.constants.paths"
 local colors = require "helljumper.systems.constants.colors"
@@ -17,8 +17,6 @@ local sqrt = math.sqrt
 local sin = math.sin
 local cos = math.cos
 local pi = math.pi
-local atan = math.atan
-local tan = math.tan
 local atan2 = math.atan2 or math.atan
 
 --------------------------------------------------------------------------------------------------
@@ -60,25 +58,28 @@ local covenantColor = colors.interface.adsReadoutCovenant
 ---@field anchorOrbitY number? a centre to swing round, in place of travelling across. The distances and angles at both ends fall out of the offsets already named, so an orbit is those same two endpoints read a different way round, and ends at unequal distances from the centre spiral between them.
 ---@field anchorOrbitTurns number? whole turns added to that swing, for a path that comes back on itself. 
 ---@field color {a: integer, r: integer, g: integer, b: integer}?
----@field delayTicks number? how long it stays as it was after the aim is taken
----@field openingTicks number? how long it takes to come out; 0 puts it there in one step
+---@field delayMs number? how long it stays as it was after the aim is taken
+---@field openingMs number? how long it takes to come out; 0 puts it there in one step
 ---@field openingStartScale number? the fraction of its full scale it comes in at, for what scales
----@field easePower number? how the movement is spread: 1 runs straight, higher lands softer
----@field closingDelayTicks number? how long it stays out after the aim is dropped, which staggers the way out
----@field closingTicks number? how long it takes to go back; the opening's own when not set
+---@field curve CurveSpec? how the movement is spread: a preset ("linear", "in", "out", "inout") or the four points of a CSS cubic-bezier, {x1, y1, x2, y2}. A y past 1 overshoots and settles back.
+---@field closingDelayMs number? how long it stays out after the aim is dropped, which staggers the way out
+---@field closingMs number? how long it takes to go back; the opening's own when not set
 ---@field crosshairScale number? @whole HUD tags only
 ---@field crosshairs table<integer, table<integer, AdsHudSettings>>? @whole HUD tags only
 
+-- A cubic ease out: a reticle flies open and settles into its scale instead of stopping dead.
+local easeOutCubic = {0.33, 1, 0.68, 1}
+
 ---@type AdsHudSettings
 local defaultHudElement = {
-    delayTicks = 3,
-    openingTicks = 7,
+    delayMs = 100,
+    openingMs = 233,
     openingStartScale = 0.20,
-    closingTicks = 2,
-    easePower = 3
+    closingMs = 67,
+    curve = easeOutCubic
 }
 
-local readoutDelayTicks = 7
+local readoutDelayMs = 233
 
 ---@class AdsReadoutSettings
 ---@field text string|nil @what it says, when its string is fixed rather than read off the weapon
@@ -88,8 +89,8 @@ local readoutDelayTicks = 7
 ---@field justification "left"|"right"|"center"|nil
 ---@field fontPath string|nil
 ---@field color {a: number, r: number, g: number, b: number}|nil
----@field delayTicks number|nil
----@field closingDelayTicks number|nil
+---@field delayMs number|nil
+---@field closingDelayMs number|nil
 ---@type table<string, AdsReadoutSettings>
 local defaultReadouts = {
     zoom = {
@@ -97,8 +98,8 @@ local defaultReadouts = {
         justification = "center",
         fontPath = defaultFontPath,
         color = defaultTextColor,
-        delayTicks = readoutDelayTicks,
-        closingDelayTicks = 1
+        delayMs = readoutDelayMs,
+        closingDelayMs = 33
     },
     ammo = {
         format = "%d",
@@ -107,8 +108,8 @@ local defaultReadouts = {
         justification = "right",
         fontPath = defaultFontPath,
         color = defaultTextColor,
-        delayTicks = readoutDelayTicks,
-        closingDelayTicks = 1
+        delayMs = readoutDelayMs,
+        closingDelayMs = 33
     },
     reserve = {
         format = "/ %d",
@@ -116,8 +117,8 @@ local defaultReadouts = {
         justification = "left",
         fontPath = smallFontPath,
         color = defaultTextColor,
-        delayTicks = readoutDelayTicks,
-        closingDelayTicks = 1
+        delayMs = readoutDelayMs,
+        closingDelayMs = 33
     }
 }
 
@@ -126,7 +127,7 @@ local ammoMaskOverlay = {
     widthScale = 2.25,
     heightScale = 2.25,
     openingStartScale = 3,
-    delayTicks = 1
+    delayMs = 33
 }
 
 ---@type table<string, AdsHudSettings>
@@ -404,7 +405,7 @@ local adsWeapons = {
                     },
                     [3] = { -- Distance arrow
                         [0] = {
-                            delayTicks = 8,
+                            delayMs = 267,
                             widthScale = 0.25,
                             heightScale = 0.25,
                             anchorOffsetX = -62,
@@ -424,7 +425,7 @@ local adsWeapons = {
         },
         readouts = {
             zoom = {
-                delayTicks = 8,
+                delayMs = 267,
                 text = "1.40x",
                 position = {
                     x = -74,
@@ -432,7 +433,7 @@ local adsWeapons = {
                 }
             },
             ammo = {
-                delayTicks = 8,
+                delayMs = 267,
                 justification = "center",
                 position = {
                     x = 116,
@@ -446,9 +447,6 @@ local adsWeapons = {
 --------------------------------------------------------------------------------------------------
 -- End of configuration
 --------------------------------------------------------------------------------------------------
-
--- Ticks are what the settings are written in, milliseconds are what the clock hands back.
-local tickMilliseconds = utils.ticksToMillisecs(1)
 
 -- Whether the aim is up, and which weapon it was taken with. The weapon is held by object and not
 -- by tag, so swapping between two of the same kind counts as a swap too.
@@ -470,15 +468,24 @@ local shownReadoutsWeaponPath = nil
 --- How far along something is on its way in or out, in the one shape everything here uses
 ---@class AdsPhase
 ---@field settings table @whichever settings it was resolved from, for its timings
+---@field curve BalltzeBezierCurve|nil @its settings' curve, looked up once; nil runs straight
 ---@field progress number @0 for as it was before the aim, 1 for all the way out
+---@field ease number @progress read off the curve, which is what the pieces are written from
 ---@field isClosing boolean @which way that progress is running
----@field phaseTicks number @how long it has been running that way, for the delay to measure
+---@field phaseMs number @how long it has been running that way, for the delay to measure
 
 --- Start something off as it was before the aim, on its way in
 ---@param settings table
 ---@return AdsPhase
 local function newPhase(settings)
-    return {settings = settings, progress = 0, isClosing = false, phaseTicks = 0}
+    return {
+        settings = settings,
+        curve = core.getCurve(settings.curve),
+        progress = 0,
+        ease = 0,
+        isClosing = false,
+        phaseMs = 0
+    }
 end
 
 --- Turn a phase around, if it is not already running that way
@@ -489,41 +496,41 @@ local function setPhaseClosing(phase, isClosing)
     -- reset that often would never get anywhere.
     if phase.isClosing ~= isClosing then
         phase.isClosing = isClosing
-        phase.phaseTicks = 0
+        phase.phaseMs = 0
     end
 end
 
 --- Move a phase along by a step of time, and say when it is all the way back
 ---@param phase AdsPhase
----@param elapsedTicks number @fractional: frames do not fall on tick boundaries
+---@param elapsedMs number
 ---@return boolean isClosed
-local function advancePhase(phase, elapsedTicks)
+local function advancePhase(phase, elapsedMs)
     local settings = phase.settings
     local isClosing = phase.isClosing
-    phase.phaseTicks = phase.phaseTicks + elapsedTicks
-    local delayTicks
+    phase.phaseMs = phase.phaseMs + elapsedMs
+    local delayMs
     if isClosing then
-        delayTicks = settings.closingDelayTicks or 0
+        delayMs = settings.closingDelayMs or 0
     else
-        delayTicks = settings.delayTicks or 0
+        delayMs = settings.delayMs or 0
     end
     -- The opening delay holds the first appearance back, so something caught halfway out and asked
     -- back does not sit through it: it is already on screen, and freezing it where it got to would
     -- read as a hitch rather than as a delay.
-    if phase.phaseTicks < delayTicks and (isClosing or phase.progress == 0) then
+    if phase.phaseMs < delayMs and (isClosing or phase.progress == 0) then
         return false
     end
-    local durationTicks
+    local durationMs
     if isClosing then
         -- Silence about closing means closing the way it opened, which is what makes the way out
         -- the way in backwards without anything having to say so.
-        durationTicks = settings.closingTicks or settings.openingTicks or 0
+        durationMs = settings.closingMs or settings.openingMs or 0
     else
-        durationTicks = settings.openingTicks or 0
+        durationMs = settings.openingMs or 0
     end
     local step = 1
-    if durationTicks > 0 then
-        step = elapsedTicks / durationTicks
+    if durationMs > 0 then
+        step = elapsedMs / durationMs
     end
     local progress = phase.progress + (isClosing and -step or step)
     if progress > 1 then
@@ -531,21 +538,22 @@ local function advancePhase(phase, elapsedTicks)
     elseif progress < 0 then
         progress = 0
     end
-    phase.progress = progress
+    if progress ~= phase.progress then
+        phase.progress = progress
+        -- Read off the curve once here rather than once per piece that follows this phase. It is a
+        -- function of progress alone and never of which way progress is running, which is why the
+        -- curve's own reverse is not used: that is what makes the closing the opening backwards and,
+        -- more usefully, what keeps a piece caught halfway and turned around from jumping. Whatever
+        -- it read on the way out it reads again on the way back, off the same curve at the same
+        -- progress. The ends are pinned so a curve that overshoots still lands exactly.
+        local curve = phase.curve
+        if progress <= 0 or progress >= 1 or not curve then
+            phase.ease = progress
+        else
+            phase.ease = curve:getPoint(0, 1, progress)
+        end
+    end
     return isClosing and progress <= 0
-end
-
---- How far out a phase reads once its easing is taken into account, 0 to 1
----@param phase AdsPhase
----@return number
-local function getPhaseEase(phase)
-    local easePower = phase.settings.easePower or 1
-    -- Eased out rather than run straight, so a reticle flies open and settles into its scale instead
-    -- of stopping dead. It is a function of progress alone and never of which way progress is
-    -- running, which is what makes the closing the opening backwards and, more usefully, what keeps
-    -- a piece caught halfway and turned around from jumping: whatever it read on the way out it
-    -- reads again on the way back, off the same curve at the same progress.
-    return 1 - (1 - phase.progress) ^ easePower
 end
 
 --- One table's fields laid over another's, so what a weapon leaves out comes from the defaults
@@ -733,7 +741,7 @@ local function writeHudElements(shownHudElement)
                             originalOverlays[overlayCount] = original
                         end
                         local overlaySetting = overlaySettings and overlaySettings[overlayKey]
-                        local ease = getPhaseEase(phase)
+                        local ease = phase.ease
                         -- Off its own clock's settings, so a piece that named a start scale of its
                         -- own grows from there rather than from the one the element handed round.
                         local startScale = phase.settings.openingStartScale or 1
@@ -829,9 +837,9 @@ end
 
 --- Move one of a weapon's HUD tags along, and say when it is back to what it was authored as
 ---@param shownHudElement ShownAdsHudElement
----@param elapsedTicks number
+---@param elapsedMs number
 ---@return boolean isClosed
-local function updateShownHudElement(shownHudElement, elapsedTicks)
+local function updateShownHudElement(shownHudElement, elapsedMs)
     local phases = shownHudElement.phases
     local isClosed = true
     local isMoved = false
@@ -840,7 +848,7 @@ local function updateShownHudElement(shownHudElement, elapsedTicks)
         local progressBefore = phase.progress
         -- Every clock is stepped, and the HUD only counts as finished once the last of them is: a
         -- piece with a closing delay of its own is still on screen after the rest have gone.
-        if not advancePhase(phase, elapsedTicks) then
+        if not advancePhase(phase, elapsedMs) then
             isClosed = false
         end
         if phase.progress ~= progressBefore then
@@ -939,10 +947,10 @@ end
 
 --- Move one of a weapon's readouts along, and say when it is off the screen for good
 ---@param shownReadout ShownAdsReadout
----@param elapsedTicks number
+---@param elapsedMs number
 ---@return boolean isClosed
-local function updateShownReadout(shownReadout, elapsedTicks)
-    local isClosed = advancePhase(shownReadout.phase, elapsedTicks)
+local function updateShownReadout(shownReadout, elapsedMs)
+    local isClosed = advancePhase(shownReadout.phase, elapsedMs)
     if isClosed or shownReadout.phase.progress <= 0 then
         removeReadoutText(shownReadout)
         return isClosed
@@ -1017,8 +1025,7 @@ end
 -- to. A piece naming any of these is asking for a clock of its own; a piece naming none of them
 -- follows the HUD element's, which is the common case and costs nothing.
 local timingFields = {
-    "delayTicks", "openingTicks", "openingStartScale", "easePower", "closingDelayTicks",
-    "closingTicks"
+    "delayMs", "openingMs", "openingStartScale", "curve", "closingDelayMs", "closingMs"
 }
 
 --- A clock for each of a HUD element's pieces that asked for one, nested the way the settings are
@@ -1232,34 +1239,33 @@ local steppedMilliseconds = 0
 local maximumStepMilliseconds = 4 * (1000 / 30)
 
 --- Move everything on screen along. Stepped once a frame and not once a tick: counting ticks would
---- quantise the movement into the 30 steps a second the game thinks in, which is what makes a four
---- tick opening read as four jumps however smoothly the game is running.
+--- quantise the movement into the 30 steps a second the game thinks in, which is what makes a short
+--- opening read as a few jumps however smoothly the game is running.
 ---
 --- Public because this module does not subscribe to "frame" itself: Balltze keeps one listener per
 --- event name, so a listener here would take down whatever else in the project drew on the frame,
 --- and be taken down by whatever subscribed after it. multiplayer.frameSystems calls this instead.
 function aimingDownSights.updateShownElements()
-    local elapsedTicks = 0
+    local elapsedMilliseconds = 0
     if stepTimestamp then
         local totalMilliseconds = stepTimestamp:getElapsedMilliseconds()
-        local elapsedMilliseconds = totalMilliseconds - steppedMilliseconds
+        elapsedMilliseconds = totalMilliseconds - steppedMilliseconds
         steppedMilliseconds = totalMilliseconds
         if elapsedMilliseconds > maximumStepMilliseconds then
             elapsedMilliseconds = maximumStepMilliseconds
         end
-        elapsedTicks = elapsedMilliseconds / tickMilliseconds
     else
         stepTimestamp = balltze.createTimestamp()
     end
     -- Walked backwards so anything that has finished closing can come off its list without shifting
     -- what is still waiting to be stepped.
     for index = #shownHudElements, 1, -1 do
-        if updateShownHudElement(shownHudElements[index], elapsedTicks) then
+        if updateShownHudElement(shownHudElements[index], elapsedMilliseconds) then
             table.remove(shownHudElements, index)
         end
     end
     for index = #shownReadouts, 1, -1 do
-        if updateShownReadout(shownReadouts[index], elapsedTicks) then
+        if updateShownReadout(shownReadouts[index], elapsedMilliseconds) then
             table.remove(shownReadouts, index)
         end
     end
