@@ -8,6 +8,7 @@ local utils = require "helljumper.utils"
 local core = require "helljumper.systems.core.core"
 local hsc = require "hsc"
 local input = require "helljumper.systems.core.input"
+local settings = require "helljumper.systems.core.settings"
 local path = require "helljumper.systems.constants.paths"
 
 local playerPingObjectives = {}
@@ -34,19 +35,18 @@ local playerPingObjectives = {}
 -- ever borrowed, not created, so a map without them shows nothing and says so in the log.
 --------------------------------------------------------------------------------------------------
 
--- What asks for a ping. Any of them can be set to nil to leave it out, and they can all be on at
--- once. The names come from input.key, input.mouse and input.gamepad, which is where the codes the
--- engine actually reports are written down.
----@type integer|nil
-local pingKeyCode = input.key.c
----@type integer|nil
-local pingMouseButton = nil
----@type integer|nil
-local pingGamepadButton = nil
-
--- Whether the game control this input is bound to should still see it. It only suppresses the
--- press, not the hold.
-local cancelPingInput = false
+-- What asks for a ping when settings.json does not say, under controls.pingObjectives. Any of them
+-- can be "none" to leave it out, and they can all be on at once. The names come from input.key,
+-- input.mouse and input.gamepad, which is where the codes the engine actually reports are written
+-- down.
+local pingDefaults = {
+    key = "c",
+    mouseButton = "none",
+    gamepadButton = "none",
+    -- Whether the game control this input is bound to should still see it. It only suppresses the
+    -- press, not the hold.
+    cancelInput = false
+}
 
 -- How far the ray reaches, in world units. Nothing beyond this is pinged at all: a player aiming at
 -- the sky or across a map bigger than this gets no waypoint rather than one at arm's length.
@@ -277,13 +277,8 @@ end
 -- What asks for a ping. The press itself is watched by the shared input module rather than by a
 -- listener of this module's own: Balltze keeps one listener per event name, so a second
 -- "player_input" subscription anywhere in the project would take this one down, or be taken down by
--- it, depending on which of the two ran first.
-local pingAction = input.newAction {
-    keyCode = pingKeyCode,
-    mouseButton = pingMouseButton,
-    gamepadButton = pingGamepadButton,
-    cancelInput = cancelPingInput
-}
+-- it, depending on which of the two ran first. The binding is the player's, out of settings.json.
+local pingAction = input.newAction(settings.binding("pingObjectives", pingDefaults))
 
 -- When the next ping may be made. Kept as a tick to compare against rather than as a countdown, so
 -- nothing has to be stepped on the ticks in between.
