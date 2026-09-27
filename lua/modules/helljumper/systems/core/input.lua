@@ -60,6 +60,23 @@ local input = {}
 -- has needed yet. backspace is out of ui/core.lua's translateKeycode; the rest are the v1 module's
 -- own reference, with its "5" and its "0" put back where the row says they go.
 input.key = {
+    escape = 0,
+    f1 = 1,
+    f2 = 2,
+    f3 = 3,
+    f4 = 4,
+    f5 = 5,
+    f6 = 6,
+    f7 = 7,
+    f8 = 8,
+    f9 = 9,
+    f10 = 10,
+    f11 = 11,
+    f12 = 12,
+    printScreen = 13,
+    scrollLock = 14,
+    pause = 15,
+    backquote = 16,
     one = 17,
     two = 18,
     three = 19,
@@ -244,6 +261,24 @@ function input.logInputs(isEnabled)
     isLoggingInputs = isEnabled ~= false
 end
 
+--- The name tables above turned around, code to name, so a logged press says the name a binding
+--- would use for it
+---@param names table<string, integer>
+---@return table<integer, string>
+local function namesByCode(names)
+    local byCode = {}
+    for name, code in pairs(names) do
+        byCode[code] = name
+    end
+    return byCode
+end
+
+local deviceNamesByCode = {
+    keyboard = namesByCode(input.key),
+    mouse = namesByCode(input.mouse),
+    gamepad = namesByCode(input.gamepad)
+}
+
 --- One line per press rather than per frame the press lasts
 ---@param device string
 ---@param inputCode integer
@@ -254,8 +289,16 @@ local function logInput(device, inputCode)
     lastLoggedDevice = device
     lastLoggedCode = inputCode
     lastLoggedTick = tick
-    if not isSamePress then
-        balltze.logger.warning("input: {} {}", device, inputCode)
+    if isSamePress then
+        return
+    end
+    local name = deviceNamesByCode[device][inputCode]
+    if name then
+        balltze.logger.warning("input: {} {} \"{}\"", device, inputCode, name)
+    else
+        -- A code the tables do not name yet binds by its number until it is added to them.
+        balltze.logger.warning("input: {} {} (no name yet, bind it as {})", device, inputCode,
+                               inputCode)
     end
 end
 
