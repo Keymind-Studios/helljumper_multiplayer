@@ -1,11 +1,12 @@
 local blam = require "blam"
+local inspect = require "inspect"
 local hsc = require "hsc"
 local hscDoc = require "hscDoc"
 local concat = table.concat
 local tagClasses = blam.tagClasses
 local objectClasses = blam.objectClasses
 
-function broadcastMessage(message)
+local function broadcastMessage(message)
     for playerIndex = 1, 16 do
         if player_present(playerIndex) then
             rprint(playerIndex, message)
@@ -14,7 +15,7 @@ function broadcastMessage(message)
     return false
 end
 
-function monocastMessage(playerIndex, message)
+local function monocastMessage(playerIndex, message)
     rprint(playerIndex, message)
     return false
 end
