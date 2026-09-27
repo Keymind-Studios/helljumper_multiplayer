@@ -8,6 +8,7 @@ local hsc = require "hsc"
 local input = require "helljumper.systems.core.input"
 local path = require "helljumper.systems.constants.paths"
 local colors = require "helljumper.systems.constants.colors"
+local zoom = require "helljumper.systems.weapons.weaponZoom"
 
 local aimingDownSights = {}
 
@@ -31,8 +32,12 @@ local toggleGamepadButton = input.gamepad.rightStick
 -- Whether the game control this input is bound to should still see it.
 local cancelToggleInput = false
 
-local hipFieldOfView = 76
-local fieldOfViewTolerance = 0.5
+-- The camera is magnified through Engine.camera rather than by narrowing the biped's field of view,
+-- which is left as the tag has it. 1 is no magnification at all, which is what the hip is.
+local hipMagnification = 1
+-- How the camera eases between the two, in weaponZoom's own terms.
+local zoomDurationMs = zoom.defaultDurationMs
+local zoomCurve = zoom.defaultCurve
 
 -- How far health or shield has to fall in a single tick to count as a hit taken.
 local damagingVitalsDrop = 0.01
@@ -136,7 +141,7 @@ local plasmaAdsHudElements = {
 
 -- Every weapon that aims down sights, keyed by tag path the same way hudDynamicCrosshair keys its crosshair animations.
 ---@class AdsWeaponConfig
----@field fieldOfView number
+---@field magnification number @camera magnification while aiming, 1 for none
 ---@field overheatedHeat number|nil
 ---@field autoaimRange number|nil
 ---@field hudElements table<string, AdsHudSettings>|nil
@@ -145,7 +150,7 @@ local plasmaAdsHudElements = {
 local adsWeapons = {
     -- AssaultRifleMA38
     [path.weapon.human.assaultRifleMa38] = {
-        fieldOfView = 56,
+        magnification = 1.4,
         autoaimRange = 30,
         hudElements = {
             [path.weaponHudInterface.ads.assaultRifleMa38] = {
@@ -171,7 +176,7 @@ local adsWeapons = {
     },
     -- NeedlerT54C
     [path.weapon.covenant.needler] = {
-        fieldOfView = 60,
+        magnification = 1.3,
         autoaimRange = 30,
         hudElements = {
             [path.weaponHudInterface.ads.needler] = {
@@ -224,7 +229,7 @@ local adsWeapons = {
     -- Plasma Rifle
     [path.weapon.covenant.plasmaRifle] = {
         overheatedHeat = 1,
-        fieldOfView = 56,
+        magnification = 1.4,
         hudElements = plasmaAdsHudElements,
         readouts = {
             zoom = {
@@ -249,7 +254,7 @@ local adsWeapons = {
     [path.weapon.covenant.plasmaPistol] = {
         overheatedHeat = 1,
         autoaimRange = 27,
-        fieldOfView = 60,
+        magnification = 1.3,
         hudElements = plasmaAdsHudElements,
         readouts = {
             zoom = {
@@ -272,7 +277,7 @@ local adsWeapons = {
     },
     -- Disruptor
     [path.weapon.covenant.disruptor] = {
-        fieldOfView = 60,
+        magnification = 1.3,
         hudElements = {
             [path.weaponHudInterface.ads.needler] = {
                 crosshairs = {
@@ -315,7 +320,7 @@ local adsWeapons = {
     },
     -- SAW
     [path.weapon.human.saw] = {
-        fieldOfView = 56,
+        magnification = 1.4,
         hudElements = {
             [path.weaponHudInterface.ads.saw] = {
                 crosshairs = {
@@ -365,7 +370,7 @@ local adsWeapons = {
         }
     },
     [path.weapon.human.shotgunM90] = {
-        fieldOfView = 57,
+        magnification = 1.4,
         autoaimRange = 30,
         hudElements = {
             [path.weaponHudInterface.ads.shotgunM90] = {
@@ -1150,8 +1155,8 @@ end
 ---
 --- The reach is written on the weapon tag rather than on the player, so it is worth saying where
 --- that write lands. This runs inside each player's own game, on each player's own copy of the map,
---- and nothing written to a tag here crosses the network: the camera field of view is the same kind
---- of write and has never pulled anyone else's camera in. Widening the reach does widen it on every
+--- and nothing written to a tag here crosses the network: the camera field of view used to be the
+--- same kind of write and never pulled anyone else's camera in. Widening the reach does widen it on every
 --- one of that weapon in the map, the ones in other players' hands included, but only the local
 --- player is ever aim assisted at all: the engine works that out in the player control path, which
 --- keeps one entry per local player and so has exactly one. Everyone else's weapon on this screen is
@@ -1186,6 +1191,25 @@ local function setWeaponAutoaimRange(weaponTagPath, adsWeapon)
             weaponTagData.autoaimRange = wantedRange
         end
     end
+end
+
+-- The magnification last asked of the camera, nil until the first ask. Kept because weaponZoom
+-- starts its easing over on every call: asking for the same thing on every tick would restart it
+-- each time and the camera would never get there.
+---@type number|nil
+local shownMagnification = nil
+
+--- Ease the camera towards a magnification, if that is not already where it is headed
+---@param magnification number
+---@param durationMs number|nil @weaponZoom's default when nil, 0 for at once
+local function setCameraMagnification(magnification, durationMs)
+    -- Builds of Balltze without Engine.camera have no way to do this at all, and the biped's field
+    -- of view is not written in its place: the aim still comes up, only without the magnification.
+    if magnification == shownMagnification or not zoom.isAvailable() then
+        return
+    end
+    shownMagnification = magnification
+    zoom.to(magnification, durationMs or zoomDurationMs, zoomCurve)
 end
 
 -- The clock the movements are stepped by, and how far along it the last step left off.
@@ -1331,6 +1355,7 @@ local function getAimBreakingAction(biped, weaponObject, adsWeapon)
     -- Counts down through the ready animation, the one a weapon plays as it is brought up on a
     -- swap or a pickup, and sits at zero the rest of the time. hudDynamicCrosshair reads it the
     -- same way to hold the reticle open while a weapon is coming up.
+    
     if weaponObject.readyTicks > 0 then
         return "readying the weapon"
     end
@@ -1382,6 +1407,10 @@ end
 --- Let go of what belonged to the map that is going
 function aimingDownSights.unload()
     hudTagHandles = {}
+    -- Taken back at once rather than eased: the camera zoom outlives the map, and the next one
+    -- should not come up magnified.
+    setCameraMagnification(hipMagnification, 0)
+    shownMagnification = nil
 end
 
 --- Work out what the aim is doing this tick and tell the rest of the module about it. Everything
@@ -1393,14 +1422,14 @@ function aimingDownSights.adsSystem()
 
     local player = getPlayer()
     local biped = player and getObject(player.unitHandle, "biped")
-    local bipedTagData = biped and engine.tag.getTagData(biped.tagHandle, "biped")
-    if not (player and bipedTagData) then
-        -- Nothing to aim with, on a dead player or between maps. The camera is left where it is,
-        -- since the tag it is written on is not reachable either, but everything on screen is asked
-        -- to close: the readouts especially, since nothing but this module would take them down.
+    if not (player and biped) then
+        -- Nothing to aim with, on a dead player or between maps. Everything is asked to close, the
+        -- camera included: its zoom is not tied to the biped, so it would carry over to the respawn,
+        -- and the readouts, since nothing but this module would take them down.
         isAimingDownSights = false
         setShownWeapon(nil, nil)
         setWeaponAutoaimRange(nil, nil)
+        setCameraMagnification(hipMagnification)
         return
     end
     ---@cast biped BipedObject
@@ -1435,10 +1464,11 @@ function aimingDownSights.adsSystem()
 
     -- Resolved from what is true right now rather than from the transition, so all of it lands
     -- correctly whether the aim was just taken, just dropped, or dropped by a swap.
-    local targetFieldOfView = hipFieldOfView
+    local targetMagnification = hipMagnification
     if isAimingDownSights and adsWeapon then
-        targetFieldOfView = adsWeapon.fieldOfView
+        targetMagnification = adsWeapon.magnification
     end
+    setCameraMagnification(targetMagnification)
     setShownWeapon(isAimingDownSights and weaponTagPath or nil, adsWeapon)
     setWeaponAutoaimRange(isAimingDownSights and weaponTagPath or nil, adsWeapon)
     if isAimingDownSights and weaponObject then
@@ -1452,11 +1482,6 @@ function aimingDownSights.adsSystem()
         elseif not isDead then
             hsc.sound_impulse_start(path.sound.ui.hud.weapons.aimingDownSight.humanAdsOut, "none", 1)
         end
-    end
-
-    local currentFieldOfView = math.deg(bipedTagData.cameraFieldOfView)
-    if math.abs(currentFieldOfView - targetFieldOfView) > fieldOfViewTolerance then
-        bipedTagData.cameraFieldOfView = math.rad(targetFieldOfView)
     end
 end
 

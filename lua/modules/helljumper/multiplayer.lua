@@ -13,6 +13,7 @@ local weaponExtensions = require "helljumper.systems.weapons.weaponExtensions"
 local hudExtensions = require "helljumper.systems.hud.hudExtensions"
 local secondaryWeaponIcons = require "helljumper.systems.hud.hudSecondaryWeapons"
 local aimingDownSights = require "helljumper.systems.weapons.weaponAimingDownSights"
+local weaponZoom = require "helljumper.systems.weapons.weaponZoom"
 local performanceMeter = require "helljumper.systems.debug.debugPerformanceMeter"
 
 local multiplayer = {}
@@ -87,6 +88,8 @@ end
 --- drawing.
 function multiplayer.frameSystems()
     measure("ads onFrame", aimingDownSights.updateShownElements)
+    -- Eases the camera magnification the ADS asks for on the tick.
+    measure("zoom onFrame", weaponZoom.frame)
 end
 
 --- Give back everything that belonged to the map that is going: what is drawn on the screen, what is
