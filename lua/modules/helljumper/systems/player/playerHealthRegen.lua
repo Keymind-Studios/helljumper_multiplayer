@@ -8,13 +8,13 @@ local maxHealth = 1
 local healthRegenerationAmount = 0.02
 
 ---@param player Player
----@param isGameClient boolean
-local function healthRegeneration(player, isGameClient)
+---@param isLocalGame boolean Whether this is a game of its own rather than one hosted for others
+local function healthRegeneration(player, isLocalGame)
     local biped = getObject(player.unitHandle, "biped")
     if not biped then
         return
     end
-    if isGameClient then
+    if isLocalGame then
         if biped.vitals.health <= 0 then
             biped.vitals.health = 0.000000001
         end
@@ -30,14 +30,16 @@ local function healthRegeneration(player, isGameClient)
     end
 end
 
+--- Only meant to run where the game is hosted: multiplayer.gameplaySystems leaves it out on a
+--- network client, whose writes to a biped the server would overwrite on its next update.
 function playerHealthRegen.healthRegen()
     -- Asked once for the whole list rather than once a player: what kind of game this is does not
     -- change between two players of it.
-    local isGameClient = engine.game.getGameConnectionType() == "local"
+    local isLocalGame = engine.game.getGameConnectionType() == "local"
     for playerIndex = 0, 15 do
         local player = getPlayer(playerIndex)
         if player then
-            healthRegeneration(player, isGameClient)
+            healthRegeneration(player, isLocalGame)
         end
     end
 end
