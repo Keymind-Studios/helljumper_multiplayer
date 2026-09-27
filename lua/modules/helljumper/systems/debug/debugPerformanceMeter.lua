@@ -32,6 +32,12 @@ local format = string.format
 local isShownOnScreen = true
 local isLogged = false
 
+-- Whether readings also go to a file of their own, moved by `setFileLogging`, so a whole match can be
+-- read back afterwards. The folder is relative to the plugin directory.
+local isFileLogged = true
+local logFolder = "logs"
+local logFileName = "performance.log"
+
 -- How long a reading covers. Shorter says more about the first moments of a map, which is where the
 -- problem being chased lives, and is noisier for it.
 local windowSeconds = 1
@@ -64,10 +70,25 @@ local textColor = {a = 1.0, r = 1.0, g = 0.85, b = 0.4}
 -- End of configuration
 --------------------------------------------------------------------------------------------------
 
--- Whether a measurement is taken at all. Neither switch on means every window's reading is built and
--- thrown away, so the sections are not timed either: the one place this module reaches into code
--- that ships to players is run(), and with nothing being read it gets out of the way.
-local isMeasuring = isShownOnScreen or isLogged
+-- The master switch, moved by `setEnabled`: DebugPerformance when the plugin loads, the
+-- `helljumper_multiplayer_performance` command after that.
+local isEnabled = false
+
+-- Whether a measurement is taken at all. Off, or on with nowhere to publish a reading, means the
+-- sections are not timed either: the one place this module reaches into code that ships to players
+-- is run(), and with nothing being read it gets out of the way.
+local isMeasuring = false
+
+local function refreshMeasuring()
+    isMeasuring = isEnabled and (isShownOnScreen or isLogged or isFileLogged)
+end
+
+-- "w" until the file has been opened once, then "a": turning the file off and on again continues it
+-- instead of throwing away what was already captured.
+local fileMode = "w"
+---@type file*|nil
+local logFile = nil
+local hasWarnedAboutFile = false
 
 -- Whether there is a screen to draw on at all. The same plugin loads on the dedicated server, where
 -- there is no interface to add a text to; the counting and the log still mean something there, so
@@ -145,6 +166,9 @@ local lastFrameMilliseconds = 0
 --- quietly counts nothing reads exactly like a game running at no frames a second. Hung off a
 --- callback already known to run, there is nothing left to fail without saying so.
 function performanceMeter.frame()
+    if not isMeasuring then
+        return
+    end
     frameCount = frameCount + 1
     if not frameTimestamp then
         frameTimestamp = balltze.createTimestamp()
@@ -220,6 +244,40 @@ end
 ---@return string
 local function readingLine(label, value)
     return format("%-14s %s", label .. ":", value)
+end
+
+--- Append a reading to the meter's own file, opened on the first reading written to it, so the
+--- file is never created unless it is asked for
+---@param lines string[]
+local function writeToFile(lines)
+    if not logFile then
+        if hasWarnedAboutFile then
+            return
+        end
+        -- createDirectory only makes the last segment of the path; the plugin directory is there.
+        if not balltze.filesystem.directoryExists(logFolder) then
+            balltze.filesystem.createDirectory(logFolder)
+        end
+        local root = balltze.filesystem.getPluginPath():gsub("[\\/]+$", "")
+        local filePath = format("%s\\%s\\%s", root, logFolder, logFileName)
+        local opened, failure = io.open(filePath, fileMode)
+        if not opened then
+            hasWarnedAboutFile = true
+            balltze.logger.error("performance: could not open {}: {}", filePath, tostring(failure))
+            return
+        end
+        logFile, fileMode = opened, "a"
+        balltze.logger.info("performance: readings also go to {}", filePath)
+    end
+    logFile:write("[", os.date("%H:%M:%S"), "]\n", table.concat(lines, "\n"), "\n\n")
+    logFile:flush()
+end
+
+local function closeFile()
+    if logFile then
+        pcall(logFile.close, logFile)
+        logFile = nil
+    end
 end
 
 --- Say what the window that just closed cost, and start the next one from nothing
@@ -308,6 +366,13 @@ local function publishReading(windowMilliseconds)
             balltze.logger.warning("performance: {}", lines[index])
         end
     end
+    if isFileLogged then
+        local wasWritten, failure = pcall(writeToFile, lines)
+        if not wasWritten and not hasWarnedAboutFile then
+            hasWarnedAboutFile = true
+            balltze.logger.error("performance: the reading could not be written: {}", failure)
+        end
+    end
 
     frameCount = 0
     tickCount = 0
@@ -328,6 +393,9 @@ local windowTimestamp = nil
 --- the tick, before the systems being measured run: what they cost on this tick then lands in the
 --- window that is opening rather than in the one just reported.
 function performanceMeter.tick()
+    if not isMeasuring then
+        return
+    end
     tickCount = tickCount + 1
     if not windowTimestamp then
         windowTimestamp = balltze.createTimestamp()
@@ -358,23 +426,65 @@ function performanceMeter.time(name, work)
     return result
 end
 
---- Take everything this module put on screen back off
----
---- A text outlives the map it was added on, so anything still up when the plugin unloads is left
---- drawing over whatever comes next.
-function performanceMeter.unload()
+--- Take the reading off the screen, leaving the sections and the file alone
+local function hideReading()
     for index = #shownLines, 1, -1 do
         removeShownLine(index)
     end
 end
 
--- Said once, at load, so that silence afterwards means something specific. Without it a console with
--- no readings in it is equally consistent with the module never having been required and with the
--- tick never reaching it, and those two want opposite things done about them. This module has been
--- on the wrong side of that before: its frame listener once went a hundred windows without firing,
--- and a counter that quietly counts nothing reads exactly like a game running at no frames a second.
-if isMeasuring then
-    balltze.logger.warning("performance: meter is up, first reading due in {}s", windowSeconds)
+--- Turn the meter on or off while the game runs. Off stops counting and clears the screen; on opens
+--- a fresh window, so the first reading is not the half window left over from whenever it went off.
+---@param isOn boolean
+function performanceMeter.setEnabled(isOn)
+    isOn = isOn == true
+    if isOn == isEnabled then
+        return
+    end
+    isEnabled = isOn
+    refreshMeasuring()
+
+    frameCount, tickCount, worstFrameMilliseconds, lastFrameMilliseconds = 0, 0, 0, 0
+    frameTimestamp, windowTimestamp = nil, nil
+    for index = 1, #sectionOrder do
+        local section = sectionOrder[index]
+        section.seconds = 0
+        section.calls = 0
+    end
+
+    if not isEnabled then
+        hideReading()
+        balltze.logger.info("performance: meter off")
+        return
+    end
+    -- Said as it comes up, so that silence afterwards means something specific. Without it a console
+    -- with no readings in it is equally consistent with the meter never being turned on and with the
+    -- tick never reaching it, and those two want opposite things done about them.
+    balltze.logger.info("performance: meter on, first reading due in {}s", windowSeconds)
+end
+
+--- Start or stop writing readings to logs/performance.log, without touching whether the meter counts
+---@param isOn boolean
+function performanceMeter.setFileLogging(isOn)
+    isOn = isOn == true
+    if isOn == isFileLogged then
+        return
+    end
+    isFileLogged = isOn
+    refreshMeasuring()
+    if not isFileLogged then
+        closeFile()
+    end
+    balltze.logger.info("performance: log file {}", isFileLogged and "on" or "off")
+end
+
+--- Take everything this module put on screen back off, and close its file
+---
+--- A text outlives the map it was added on, so anything still up when the plugin unloads is left
+--- drawing over whatever comes next.
+function performanceMeter.unload()
+    hideReading()
+    closeFile()
 end
 
 return performanceMeter
