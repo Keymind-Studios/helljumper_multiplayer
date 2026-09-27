@@ -6,6 +6,7 @@ local getPlayer = Engine.player.getPlayer
 local hsc = require "hsc"
 local core = require "helljumper.systems.core.core"
 local input = require "helljumper.systems.core.input"
+local userSettings = require "helljumper.systems.core.settings"
 local path = require "helljumper.systems.constants.paths"
 local colors = require "helljumper.systems.constants.colors"
 local zoom = require "helljumper.systems.weapons.weaponZoom"
@@ -23,12 +24,15 @@ local atan2 = math.atan2 or math.atan
 -- Configuration
 --------------------------------------------------------------------------------------------------
 
-local toggleKeyCode = input.key.z
-local toggleMouseButton = input.mouse.middle
-local toggleGamepadButton = input.gamepad.rightStick
-
--- Whether the game control this input is bound to should still see it.
-local cancelToggleInput = false
+-- What flips the aim when settings.json does not say, under controls.aimDownSights. Names out of
+-- input.key, input.mouse and input.gamepad, or "none" to leave a device out.
+local toggleDefaults = {
+    key = "z",
+    mouseButton = "middle",
+    gamepadButton = "rightStick",
+    -- Whether the game control this input is bound to should still see it.
+    cancelInput = false
+}
 
 -- The camera is magnified through Engine.camera rather than by narrowing the biped's field of view,
 -- which is left as the tag has it. 1 is no magnification at all, which is what the hip is.
@@ -1278,13 +1282,8 @@ end
 -- What flips the aim. The press itself is watched by the shared input module rather than by a
 -- listener of this module's own: Balltze keeps one listener per event name, so a second
 -- "player_input" subscription anywhere in the project would take this one down, or be taken down by
--- it, depending on which of the two ran first.
-local toggleAction = input.newAction {
-    keyCode = toggleKeyCode,
-    mouseButton = toggleMouseButton,
-    gamepadButton = toggleGamepadButton,
-    cancelInput = cancelToggleInput
-}
+-- it, depending on which of the two ran first. The binding is the player's, out of settings.json.
+local toggleAction = input.newAction(userSettings.binding("aimDownSights", toggleDefaults))
 
 --- The aiming settings of the weapon a biped is holding, if that weapon aims at all
 ---@param biped BipedObject
