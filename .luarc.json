@@ -6,5 +6,5 @@
     ],
     "workspace.preloadFileSize": 1000,
     "runtime.version": "Lua 5.3",
-    "runtime.path": ["lua/docs/?.lua", "lua/?.lua"]
+    "runtime.path": ["lua/docs/?.lua", "lua/?.lua", "lua/modules/?.lua"]
 }
