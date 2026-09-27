@@ -23,7 +23,7 @@ local atan2 = math.atan2 or math.atan
 -- Configuration
 --------------------------------------------------------------------------------------------------
 
-local toggleKeyCode = nil
+local toggleKeyCode = input.key.z
 local toggleMouseButton = input.mouse.middle
 local toggleGamepadButton = input.gamepad.rightStick
 
