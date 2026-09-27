@@ -1,5 +1,6 @@
 local balltze = Balltze
 local engine = Engine
+local core = require "helljumper.systems.core.core"
 
 --- Camera zoom eased over time with Balltze's bezier curves; frame() advances it.
 local zoom = {}
@@ -7,22 +8,11 @@ local zoom = {}
 zoom.defaultDurationMs = 150
 zoom.defaultCurve = "inout"
 
--- One word each, since the console splits arguments on spaces.
-local presets = {
-    linear = "linear",
-    ["in"] = "ease in",
-    out = "ease out",
-    inout = "ease in out",
-}
-
----@type table<string, BalltzeBezierCurve>
-local curves = {}
-
 ---@class ZoomTransition
 ---@field from number
 ---@field to number
 ---@field durationMs number
----@field curve BalltzeBezierCurve
+---@field curve BalltzeBezierCurve|nil @nil runs straight
 ---@field timestamp BalltzeTimestamp
 
 ---@type ZoomTransition|nil
@@ -37,7 +27,7 @@ end
 ---@param name string
 ---@return boolean
 function zoom.isCurve(name)
-    return presets[name] ~= nil
+    return core.isCurvePreset(name)
 end
 
 ---@return number
@@ -58,13 +48,11 @@ function zoom.to(target, durationMs, curveName)
         return
     end
 
-    local preset = presets[curveName or zoom.defaultCurve]
-    curves[preset] = curves[preset] or balltze.createBezierCurve(preset)
     transition = {
         from = from,
         to = target,
         durationMs = durationMs,
-        curve = curves[preset],
+        curve = core.getCurve(curveName or zoom.defaultCurve),
         timestamp = balltze.createTimestamp(),
     }
 end
@@ -81,7 +69,12 @@ function zoom.frame()
         transition = nil
         return
     end
-    engine.camera.setZoom(transition.curve:getPoint(transition.from, transition.to, t))
+    local from, to, curve = transition.from, transition.to, transition.curve
+    if curve then
+        engine.camera.setZoom(curve:getPoint(from, to, t))
+    else
+        engine.camera.setZoom(from + (to - from) * t)
+    end
 end
 
 return zoom
