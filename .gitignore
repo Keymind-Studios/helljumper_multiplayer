@@ -72,3 +72,4 @@ tags
 # User-specific files and folders
 *.bat
 _docs/
+lua/docs/sapp/
