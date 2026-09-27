@@ -1,3 +1,10 @@
+-- Set before anything is required: script.lua caches DebugPerformance at require time. These are the
+-- values a first run starts with; after that the saved `helljumper_multiplayer_debug` and
+-- `helljumper_multiplayer_performance` commands in settings.json replay over them.
+DebugMode = false
+DebugLuaMemory = true
+DebugPerformance = false
+
 require "luna"
 local balltze = Balltze
 local engine = Engine
@@ -6,15 +13,12 @@ local script = require "script"
 -- a `local main` further down would leave that closure reading a global that nothing ever assigns.
 local main
 
-DebugMode = false
-DebugLuaMemory = true
-DebugPerformance = false
-
 local commands = require "helljumper.systems.debug.commands"
 -- Required here rather than from helljumper.main because the meter is meant to be counting from the
 -- moment the plugin loads: what it was written to catch is a cost in a map's first seconds, which is
--- over before PluginOnGameStart hands main over. Its own flags decide whether anything comes out.
+-- over before PluginOnGameStart hands main over. DebugPerformance decides whether it counts at all.
 local performanceMeter = require "helljumper.systems.debug.debugPerformanceMeter"
+performanceMeter.setEnabled(DebugPerformance)
 
 -- Override assert function to print traceback as well
 local luaAssert = assert
@@ -78,4 +82,5 @@ end
 function PluginOnGameStart()
     main = require "helljumper.main"
     script.setReferenceContext(main)
+    commands.register()
 end
