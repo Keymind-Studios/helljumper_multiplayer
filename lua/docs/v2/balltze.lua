@@ -157,6 +157,32 @@ function BalltzeTimestamp:reset() end
 ---@return BalltzeTimestamp
 function Balltze.createTimestamp() end
 
+---@class BalltzeBezierCurve
+local BalltzeBezierCurve = {}
+
+-- Value between initialValue and finalValue at progress t (0-1), eased by the curve
+---@param initialValue number
+---@param finalValue number
+---@param t number
+---@param reverse? boolean Evaluate from the end of the curve; defaults to false
+---@return number
+function BalltzeBezierCurve:getPoint(initialValue, finalValue, t, reverse) end
+
+---@alias BalltzeBezierCurvePreset
+---| "linear"
+---| "ease in"
+---| "ease out"
+---| "ease in out"
+
+-- Cubic bezier easing curve from (0,0) to (1,1), like CSS cubic-bezier; x1 and x2 must be 0-1
+---@param x1 number
+---@param y1 number
+---@param x2 number
+---@param y2 number
+---@return BalltzeBezierCurve
+---@overload fun(preset: BalltzeBezierCurvePreset): BalltzeBezierCurve
+function Balltze.createBezierCurve(x1, y1, x2, y2) end
+
 ---@return string
 function Balltze.getClipboard() end
 

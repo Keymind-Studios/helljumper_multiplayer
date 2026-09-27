@@ -224,6 +224,12 @@ function Engine.object.getObject(handle, type) end
 ---@return ObjectType|nil @nil if the handle doesn't refer to a live object
 function Engine.object.getObjectType(handle) end
 
+-- Get how many objects exist and how many the object table can hold. Returns nil when no map is
+-- loaded, since there is no object table yet.
+---@return integer|nil count @objects alive right now
+---@return integer|nil maxCount @capacity of the object table
+function Engine.object.getObjectCount() end
+
 -- Spawn an object
 ---@param tagHandle TagHandle|integer
 ---@param parentObjectHandle? ObjectHandle|integer
@@ -400,6 +406,24 @@ function Engine.uiWidget.isListWidget(widget) end
 ---@param widget Widget
 ---@return boolean
 function Engine.uiWidget.textBoxWidgetIsFocused(widget) end
+
+
+-------------------------------------------------------
+-- Engine.camera
+-------------------------------------------------------
+
+Engine.camera = {}
+
+-- Magnify the camera without zooming the weapon; look sensitivity scales down with it like a
+-- weapon zoom. Reset when the plugin unloads.
+---@param zoom number Magnification, 1 for none
+---@param localPlayerIndex? integer @default 0
+function Engine.camera.setZoom(zoom, localPlayerIndex) end
+
+-- Get the camera magnification set with setZoom.
+---@param localPlayerIndex? integer @default 0
+---@return number
+function Engine.camera.getZoom(localPlayerIndex) end
 
 
 -------------------------------------------------------
