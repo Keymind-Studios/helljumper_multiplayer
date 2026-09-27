@@ -6,6 +6,62 @@ local getPlayer = Engine.player.getPlayer
 
 local core = {}
 
+-- Balltze's presets, by the one word each is asked for with: the console splits its arguments on
+-- spaces, so "ease in out" could not be typed there.
+local curvePresets = {
+    linear = "linear",
+    ["in"] = "ease in",
+    out = "ease out",
+    inout = "ease in out"
+}
+
+-- Every curve asked for so far. A curve is a pure function of its four points and belongs to no map,
+-- so each is built once for the life of the plugin and shared by whoever asks for it.
+---@type table<string, BalltzeBezierCurve>
+local curves = {}
+
+--- A preset's name, or the four control points of a CSS cubic-bezier: {x1, y1, x2, y2}
+---@alias CurveSpec string|number[]
+
+---@param name string
+---@return boolean
+function core.isCurvePreset(name)
+    return curvePresets[name] ~= nil
+end
+
+--- The eased curve a spec describes, or nil when there is none to be had
+---
+--- Nil on a build of Balltze without bezier curves, and on a preset name nobody knows. Whoever asks
+--- reads nil as running straight, so neither costs more than the easing.
+---@param spec CurveSpec|nil
+---@return BalltzeBezierCurve|nil
+function core.getCurve(spec)
+    if spec == nil or not balltze.createBezierCurve then
+        return nil
+    end
+    local key
+    if type(spec) == "table" then
+        -- Keyed by the points and not by the table, so two settings that write out the same curve
+        -- share it rather than each building their own.
+        key = ("%g,%g,%g,%g"):format(spec[1], spec[2], spec[3], spec[4])
+    else
+        key = curvePresets[spec]
+        if not key then
+            return nil
+        end
+    end
+    local curve = curves[key]
+    if not curve then
+        if type(spec) == "table" then
+            curve = balltze.createBezierCurve(spec[1], spec[2], spec[3], spec[4])
+        else
+            curve = balltze.createBezierCurve(key)
+        end
+        curves[key] = curve
+    end
+    return curve
+end
+
 ---@class TextEntry
 ---@field text string
 ---@field position {x: integer, y: integer}
